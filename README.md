@@ -7,7 +7,7 @@ WentUrc ASCII Art Tool 是一个支持图片和视频处理，以及播放 `.txt
 ## 目录结构
 
 ```
-WentUrc_ASCII_Art_Tool/
+ASCII_drawing/
 │
 ├── WentUrc_ASCII_Art_Tool/          # 主包
 │   ├── __init__.py
@@ -70,8 +70,8 @@ WentUrc_ASCII_Art_Tool/
 ### 1. 克隆仓库
 
 ```bash
-git clone https://github.com/yourusername/WentUrc_ASCII_Art_Tool.git
-cd WentUrc_ASCII_Art_Tool
+git clone https://github.com/IGCrystal/ASCII_drawing.git
+cd ASCII_drawing
 ```
 
 ### 2. 运行自动化脚本
@@ -171,11 +171,3 @@ python -m unittest discover tests
 
 MIT License
 ```
-
-**关键改动：**
-
-- **目录结构说明**：详细描述了项目的目录结构，便于理解各个模块的作用。
-- **安装步骤**：提供了详细的安装和配置指南，确保用户能够顺利设置环境并运行程序。
-- **使用方法**：清晰说明了不同功能的使用方式。
-- **测试说明**：指导用户如何运行测试用例，确保代码质量。
-- **贡献指南**：鼓励开源贡献，提升项目的协作性。
