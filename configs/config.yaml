@@ -1,0 +1,16 @@
+# ASCII_drawing/configs/config.yaml
+
+output_directories:
+  image_txt: "./output/image/txt"
+  image_png: "./output/image/png"
+  video: "./output/video"
+
+font_path: "C:\\Windows\\Fonts\\consola.ttf"  # 根据需要调整路径
+
+default_settings:
+  ascii_width_txt: 100
+  ascii_width_png: 300
+  video_fps: 24
+
+log_level: "INFO"
+log_format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"

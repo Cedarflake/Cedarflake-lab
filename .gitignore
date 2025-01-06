@@ -1,0 +1,10 @@
+
+/.idea
+/build
+/dist
+/output
+
+*__pycache__
+ffmpeg/ffmpeg.exe
+ffmpeg/ffplay.exe
+ffmpeg/ffprobe.exe
