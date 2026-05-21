@@ -3,6 +3,80 @@ import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
 import { MAIMAI_SVG_PATH, MAIMAI_TIMINGS } from '../constants'
 import { createMaimaiTimeline } from '../lib/createMaimaiTimeline'
 
+const preloadedSvgAssetPromises = new Map<string, Promise<void>>()
+
+function collectSvgExternalAssetUrls(markup: string, svgPath: string) {
+  const parser = new DOMParser()
+  const document = parser.parseFromString(markup, 'image/svg+xml')
+  const svgUrl = new URL(svgPath, window.location.href)
+  const imageElements = Array.from(document.querySelectorAll('image'))
+  const assetUrls = imageElements
+    .map((imageElement) => imageElement.getAttribute('href') ?? imageElement.getAttribute('xlink:href'))
+    .filter((href): href is string => Boolean(href && href.trim() && !href.startsWith('#') && !href.startsWith('data:')))
+    .map((href) => new URL(href, svgUrl).toString())
+
+  return Array.from(new Set(assetUrls))
+}
+
+function preloadImageAsset(assetUrl: string, signal: AbortSignal) {
+  const existingPromise = preloadedSvgAssetPromises.get(assetUrl)
+
+  if (existingPromise) {
+    return existingPromise
+  }
+
+  const imagePromise = new Promise<void>((resolve, reject) => {
+    const image = new Image()
+
+    const cleanup = () => {
+      image.onload = null
+      image.onerror = null
+      signal.removeEventListener('abort', handleAbort)
+    }
+
+    const handleAbort = () => {
+      cleanup()
+      preloadedSvgAssetPromises.delete(assetUrl)
+      reject(new DOMException('资源预加载已取消。', 'AbortError'))
+    }
+
+    image.onload = () => {
+      cleanup()
+      resolve()
+    }
+
+    image.onerror = () => {
+      cleanup()
+      preloadedSvgAssetPromises.delete(assetUrl)
+      reject(new Error(`SVG 资源加载失败：${assetUrl}`))
+    }
+
+    signal.addEventListener('abort', handleAbort, { once: true })
+
+    if (signal.aborted) {
+      handleAbort()
+      return
+    }
+
+    image.decoding = 'async'
+    image.src = assetUrl
+  })
+
+  preloadedSvgAssetPromises.set(assetUrl, imagePromise)
+
+  return imagePromise
+}
+
+async function preloadSvgExternalAssets(markup: string, svgPath: string, signal: AbortSignal) {
+  const assetUrls = collectSvgExternalAssetUrls(markup, svgPath)
+
+  if (assetUrls.length === 0) {
+    return
+  }
+
+  await Promise.all(assetUrls.map((assetUrl) => preloadImageAsset(assetUrl, signal)))
+}
+
 export type TransitionStatus =
   | 'loading'
   | 'ready'
@@ -149,6 +223,12 @@ export function useMaimaiTransition(
         const markup = await response.text()
 
         if (disposed) {
+          return
+        }
+
+        await preloadSvgExternalAssets(markup, svgPath, abortController.signal)
+
+        if (disposed || abortController.signal.aborted) {
           return
         }
 
