@@ -25,7 +25,8 @@ export function RouteShowcasePage({
         <header className={styles.topBar}>
           <div className={styles.brand} data-smooth-corners="pill">
             <span className={styles.brandDot} data-smooth-corners="pill" />
-            舞萌转场 · 路由切换 Demo
+            <span className={styles.brandLabelFull}>舞萌转场 · 路由切换 Demo</span>
+            <span className={styles.brandLabelCompact}>舞萌转场 Demo</span>
           </div>
 
           <button

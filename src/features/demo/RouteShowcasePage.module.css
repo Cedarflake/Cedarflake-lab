@@ -42,10 +42,15 @@
   align-items: center;
   gap: 0.7rem;
   padding: 0.5rem 0.9rem;
+  white-space: nowrap;
   color: rgba(255, 255, 255, 0.9);
   background: rgba(8, 10, 24, 0.38);
   -webkit-backdrop-filter: blur(18px);
   backdrop-filter: blur(18px);
+}
+
+.brandLabelCompact {
+  display: none;
 }
 
 .brandDot {
@@ -138,6 +143,8 @@
 .sceneStatusButton {
   margin-left: auto;
   padding: 0.72rem 1rem;
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .secondaryButton:hover:not(:disabled) {
@@ -175,9 +182,31 @@
     padding: 18px;
   }
 
+  .topBar {
+    gap: 0.6rem;
+  }
+
   .topBar,
   .footer {
     align-items: stretch;
+  }
+
+  .brand,
+  .sceneStatusButton {
+    font-size: 0.88rem;
+  }
+
+  .brand {
+    gap: 0.5rem;
+    padding: 0.48rem 0.72rem;
+  }
+
+  .brandLabelFull {
+    display: none;
+  }
+
+  .brandLabelCompact {
+    display: inline;
   }
 
   .actions {
@@ -190,10 +219,27 @@
   }
 
   .sceneStatusButton {
+    flex: 0 0 auto;
     margin-left: 0;
+    padding: 0.66rem 0.82rem;
   }
 
   .title {
     max-width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .brand,
+  .sceneStatusButton {
+    font-size: 0.82rem;
+  }
+
+  .brand {
+    padding-inline: 0.64rem;
+  }
+
+  .sceneStatusButton {
+    padding-inline: 0.72rem;
   }
 }
