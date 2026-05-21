@@ -1,0 +1,60 @@
+.root {
+  --opening-color-text: rgba(244, 247, 255, 0.95);
+  --opening-color-surface: rgba(8, 10, 22, 0.5);
+  --opening-color-surface-border: rgba(255, 255, 255, 0.18);
+  --opening-color-focus: #67e8f9;
+  --opening-color-stage-bg: #fff;
+  --opening-stage-background-image: none;
+  --opening-stage-background-position: center center;
+  --opening-stage-background-repeat: no-repeat;
+  --opening-stage-background-size: cover;
+  --opening-radius-pill: 999px;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.sceneBackground {
+  position: absolute;
+  inset: 0;
+  background-color: var(--opening-color-stage-bg);
+  background-image: var(--opening-stage-background-image);
+  background-position: var(--opening-stage-background-position);
+  background-repeat: var(--opening-stage-background-repeat);
+  background-size: var(--opening-stage-background-size);
+}
+
+.viewport {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+}
+
+.stage {
+  position: relative;
+  overflow: hidden;
+}
+
+.stageFrame {
+  width: min(100%, calc(100dvh * 16 / 9));
+  aspect-ratio: 16 / 9;
+}
+
+.stageFullscreen {
+  width: 100%;
+  height: 100%;
+}
+
+.frame,
+.frame > svg {
+  width: 100%;
+  height: 100%;
+}
+
+.frame > svg {
+  display: block;
+}

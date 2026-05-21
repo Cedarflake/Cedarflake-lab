@@ -1,0 +1,41 @@
+:where([data-smooth-corners='sm']) {
+  border-radius: var(--radius-sm);
+}
+
+:where([data-smooth-corners='md']) {
+  border-radius: var(--radius-md);
+}
+
+:where([data-smooth-corners='lg']) {
+  border-radius: var(--radius-lg);
+}
+
+:where([data-smooth-corners='xl']) {
+  border-radius: var(--radius-xl);
+}
+
+:where([data-smooth-corners='pill']) {
+  border-radius: var(--radius-pill);
+}
+
+@supports (corner-shape: superellipse(0.5)) {
+  :where([data-smooth-corners='sm']) {
+    corner-shape: var(--corner-shape-sm);
+  }
+
+  :where([data-smooth-corners='md']) {
+    corner-shape: var(--corner-shape-md);
+  }
+
+  :where([data-smooth-corners='lg']) {
+    corner-shape: var(--corner-shape-lg);
+  }
+
+  :where([data-smooth-corners='xl']) {
+    corner-shape: var(--corner-shape-xl);
+  }
+
+  :where([data-smooth-corners='pill']) {
+    corner-shape: var(--corner-shape-pill);
+  }
+}

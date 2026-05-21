@@ -1,0 +1,199 @@
+.page {
+  position: relative;
+  min-height: 100dvh;
+  display: grid;
+  align-items: stretch;
+  overflow: hidden;
+  color: #ffffff;
+  background-color: #080814;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(8, 8, 20, 0.18) 0%, rgba(8, 8, 20, 0.52) 50%, rgba(8, 8, 20, 0.74) 100%),
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.12), transparent 30%),
+    radial-gradient(circle at 80% 20%, rgba(213, 140, 255, 0.22), transparent 26%);
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: space-between;
+  min-height: 100dvh;
+  padding: clamp(24px, 4vw, 52px);
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.5rem 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(8, 10, 24, 0.38);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+.brandDot {
+  width: 0.7rem;
+  height: 0.7rem;
+  background: #d58cff;
+}
+
+.primaryButton,
+.secondaryButton {
+  appearance: none;
+  border: 0;
+  font: inherit;
+  line-height: 1.1;
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    opacity 180ms ease;
+}
+
+.hero {
+  display: grid;
+  gap: 1.5rem;
+  align-content: center;
+  justify-items: start;
+  padding-block: clamp(32px, 8vh, 72px);
+}
+
+.accentLabel {
+  padding: 0.5rem 0.85rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.14);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+.title {
+  max-width: 12ch;
+  margin: 0;
+  font-size: clamp(3.2rem, 6.8vw, 6.8rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.description {
+  max-width: min(62ch, 100%);
+  margin: 0;
+  font-size: clamp(1rem, 1.6vw, 1.12rem);
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.actions {
+  display: flex;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.primaryButton,
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.88rem 1.25rem;
+  font-weight: 700;
+}
+
+.primaryButton {
+  color: #ffffff;
+  background: #d58cff;
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: #c874ff;
+}
+
+.secondaryButton {
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(8, 10, 24, 0.34);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+.sceneStatusButton {
+  margin-left: auto;
+  padding: 0.72rem 1rem;
+}
+
+.secondaryButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.note {
+  padding: 0.72rem 0.96rem;
+  background: rgba(8, 10, 24, 0.3);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+.note {
+  max-width: 38rem;
+}
+
+@media (max-width: 767px) {
+  .content {
+    padding: 18px;
+  }
+
+  .topBar,
+  .footer {
+    align-items: stretch;
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    flex: 1 1 auto;
+  }
+
+  .sceneStatusButton {
+    margin-left: 0;
+  }
+
+  .title {
+    max-width: 100%;
+  }
+}

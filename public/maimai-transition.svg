@@ -1,0 +1,300 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3840 2160" width="3840" height="2160">
+	<defs>
+		<image  width="3840" height="3840" id="img1" href="assets/svg-extracted/img1.png"/>
+		<image  width="79" height="79" id="img2" href="assets/svg-extracted/img2.png"/>
+		<image  width="79" height="79" id="img3" href="assets/svg-extracted/img3.png"/>
+		<image  width="79" height="79" id="img4" href="assets/svg-extracted/img4.png"/>
+		<image  width="79" height="79" id="img5" href="assets/svg-extracted/img5.png"/>
+		<image  width="79" height="79" id="img6" href="assets/svg-extracted/img6.png"/>
+		<image  width="79" height="79" id="img7" href="assets/svg-extracted/img7.png"/>
+		<image  width="79" height="79" id="img8" href="assets/svg-extracted/img8.png"/>
+		<image  width="79" height="79" id="img9" href="assets/svg-extracted/img9.png"/>
+		<image  width="79" height="79" id="img10" href="assets/svg-extracted/img10.png"/>
+		<image  width="79" height="79" id="img11" href="assets/svg-extracted/img11.png"/>
+		<image  width="79" height="79" id="img12" href="assets/svg-extracted/img12.png"/>
+		<image  width="79" height="79" id="img13" href="assets/svg-extracted/img13.png"/>
+		<image  width="79" height="79" id="img14" href="assets/svg-extracted/img14.png"/>
+		<image  width="79" height="79" id="img15" href="assets/svg-extracted/img15.png"/>
+		<image  width="79" height="79" id="img16" href="assets/svg-extracted/img16.png"/>
+		<image  width="79" height="79" id="img17" href="assets/svg-extracted/img17.png"/>
+		<image  width="79" height="79" id="img18" href="assets/svg-extracted/img18.png"/>
+		<image  width="79" height="79" id="img19" href="assets/svg-extracted/img19.png"/>
+		<image  width="79" height="79" id="img20" href="assets/svg-extracted/img20.png"/>
+		<image  width="79" height="79" id="img21" href="assets/svg-extracted/img21.png"/>
+		<image  width="79" height="79" id="img22" href="assets/svg-extracted/img22.png"/>
+		<image  width="79" height="79" id="img23" href="assets/svg-extracted/img23.png"/>
+		<image  width="79" height="79" id="img24" href="assets/svg-extracted/img24.png"/>
+		<image  width="79" height="79" id="img25" href="assets/svg-extracted/img25.png"/>
+		<image  width="79" height="79" id="img26" href="assets/svg-extracted/img26.png"/>
+		<image  width="79" height="79" id="img27" href="assets/svg-extracted/img27.png"/>
+		<image  width="79" height="79" id="img28" href="assets/svg-extracted/img28.png"/>
+		<image  width="79" height="79" id="img29" href="assets/svg-extracted/img29.png"/>
+		<image  width="79" height="79" id="img30" href="assets/svg-extracted/img30.png"/>
+		<image  width="79" height="79" id="img31" href="assets/svg-extracted/img31.png"/>
+		<image  width="79" height="79" id="img32" href="assets/svg-extracted/img32.png"/>
+		<image  width="3840" height="3840" id="img33" href="assets/svg-extracted/img33.png"/>
+		<image  width="1000" height="1000" id="img34" href="assets/svg-extracted/img34.png"/>
+		<image  width="414" height="416" id="img35" href="assets/svg-extracted/img35.png"/>
+		<image  width="880" height="880" id="img36" href="assets/svg-extracted/img36.png"/>
+		<image  width="890" height="892" id="img37" href="assets/svg-extracted/img37.png"/>
+		<image  width="870" height="871" id="img38" href="assets/svg-extracted/img38.png"/>
+		<image  width="725" height="725" id="img39" href="assets/svg-extracted/img39.png"/>
+		<image  width="1493" height="1492" id="img40" href="assets/svg-extracted/img40.png"/>
+		<image  width="890" height="890" id="img41" href="assets/svg-extracted/img41.png"/>
+		<image  width="512" height="513" id="img42" href="assets/svg-extracted/img42.png"/>
+		<image  width="500" height="501" id="img43" href="assets/svg-extracted/img43.png"/>
+		<image  width="925" height="927" id="img44" href="assets/svg-extracted/img44.png"/>
+		<image  width="1063" height="1065" id="img45" href="assets/svg-extracted/img45.png"/>
+		<image  width="1350" height="1351" id="img46" href="assets/svg-extracted/img46.png"/>
+		<image  width="685" height="685" id="img47" href="assets/svg-extracted/img47.png"/>
+		<image  width="1847" height="1847" id="img48" href="assets/svg-extracted/img48.png"/>
+		<image  width="72" height="72" id="img49" href="assets/svg-extracted/img49.png"/>
+		<image  width="72" height="72" id="img50" href="assets/svg-extracted/img50.png"/>
+		<image  width="72" height="72" id="img51" href="assets/svg-extracted/img51.png"/>
+		<image  width="72" height="72" id="img52" href="assets/svg-extracted/img52.png"/>
+		<image  width="72" height="72" id="img53" href="assets/svg-extracted/img53.png"/>
+		<image  width="72" height="72" id="img54" href="assets/svg-extracted/img54.png"/>
+		<image  width="72" height="72" id="img55" href="assets/svg-extracted/img55.png"/>
+		<image  width="72" height="72" id="img56" href="assets/svg-extracted/img56.png"/>
+		<image  width="72" height="72" id="img57" href="assets/svg-extracted/img57.png"/>
+		<image  width="72" height="72" id="img58" href="assets/svg-extracted/img58.png"/>
+		<image  width="72" height="72" id="img59" href="assets/svg-extracted/img59.png"/>
+		<image  width="72" height="72" id="img60" href="assets/svg-extracted/img60.png"/>
+		<image  width="72" height="72" id="img61" href="assets/svg-extracted/img61.png"/>
+		<image  width="72" height="72" id="img62" href="assets/svg-extracted/img62.png"/>
+		<image  width="72" height="72" id="img63" href="assets/svg-extracted/img63.png"/>
+		<image  width="72" height="72" id="img64" href="assets/svg-extracted/img64.png"/>
+		<image  width="1846" height="1847" id="img65" href="assets/svg-extracted/img65.png"/>
+		<image  width="72" height="72" id="img66" href="assets/svg-extracted/img66.png"/>
+		<image  width="72" height="72" id="img67" href="assets/svg-extracted/img67.png"/>
+		<image  width="72" height="72" id="img68" href="assets/svg-extracted/img68.png"/>
+		<image  width="72" height="72" id="img69" href="assets/svg-extracted/img69.png"/>
+		<image  width="72" height="72" id="img70" href="assets/svg-extracted/img70.png"/>
+		<image  width="72" height="72" id="img71" href="assets/svg-extracted/img71.png"/>
+		<image  width="72" height="72" id="img72" href="assets/svg-extracted/img72.png"/>
+		<image  width="72" height="72" id="img73" href="assets/svg-extracted/img73.png"/>
+		<image  width="72" height="72" id="img74" href="assets/svg-extracted/img74.png"/>
+		<image  width="72" height="72" id="img75" href="assets/svg-extracted/img75.png"/>
+		<image  width="72" height="72" id="img76" href="assets/svg-extracted/img76.png"/>
+		<image  width="72" height="72" id="img77" href="assets/svg-extracted/img77.png"/>
+		<image  width="72" height="72" id="img78" href="assets/svg-extracted/img78.png"/>
+		<image  width="72" height="72" id="img79" href="assets/svg-extracted/img79.png"/>
+		<image  width="72" height="72" id="img80" href="assets/svg-extracted/img80.png"/>
+		<image  width="72" height="72" id="img81" href="assets/svg-extracted/img81.png"/>
+		<image  width="72" height="72" id="img82" href="assets/svg-extracted/img82.png"/>
+		<image  width="1372" height="1372" id="img83" href="assets/svg-extracted/img83.png"/>
+		<image  width="72" height="72" id="img84" href="assets/svg-extracted/img84.png"/>
+		<image  width="72" height="72" id="img85" href="assets/svg-extracted/img85.png"/>
+		<image  width="72" height="72" id="img86" href="assets/svg-extracted/img86.png"/>
+		<image  width="72" height="72" id="img87" href="assets/svg-extracted/img87.png"/>
+		<image  width="72" height="72" id="img88" href="assets/svg-extracted/img88.png"/>
+		<image  width="72" height="72" id="img89" href="assets/svg-extracted/img89.png"/>
+		<image  width="72" height="72" id="img90" href="assets/svg-extracted/img90.png"/>
+		<image  width="72" height="72" id="img91" href="assets/svg-extracted/img91.png"/>
+		<image  width="72" height="72" id="img92" href="assets/svg-extracted/img92.png"/>
+		<image  width="72" height="72" id="img93" href="assets/svg-extracted/img93.png"/>
+		<image  width="72" height="72" id="img94" href="assets/svg-extracted/img94.png"/>
+		<image  width="72" height="72" id="img95" href="assets/svg-extracted/img95.png"/>
+		<image  width="72" height="72" id="img96" href="assets/svg-extracted/img96.png"/>
+		<image  width="72" height="72" id="img97" href="assets/svg-extracted/img97.png"/>
+		<image  width="72" height="72" id="img98" href="assets/svg-extracted/img98.png"/>
+		<image  width="72" height="72" id="img99" href="assets/svg-extracted/img99.png"/>
+		<image  width="1372" height="1372" id="img100" href="assets/svg-extracted/img100.png"/>
+		<image  width="72" height="72" id="img101" href="assets/svg-extracted/img101.png"/>
+		<image  width="72" height="72" id="img102" href="assets/svg-extracted/img102.png"/>
+		<image  width="72" height="72" id="img103" href="assets/svg-extracted/img103.png"/>
+		<image  width="72" height="72" id="img104" href="assets/svg-extracted/img104.png"/>
+		<image  width="72" height="72" id="img105" href="assets/svg-extracted/img105.png"/>
+		<image  width="72" height="72" id="img106" href="assets/svg-extracted/img106.png"/>
+		<image  width="72" height="72" id="img107" href="assets/svg-extracted/img107.png"/>
+		<image  width="72" height="72" id="img108" href="assets/svg-extracted/img108.png"/>
+		<image  width="72" height="72" id="img109" href="assets/svg-extracted/img109.png"/>
+		<image  width="72" height="72" id="img110" href="assets/svg-extracted/img110.png"/>
+		<image  width="72" height="72" id="img111" href="assets/svg-extracted/img111.png"/>
+		<image  width="72" height="72" id="img112" href="assets/svg-extracted/img112.png"/>
+		<image  width="72" height="72" id="img113" href="assets/svg-extracted/img113.png"/>
+		<image  width="72" height="72" id="img114" href="assets/svg-extracted/img114.png"/>
+		<image  width="72" height="72" id="img115" href="assets/svg-extracted/img115.png"/>
+		<image  width="72" height="72" id="img116" href="assets/svg-extracted/img116.png"/>
+	</defs>
+	<style>
+		.s0 { fill: #cea5fc } 
+	</style>
+	<g id="底板">
+		<g id="左上小方块">
+			<path id="矩形 1" fill-rule="evenodd" class="s0" d="m1969 1190h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 10" fill-rule="evenodd" class="s0" d="m2524 634h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 14" fill-rule="evenodd" class="s0" d="m2603 555h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 15" fill-rule="evenodd" class="s0" d="m2682 476h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 17" fill-rule="evenodd" class="s0" d="m2762 317h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 18" fill-rule="evenodd" class="s0" d="m2841 238h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 23" fill-rule="evenodd" class="s0" d="m464 2615h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 23" fill-rule="evenodd" class="s0" d="m543 2536h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 19" fill-rule="evenodd" class="s0" d="m2920 159h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 20" fill-rule="evenodd" class="s0" d="m2999 80h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 21" fill-rule="evenodd" class="s0" d="m3157 159h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 22" fill-rule="evenodd" class="s0" d="m3157 1h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 24" fill-rule="evenodd" class="s0" d="m3236-163h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 26" fill-rule="evenodd" class="s0" d="m3315-242h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 25" fill-rule="evenodd" class="s0" d="m3315 1h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 16" fill-rule="evenodd" class="s0" d="m2840 476h-79v-79h79z"/>
+			<path id="矩形 1" fill-rule="evenodd" class="s0" d="m1572 1507h-79v-79h79z"/>
+			<path id="矩形 1" fill-rule="evenodd" class="s0" d="m1572 1745h-79v-79h79z"/>
+			<path id="矩形 1 拷贝" fill-rule="evenodd" class="s0" d="m1493 1824h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 2" fill-rule="evenodd" class="s0" d="m1414 1745h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 3" fill-rule="evenodd" class="s0" d="m1335 1824h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 4" fill-rule="evenodd" class="s0" d="m1256 1903h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 6" fill-rule="evenodd" class="s0" d="m1017 2060h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 7" fill-rule="evenodd" class="s0" d="m938 2139h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 8" fill-rule="evenodd" class="s0" d="m1017 2299h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 9" fill-rule="evenodd" class="s0" d="m859 2299h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 11" fill-rule="evenodd" class="s0" d="m701 2378h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 13" fill-rule="evenodd" class="s0" d="m622 2457h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 12" fill-rule="evenodd" class="s0" d="m859 2457h-79v-79h79z"/>
+			<path id="矩形 1 拷贝 5" fill-rule="evenodd" class="s0" d="m1572 1903h-79v-79h79z"/>
+			<path id="矩形 1" fill-rule="evenodd" class="s0" d="m1493 1586h-79v-79h79z"/>
+		</g>
+		<use id="左上底板" href="#img1" x="0" y="-840"/>
+		<g id="右下小方块">
+			<use id="矩形 1" href="#img2" x="1872" y="970"/>
+			<use id="矩形 1 拷贝 10" href="#img3" x="1317" y="1526"/>
+			<use id="矩形 1 拷贝 14" href="#img4" x="1238" y="1605"/>
+			<use id="矩形 1 拷贝 15" href="#img5" x="1159" y="1684"/>
+			<use id="矩形 1 拷贝 17" href="#img6" x="1079" y="1843"/>
+			<use id="矩形 1 拷贝 18" href="#img7" x="1000" y="1922"/>
+			<use id="矩形 1 拷贝 23" href="#img8" x="3377" y="-455"/>
+			<use id="矩形 1 拷贝 23" href="#img9" x="3298" y="-376"/>
+			<use id="矩形 1 拷贝 19" href="#img10" x="921" y="2001"/>
+			<use id="矩形 1 拷贝 20" href="#img11" x="842" y="2080"/>
+			<use id="矩形 1 拷贝 21" href="#img12" x="684" y="2001"/>
+			<use id="矩形 1 拷贝 22" href="#img13" x="684" y="2159"/>
+			<use id="矩形 1 拷贝 24" href="#img14" x="605" y="2323"/>
+			<use id="矩形 1 拷贝 26" href="#img15" x="526" y="2402"/>
+			<use id="矩形 1 拷贝 25" href="#img16" x="526" y="2159"/>
+			<use id="矩形 1 拷贝 16" href="#img17" x="1001" y="1684"/>
+			<use id="矩形 1" href="#img18" x="2269" y="653"/>
+			<use id="矩形 1" href="#img19" x="2269" y="415"/>
+			<use id="矩形 1 拷贝" href="#img20" x="2348" y="336"/>
+			<use id="矩形 1 拷贝 2" href="#img21" x="2427" y="415"/>
+			<use id="矩形 1 拷贝 3" href="#img22" x="2506" y="336"/>
+			<use id="矩形 1 拷贝 4" href="#img23" x="2585" y="257"/>
+			<use id="矩形 1 拷贝 6" href="#img24" x="2824" y="100"/>
+			<use id="矩形 1 拷贝 7" href="#img25" x="2903" y="21"/>
+			<use id="矩形 1 拷贝 8" href="#img26" x="2824" y="-139"/>
+			<use id="矩形 1 拷贝 9" href="#img27" x="2982" y="-139"/>
+			<use id="矩形 1 拷贝 11" href="#img28" x="3140" y="-218"/>
+			<use id="矩形 1 拷贝 13" href="#img29" x="3219" y="-297"/>
+			<use id="矩形 1 拷贝 12" href="#img30" x="2982" y="-297"/>
+			<use id="矩形 1 拷贝 5" href="#img31" x="2269" y="257"/>
+			<use id="矩形 1" href="#img32" x="2348" y="574"/>
+		</g>
+		<use id="右下底板" href="#img33" x="0" y="-840"/>
+	</g>
+	<use id="滴拉熊" href="#img34" x="1420" y="580"/>
+	<g id="HOLD">
+		<use id="矩形 3 拷贝 2" href="#img35" x="2492" y="1106"/>
+		<use id="矩形 3 拷贝 2" href="#img36" x="2572" y="195"/>
+		<use id="矩形 3 拷贝 3" href="#img37" x="3278" y="-675"/>
+		<use id="矩形 3 拷贝 5" href="#img38" x="495" y="1726"/>
+		<use id="矩形 3 拷贝 2" href="#img39" x="2822" y="392"/>
+		<use id="矩形 3 拷贝 2" href="#img40" x="-293" y="1184"/>
+		<use id="矩形 3 拷贝 2" href="#img41" x="129" y="1714"/>
+	</g>
+	<g id="Slide">
+		<use id="青色小Slide" href="#img42" x="2548" y="186"/>
+		<use id="白色小Slide" href="#img43" x="1552" y="-23"/>
+		<use id="黄色右上Slide" href="#img44" x="2057" y="-560"/>
+		<use id="黄色中间Slide" href="#img45" x="1285" y="1680"/>
+		<use id="青色大Slide" href="#img46" x="-77" y="687"/>
+		<use id="白色长Slide" href="#img47" x="925" y="1798"/>
+	</g>
+	<g id="两角淡紫">
+		<g id="右下">
+			<use id="右下粉大三角" href="#img48" x="2080" y="400"/>
+			<g id="右下粉色小方块">
+				<use id="矩形 1" href="#img49" x="2961" y="1223"/>
+				<use id="矩形 1 拷贝 16" href="#img50" x="3321" y="935"/>
+				<use id="矩形 1 拷贝 25" href="#img51" x="2458" y="1727"/>
+				<use id="矩形 1 拷贝 26" href="#img52" x="2386" y="1799"/>
+				<use id="矩形 1 拷贝 27" href="#img53" x="2314" y="1871"/>
+				<use id="矩形 1 拷贝 28" href="#img54" x="2170" y="1871"/>
+				<use id="矩形 1 拷贝 29" href="#img55" x="2170" y="2086"/>
+				<use id="矩形 1 拷贝 30" href="#img56" x="2242" y="2015"/>
+				<use id="矩形 1 拷贝 17" href="#img57" x="3393" y="863"/>
+				<use id="矩形 1 拷贝 18" href="#img58" x="3465" y="719"/>
+				<use id="矩形 1 拷贝 19" href="#img59" x="3393" y="647"/>
+				<use id="矩形 1 拷贝 20" href="#img60" x="3321" y="719"/>
+				<use id="矩形 1 拷贝 21" href="#img61" x="3321" y="575"/>
+				<use id="矩形 1 拷贝 22" href="#img62" x="3537" y="647"/>
+				<use id="矩形 1 拷贝 23" href="#img63" x="3609" y="575"/>
+				<use id="矩形 1 拷贝 24" href="#img64" x="3823" y="433"/>
+			</g>
+		</g>
+		<g id="左上">
+			<use id="左上粉大三角" href="#img65" x="-78" y="-78"/>
+			<g id="左上粉色小方块">
+				<use id="矩形 1" href="#img66" x="819" y="871"/>
+				<use id="矩形 1 拷贝 16" href="#img67" x="459" y="1159"/>
+				<use id="矩形 1 拷贝 25" href="#img68" x="1322" y="367"/>
+				<use id="矩形 1 拷贝 26" href="#img69" x="1394" y="295"/>
+				<use id="矩形 1 拷贝 27" href="#img70" x="1466" y="223"/>
+				<use id="矩形 1 拷贝 28" href="#img71" x="1610" y="223"/>
+				<use id="矩形 1 拷贝 29" href="#img72" x="1610" y="8"/>
+				<use id="矩形 1 拷贝 31" href="#img73" x="1682" y="-64"/>
+				<use id="矩形 1 拷贝 30" href="#img74" x="1538" y="79"/>
+				<use id="矩形 1 拷贝 17" href="#img75" x="387" y="1231"/>
+				<use id="矩形 1 拷贝 18" href="#img76" x="315" y="1375"/>
+				<use id="矩形 1 拷贝 19" href="#img77" x="387" y="1447"/>
+				<use id="矩形 1 拷贝 20" href="#img78" x="459" y="1375"/>
+				<use id="矩形 1 拷贝 21" href="#img79" x="459" y="1519"/>
+				<use id="矩形 1 拷贝 22" href="#img80" x="243" y="1447"/>
+				<use id="矩形 1 拷贝 23" href="#img81" x="171" y="1519"/>
+				<use id="矩形 1 拷贝 24" href="#img82" x="-43" y="1661"/>
+			</g>
+		</g>
+	</g>
+	<g id="两角白色">
+		<g id="右下">
+			<use id="右下白小三角" href="#img83" x="2528" y="848"/>
+			<g id="右下白色小方块">
+				<use id="矩形 1" href="#img84" x="2667" y="2010"/>
+				<use id="矩形 1 拷贝" href="#img85" x="2595" y="2082"/>
+				<use id="矩形 1 拷贝 2" href="#img86" x="2523" y="2010"/>
+				<use id="矩形 1 拷贝 3" href="#img87" x="2595" y="1938"/>
+				<use id="矩形 1 拷贝 4" href="#img88" x="2667" y="1866"/>
+				<use id="矩形 1 拷贝 5" href="#img89" x="2883" y="1795"/>
+				<use id="矩形 1 拷贝 6" href="#img90" x="2955" y="1723"/>
+				<use id="矩形 1 拷贝 7" href="#img91" x="2883" y="1651"/>
+				<use id="矩形 1 拷贝 8" href="#img92" x="3027" y="1579"/>
+				<use id="矩形 1 拷贝 9" href="#img93" x="3099" y="1507"/>
+				<use id="矩形 1 拷贝 10" href="#img94" x="3171" y="1363"/>
+				<use id="矩形 1 拷贝 11" href="#img95" x="3243" y="1291"/>
+				<use id="矩形 1 拷贝 12" href="#img96" x="3315" y="1363"/>
+				<use id="矩形 1 拷贝 13" href="#img97" x="3171" y="1219"/>
+				<use id="矩形 1 拷贝 14" href="#img98" x="3387" y="1291"/>
+				<use id="矩形 1 拷贝 15" href="#img99" x="3459" y="1219"/>
+			</g>
+		</g>
+		<g id="左上">
+			<use id="左上白小三角" href="#img100" x="-58" y="-58"/>
+			<g id="左上白色小方块">
+				<use id="矩形 1" href="#img101" x="1108" y="76"/>
+				<use id="矩形 1 拷贝" href="#img102" x="1180" y="4"/>
+				<use id="矩形 1 拷贝 2" href="#img103" x="1252" y="76"/>
+				<use id="矩形 1 拷贝 3" href="#img104" x="1180" y="148"/>
+				<use id="矩形 1 拷贝 4" href="#img105" x="1108" y="220"/>
+				<use id="矩形 1 拷贝 5" href="#img106" x="892" y="291"/>
+				<use id="矩形 1 拷贝 6" href="#img107" x="820" y="363"/>
+				<use id="矩形 1 拷贝 7" href="#img108" x="892" y="435"/>
+				<use id="矩形 1 拷贝 8" href="#img109" x="748" y="507"/>
+				<use id="矩形 1 拷贝 9" href="#img110" x="676" y="579"/>
+				<use id="矩形 1 拷贝 10" href="#img111" x="604" y="723"/>
+				<use id="矩形 1 拷贝 11" href="#img112" x="532" y="795"/>
+				<use id="矩形 1 拷贝 12" href="#img113" x="460" y="723"/>
+				<use id="矩形 1 拷贝 13" href="#img114" x="604" y="867"/>
+				<use id="矩形 1 拷贝 14" href="#img115" x="388" y="795"/>
+				<use id="矩形 1 拷贝 15" href="#img116" x="316" y="867"/>
+			</g>
+		</g>
+	</g>
+</svg>

@@ -1,0 +1,85 @@
+:root {
+  --font-ui:
+    'Inter Variable', Inter, 'Segoe UI Variable', 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --font-display:
+    'Inter Variable', Inter, 'Segoe UI Variable', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --font-sans: var(--font-ui);
+  --font-mono:
+    'SFMono-Regular', 'Cascadia Code', 'JetBrains Mono', Consolas, monospace;
+
+  --color-text-primary: rgba(244, 247, 255, 0.95);
+  --color-text-secondary: rgba(230, 235, 255, 0.75);
+  --color-text-muted: rgba(230, 235, 255, 0.58);
+  --color-text-strong: rgba(248, 250, 255, 0.96);
+  --color-text-dark: #111827;
+  --color-white: #fff;
+
+  --color-border-soft: rgba(255, 255, 255, 0.08);
+  --color-border-medium: rgba(255, 255, 255, 0.12);
+  --color-surface-soft: rgba(255, 255, 255, 0.03);
+  --color-surface-medium: rgba(255, 255, 255, 0.05);
+  --color-surface-strong: rgba(255, 255, 255, 0.06);
+
+  --color-accent-cyan: #67e8f9;
+  --color-accent-pink: #f9a8d4;
+  --color-accent-sky: rgba(125, 211, 252, 0.85);
+
+  --gradient-app-bg:
+    radial-gradient(circle at top, rgba(99, 102, 241, 0.2), transparent 32%),
+    radial-gradient(circle at 85% 10%, rgba(236, 72, 153, 0.16), transparent 24%),
+    linear-gradient(180deg, #090b16 0%, #0f1530 55%, #111827 100%);
+  --gradient-panel:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+    rgba(13, 16, 33, 0.82);
+  --gradient-stage:
+    radial-gradient(circle at top, rgba(102, 126, 234, 0.26), transparent 35%),
+    linear-gradient(145deg, rgba(10, 13, 29, 0.95), rgba(16, 21, 46, 0.9));
+  --gradient-button: linear-gradient(135deg, #67e8f9, #f9a8d4);
+
+  --shadow-panel: 0 24px 80px rgba(5, 8, 20, 0.35);
+  --shadow-panel-strong: 0 24px 80px rgba(5, 8, 20, 0.45);
+  --shadow-stage:
+    0 32px 80px rgba(0, 0, 0, 0.38),
+    inset 0 0 0 1px rgba(10, 13, 29, 0.08);
+  --shadow-button: 0 16px 36px rgba(103, 232, 249, 0.18);
+
+  --radius-sm: 1rem;
+  --radius-md: 1.2rem;
+  --radius-lg: 1.5rem;
+  --radius-xl: 1.75rem;
+  --radius-pill: 999px;
+
+  --corner-shape-sm: superellipse(0.82);
+  --corner-shape-md: superellipse(0.76);
+  --corner-shape-lg: superellipse(0.72);
+  --corner-shape-xl: superellipse(0.68);
+  --corner-shape-pill: superellipse(1);
+
+  --space-1: 0.35rem;
+  --space-2: 0.45rem;
+  --space-3: 0.7rem;
+  --space-4: 0.75rem;
+  --space-5: 0.85rem;
+  --space-6: 0.9rem;
+  --space-7: 1rem;
+  --space-8: 1.25rem;
+  --space-9: 1.35rem;
+  --space-10: 1.5rem;
+
+  --font-weight-regular: 450;
+  --font-weight-medium: 520;
+  --font-weight-bold: 700;
+
+  --status-loading-bg: rgba(99, 102, 241, 0.18);
+  --status-loading-border: rgba(129, 140, 248, 0.4);
+  --status-ready-bg: rgba(45, 212, 191, 0.16);
+  --status-ready-border: rgba(45, 212, 191, 0.34);
+  --status-playing-bg: rgba(251, 191, 36, 0.18);
+  --status-playing-border: rgba(251, 191, 36, 0.34);
+  --status-finished-bg: rgba(244, 114, 182, 0.18);
+  --status-finished-border: rgba(244, 114, 182, 0.34);
+  --status-error-bg: rgba(248, 113, 113, 0.18);
+  --status-error-border: rgba(248, 113, 113, 0.42);
+}
