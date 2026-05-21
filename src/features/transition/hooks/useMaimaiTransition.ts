@@ -3,7 +3,34 @@ import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
 import { MAIMAI_SVG_PATH, MAIMAI_TIMINGS } from '../constants'
 import { createMaimaiTimeline } from '../lib/createMaimaiTimeline'
 
-const preloadedSvgAssetPromises = new Map<string, Promise<void>>()
+const svgMarkupPromises = new Map<string, Promise<string>>()
+const resolvedSvgMarkupPromises = new Map<string, Promise<string>>()
+const svgAssetObjectUrlPromises = new Map<string, Promise<string>>()
+const svgAssetObjectUrls = new Set<string>()
+
+let hasRegisteredSvgAssetCleanup = false
+
+function ensureSvgAssetCleanupRegistered() {
+  if (hasRegisteredSvgAssetCleanup || typeof window === 'undefined') {
+    return
+  }
+
+  window.addEventListener('pagehide', () => {
+    for (const objectUrl of svgAssetObjectUrls) {
+      URL.revokeObjectURL(objectUrl)
+    }
+
+    svgAssetObjectUrls.clear()
+    svgAssetObjectUrlPromises.clear()
+    resolvedSvgMarkupPromises.clear()
+  })
+
+  hasRegisteredSvgAssetCleanup = true
+}
+
+function resolveAbsoluteUrl(url: string) {
+  return new URL(url, window.location.href).toString()
+}
 
 function collectSvgExternalAssetUrls(markup: string, svgPath: string) {
   const parser = new DOMParser()
@@ -18,63 +45,116 @@ function collectSvgExternalAssetUrls(markup: string, svgPath: string) {
   return Array.from(new Set(assetUrls))
 }
 
-function preloadImageAsset(assetUrl: string, signal: AbortSignal) {
-  const existingPromise = preloadedSvgAssetPromises.get(assetUrl)
+function fetchSvgMarkup(svgPath: string) {
+  const absoluteSvgUrl = resolveAbsoluteUrl(svgPath)
+  const existingPromise = svgMarkupPromises.get(absoluteSvgUrl)
 
   if (existingPromise) {
     return existingPromise
   }
 
-  const imagePromise = new Promise<void>((resolve, reject) => {
-    const image = new Image()
+  const markupPromise = fetch(absoluteSvgUrl)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`SVG 加载失败：${response.status} ${response.statusText}`)
+      }
 
-    const cleanup = () => {
-      image.onload = null
-      image.onerror = null
-      signal.removeEventListener('abort', handleAbort)
-    }
+      return response.text()
+    })
+    .catch((error) => {
+      svgMarkupPromises.delete(absoluteSvgUrl)
+      throw error
+    })
 
-    const handleAbort = () => {
-      cleanup()
-      preloadedSvgAssetPromises.delete(assetUrl)
-      reject(new DOMException('资源预加载已取消。', 'AbortError'))
-    }
+  svgMarkupPromises.set(absoluteSvgUrl, markupPromise)
 
-    image.onload = () => {
-      cleanup()
-      resolve()
-    }
-
-    image.onerror = () => {
-      cleanup()
-      preloadedSvgAssetPromises.delete(assetUrl)
-      reject(new Error(`SVG 资源加载失败：${assetUrl}`))
-    }
-
-    signal.addEventListener('abort', handleAbort, { once: true })
-
-    if (signal.aborted) {
-      handleAbort()
-      return
-    }
-
-    image.decoding = 'async'
-    image.src = assetUrl
-  })
-
-  preloadedSvgAssetPromises.set(assetUrl, imagePromise)
-
-  return imagePromise
+  return markupPromise
 }
 
-async function preloadSvgExternalAssets(markup: string, svgPath: string, signal: AbortSignal) {
-  const assetUrls = collectSvgExternalAssetUrls(markup, svgPath)
+function fetchSvgAssetObjectUrl(assetUrl: string) {
+  const existingPromise = svgAssetObjectUrlPromises.get(assetUrl)
 
-  if (assetUrls.length === 0) {
-    return
+  if (existingPromise) {
+    return existingPromise
   }
 
-  await Promise.all(assetUrls.map((assetUrl) => preloadImageAsset(assetUrl, signal)))
+  const objectUrlPromise = fetch(assetUrl)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`SVG 资源加载失败：${assetUrl}`)
+      }
+
+      return response.blob()
+    })
+    .then((blob) => {
+      const objectUrl = URL.createObjectURL(blob)
+      svgAssetObjectUrls.add(objectUrl)
+
+      return objectUrl
+    })
+    .catch((error) => {
+      svgAssetObjectUrlPromises.delete(assetUrl)
+      throw error
+    })
+
+  svgAssetObjectUrlPromises.set(assetUrl, objectUrlPromise)
+
+  return objectUrlPromise
+}
+
+async function resolveSvgMarkupWithCachedAssets(svgPath: string) {
+  ensureSvgAssetCleanupRegistered()
+
+  const absoluteSvgUrl = resolveAbsoluteUrl(svgPath)
+  const existingPromise = resolvedSvgMarkupPromises.get(absoluteSvgUrl)
+
+  if (existingPromise) {
+    return existingPromise
+  }
+
+  const resolvedMarkupPromise = fetchSvgMarkup(absoluteSvgUrl)
+    .then(async (markup) => {
+      const parser = new DOMParser()
+      const document = parser.parseFromString(markup, 'image/svg+xml')
+      const imageElements = Array.from(document.querySelectorAll('image'))
+      const assetUrls = collectSvgExternalAssetUrls(markup, absoluteSvgUrl)
+
+      const objectUrlEntries = await Promise.all(
+        assetUrls.map(async (assetUrl) => [assetUrl, await fetchSvgAssetObjectUrl(assetUrl)] as const),
+      )
+      const objectUrlMap = new Map(objectUrlEntries)
+
+      for (const imageElement of imageElements) {
+        const rawHref = imageElement.getAttribute('href') ?? imageElement.getAttribute('xlink:href')
+
+        if (!rawHref || rawHref.startsWith('#') || rawHref.startsWith('data:')) {
+          continue
+        }
+
+        const absoluteAssetUrl = new URL(rawHref, absoluteSvgUrl).toString()
+        const cachedObjectUrl = objectUrlMap.get(absoluteAssetUrl)
+
+        if (!cachedObjectUrl) {
+          continue
+        }
+
+        imageElement.setAttribute('href', cachedObjectUrl)
+
+        if (imageElement.hasAttribute('xlink:href')) {
+          imageElement.setAttribute('xlink:href', cachedObjectUrl)
+        }
+      }
+
+      return new XMLSerializer().serializeToString(document)
+    })
+    .catch((error) => {
+      resolvedSvgMarkupPromises.delete(absoluteSvgUrl)
+      throw error
+    })
+
+  resolvedSvgMarkupPromises.set(absoluteSvgUrl, resolvedMarkupPromise)
+
+  return resolvedMarkupPromise
 }
 
 export type TransitionStatus =
@@ -212,21 +292,7 @@ export function useMaimaiTransition(
       setError(null)
 
       try {
-        const response = await fetch(svgPath, {
-          signal: abortController.signal,
-        })
-
-        if (!response.ok) {
-          throw new Error(`SVG 加载失败：${response.status} ${response.statusText}`)
-        }
-
-        const markup = await response.text()
-
-        if (disposed) {
-          return
-        }
-
-        await preloadSvgExternalAssets(markup, svgPath, abortController.signal)
+        const markup = await resolveSvgMarkupWithCachedAssets(svgPath)
 
         if (disposed || abortController.signal.aborted) {
           return
