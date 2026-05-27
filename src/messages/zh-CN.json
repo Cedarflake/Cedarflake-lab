@@ -1,0 +1,160 @@
+{
+  "Metadata": {
+    "title": "Shikaneko · 个人状态页",
+    "description": "把个人状态、日记、维护预告与颗粒图融合在一起的 Shikaneko MVP 首页。"
+  },
+  "LocaleSwitcher": {
+    "label": "语言",
+    "switchTo": "切换到"
+  },
+  "Home": {
+    "navigation": [
+      {
+        "href": "#uptime",
+        "label": "状态颗粒"
+      },
+      {
+        "href": "#components",
+        "label": "系统组件"
+      }
+    ],
+    "granules": {
+      "kicker": "Daily Granules",
+      "title": "最近这一年",
+      "description": "按最近一年的每日颗粒展开，颜色与 hover 信息都直接来自实际事件和所属模块。"
+    },
+    "components": {
+      "kicker": "System Components",
+      "title": "按部就班",
+      "description": "身体、情绪、学习与绘画各自拥有独立的健康状态和事件归属，未来可继续扩展更多 personal services。",
+      "historyLabel": "最近 {days} 天组件历史",
+      "uptimeLabel": "窗口可用性",
+      "incidentsLabel": "累计事件",
+      "activeLabel": "活动事件"
+    },
+    "recentFeed": {
+      "kicker": "Recent Events",
+      "title": "最近发生了什么",
+      "description": "这里不再按生活模块拆栏，而是集中展示最近发生过的事件、它们的归属模块，以及每一次时间线更新。",
+      "empty": "最近还没有新的事件可以展示。"
+    }
+  },
+  "IncidentCommon": {
+    "actions": {
+      "viewIncident": "查看详情",
+      "backHome": "返回首页",
+      "backToComponents": "返回生活模块列表",
+      "backToComponent": "返回所属生活模块"
+    },
+    "labels": {
+      "published": "发布时间",
+      "duration": "持续时长",
+      "window": "影响窗口"
+    },
+    "kind": {
+      "log": "状态日志",
+      "issue": "异常事件",
+      "maintenance": "计划维护"
+    },
+    "visibility": {
+      "public": {
+        "label": "公开"
+      },
+      "authenticated": {
+        "label": "登录可见"
+      },
+      "private": {
+        "label": "私密"
+      }
+    },
+    "status": {
+      "scheduled": {
+        "label": "计划中"
+      },
+      "investigating": {
+        "label": "持续中"
+      },
+      "identified": {
+        "label": "已确认"
+      },
+      "monitoring": {
+        "label": "观察恢复"
+      },
+      "resolved": {
+        "label": "已解决"
+      }
+    },
+    "severity": {
+      "normal": {
+        "label": "平稳运行",
+        "description": "状态绝佳，一切顺利，适合记录日常碎片。"
+      },
+      "maintenance": {
+        "label": "专注休整",
+        "description": "计划内调整、免打扰或专注模式，不计入故障时长。"
+      },
+      "notice": {
+        "label": "轻微掉线",
+        "description": "轻微疲惫、小烦恼或电量不足，开始影响日常节奏。"
+      },
+      "warning": {
+        "label": "状态预警",
+        "description": "明显身体不适或情绪低落，需要主动休息与恢复。"
+      },
+      "critical": {
+        "label": "强制关机",
+        "description": "极度虚弱或生病，进入完全离线躺平模式。"
+      }
+    }
+  },
+  "IncidentDetail": {
+    "hero": {
+      "kicker": "Incident Detail",
+      "description": "单条事件详情页会展示完整摘要、影响窗口、归属组件与时间线更新。"
+    },
+    "timeline": {
+      "title": "时间线更新",
+      "description": "按时间顺序展示这个事件从发布到收尾的每一次手动状态变更。"
+    },
+    "side": {
+      "title": "事件速览",
+      "description": "把这次事件的核心元信息收拢到侧栏，便于快速回顾。",
+      "kindLabel": "事件类型",
+      "updatedLabel": "最后更新",
+      "severityLabel": "状态解读"
+    }
+  },
+  "ComponentPage": {
+    "hero": {
+      "kicker": "Component Events"
+    },
+    "metrics": {
+      "total": "相关事件",
+      "active": "进行中",
+      "scheduled": "已排期",
+      "resolved": "已解决"
+    },
+    "sections": {
+      "active": {
+        "kicker": "Live Incidents",
+        "title": "仍在进行",
+        "description": "这些事件还没有真正收尾，所以会继续留在这个组件的运行面板里。"
+      },
+      "scheduled": {
+        "kicker": "Scheduled Maintenance",
+        "title": "计划中",
+        "description": "计划内维护依然属于这个组件的状态历史，但不等同于故障。"
+      },
+      "resolved": {
+        "kicker": "Resolved History",
+        "title": "已结束",
+        "description": "它们可以继续作为后续回顾和详情追踪的入口。"
+      }
+    },
+    "empty": {
+      "active": "当前没有正在进行中的事件。",
+      "scheduled": "这个组件当前没有新的维护排期。",
+      "resolved": "这个组件暂时还没有可回看的已解决事件。"
+    }
+  }
+}

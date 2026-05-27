@@ -1,0 +1,160 @@
+{
+  "Metadata": {
+    "title": "Shikaneko · Personal Status Page",
+    "description": "A Shikaneko MVP homepage that blends a personal status page, journal logs and scheduled maintenance." 
+  },
+  "LocaleSwitcher": {
+    "label": "Language",
+    "switchTo": "Switch to"
+  },
+  "Home": {
+    "navigation": [
+      {
+        "href": "#uptime",
+        "label": "Granules"
+      },
+      {
+        "href": "#components",
+        "label": "Components"
+      }
+    ],
+    "granules": {
+      "kicker": "Daily Granules",
+      "title": "The daily granule strip absorbs the highest-severity incident of each day.",
+      "description": "Expanded across the last year, with color and hover details driven directly by real incidents and their related components."
+    },
+    "components": {
+      "kicker": "System Components",
+      "title": "Personal life is split into a few virtual services that can each report health independently.",
+      "description": "Physical condition, emotional core, study flow and art practice each carry their own severity and incident ownership.",
+      "historyLabel": "Last {days} days of component history",
+      "uptimeLabel": "Window uptime",
+      "incidentsLabel": "incidents",
+      "activeLabel": "active"
+    },
+    "recentFeed": {
+      "kicker": "Recent Events",
+      "title": "The latest 10 incidents are grouped by day into a more status-page-like event history.",
+      "description": "This stream no longer splits by life component. Instead, it shows the newest incidents together with their affected components and every timeline update.",
+      "empty": "There are no recent incidents to display yet."
+    }
+  },
+  "IncidentCommon": {
+    "actions": {
+      "viewIncident": "View details",
+      "backHome": "Back to home",
+      "backToComponents": "Back to components",
+      "backToComponent": "Back to related component"
+    },
+    "labels": {
+      "published": "Published",
+      "duration": "Duration",
+      "window": "Window"
+    },
+    "kind": {
+      "log": "Status log",
+      "issue": "Issue incident",
+      "maintenance": "Scheduled maintenance"
+    },
+    "visibility": {
+      "public": {
+        "label": "Public"
+      },
+      "authenticated": {
+        "label": "Authenticated"
+      },
+      "private": {
+        "label": "Private"
+      }
+    },
+    "status": {
+      "scheduled": {
+        "label": "Scheduled"
+      },
+      "investigating": {
+        "label": "Live"
+      },
+      "identified": {
+        "label": "Identified"
+      },
+      "monitoring": {
+        "label": "Monitoring"
+      },
+      "resolved": {
+        "label": "Resolved"
+      }
+    },
+    "severity": {
+      "normal": {
+        "label": "Normal",
+        "description": "Everything is running gently and cleanly — a good state to archive as a baseline day."
+      },
+      "maintenance": {
+        "label": "Maintenance",
+        "description": "Intentional quiet mode, planned maintenance, or focus windows that should not count as downtime."
+      },
+      "notice": {
+        "label": "Notice",
+        "description": "A mild dip in energy or rhythm has begun to affect the day, but the system still mostly operates."
+      },
+      "warning": {
+        "label": "Warning",
+        "description": "Clear discomfort or emotional drag is reducing capacity and requires active recovery."
+      },
+      "critical": {
+        "label": "Critical",
+        "description": "A hard-stop state where normal operation is no longer realistic and full recovery takes priority."
+      }
+    }
+  },
+  "IncidentDetail": {
+    "hero": {
+      "kicker": "Incident Detail",
+      "description": "A single incident page brings together the summary, impact window, affected components and all timeline updates."
+    },
+    "timeline": {
+      "title": "Timeline updates",
+      "description": "Each manual status transition is kept in chronological order so the event reads like a compact journal."
+    },
+    "side": {
+      "title": "Quick summary",
+      "description": "A compact side panel that keeps the most important metadata close at hand.",
+      "kindLabel": "Incident type",
+      "updatedLabel": "Last updated",
+      "severityLabel": "Severity reading"
+    }
+  },
+  "ComponentPage": {
+    "hero": {
+      "kicker": "Component Events"
+    },
+    "metrics": {
+      "total": "Related incidents",
+      "active": "Active",
+      "scheduled": "Scheduled",
+      "resolved": "Resolved"
+    },
+    "sections": {
+      "active": {
+        "kicker": "Live Incidents",
+        "title": "These incidents are still affecting this component right now.",
+        "description": "Anything not fully closed out yet remains visible in this component's current operational history."
+      },
+      "scheduled": {
+        "kicker": "Scheduled Maintenance",
+        "title": "Planned maintenance windows for this component appear here in advance.",
+        "description": "Scheduled quiet windows still belong to this component's history, but they are not treated as failures."
+      },
+      "resolved": {
+        "kicker": "Resolved History",
+        "title": "Finished incidents settle into this component's historical archive.",
+        "description": "These entries remain useful as a browsable trail and a gateway to deeper incident details."
+      }
+    },
+    "empty": {
+      "active": "There are no active incidents affecting this component right now.",
+      "scheduled": "There is no upcoming maintenance scheduled for this component.",
+      "resolved": "There are no resolved incidents to revisit for this component yet."
+    }
+  }
+}

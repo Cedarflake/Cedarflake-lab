@@ -87,6 +87,12 @@ web_modules/
 .next
 out
 
+# Vercel
+.vercel
+
+# Next.js generated types
+next-env.d.ts
+
 # Nuxt.js build / generate output
 .nuxt
 dist
