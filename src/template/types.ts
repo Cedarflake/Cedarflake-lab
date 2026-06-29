@@ -59,10 +59,9 @@ export interface TemplateFinalCtaConfig {
 }
 
 export interface TemplateCtaConfig {
-  join: string;
-  joinConfirmation: string;
-  returning: string;
-  signIn: string;
+  label: string;
+  href: string;
+  target?: "_self" | "_blank";
 }
 
 export interface TemplateAccessibilityConfig {

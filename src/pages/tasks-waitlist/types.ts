@@ -129,7 +129,6 @@ export interface ScrollProgressOptions {
   negativeMarginOffset?: number;
 }
 
-// ===================== Waitlist Button =====================
+// ===================== CTA Button =====================
 
 export type ButtonPlacement = "home" | "floating" | "footer";
-export type ButtonState = "default" | "confirmation" | "joined" | "signIn";

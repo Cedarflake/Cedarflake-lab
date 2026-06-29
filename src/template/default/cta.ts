@@ -1,10 +1,9 @@
 import type { TemplateCtaConfig, TemplateFinalCtaConfig } from "../types";
 
 export const ctaConfig: TemplateCtaConfig = {
-  join: "Join the waitlist",
-  joinConfirmation: "You're on the list!",
-  returning: "You're on the list",
-  signIn: "Sign in to join",
+  label: "Join the waitlist",
+  href: "https://copilot.microsoft.com/tasks/preview",
+  target: "_blank",
 };
 
 export const finalCtaConfig: TemplateFinalCtaConfig = {

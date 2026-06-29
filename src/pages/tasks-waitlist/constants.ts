@@ -121,17 +121,6 @@ export const CAROUSEL_KEYFRAMES = {
 /** Default border radius for carousel image cards */
 export const IMAGE_BORDER_RADIUS = 24;
 
-// ===================== Waitlist API =====================
-
-/** The waitlist program identifier */
-export const WAITLIST_PROGRAM = "supersonic-task";
-
-/** Duration to show "Joined" confirmation before reverting */
-export const JOIN_CONFIRMATION_DURATION_MS = 2000;
-
-/** Max age for a pending join stored in session storage */
-export const PENDING_JOIN_EXPIRY_MS = 5 * 60 * 1000;
-
 // ===================== Easing =====================
 
 /**
