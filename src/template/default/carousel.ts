@@ -5,28 +5,30 @@ export const carouselConfig: TemplateCarouselConfig = {
   images: [
     {
       id: "image-1",
-      srcLight: `${ASSET_BASE}/images/tasks/waitlist/carousel/user-value-1-light.jpg`,
-      srcDark: `${ASSET_BASE}/images/tasks/waitlist/carousel/user-value-1-dark.jpg`,
-      alt: "Copilot researching information on the web.",
-      headline: "Research in depth",
-      description: "Copilot browses the web to find, compare, and summarize information for you.",
+      srcLight: `${ASSET_BASE}/images/revaea/carousel/pure-tea-light.png`,
+      srcDark: `${ASSET_BASE}/images/revaea/carousel/pure-tea-dark.png`,
+      alt: "A floating tea pavilion of the Pure Tea Dream Circle.",
+      headline: "Pure Tea Dream Circle",
+      description:
+        "Tea steam curls into quiet rings, washing yesterday's dust from weary spirits.",
     },
     {
       id: "image-2",
-      srcLight: `${ASSET_BASE}/images/tasks/waitlist/carousel/user-value-2-light.jpg`,
-      srcDark: `${ASSET_BASE}/images/tasks/waitlist/carousel/user-value-2-dark.jpg`,
-      alt: "Copilot drafting a document.",
-      headline: "Draft with precision",
+      srcLight: `${ASSET_BASE}/images/revaea/carousel/memory-library-light.png`,
+      srcDark: `${ASSET_BASE}/images/revaea/carousel/memory-library-dark.png`,
+      alt: "A luminous gothic memory library filled with floating pages.",
+      headline: "Memory Library",
       description:
-        "From emails to documents, Copilot creates polished drafts based on your instructions.",
+        "Open a book and touch not ink, but the warmest image from a life once lived.",
     },
     {
       id: "image-3",
-      srcLight: `${ASSET_BASE}/images/tasks/waitlist/carousel/user-value-3-light.jpg`,
-      srcDark: `${ASSET_BASE}/images/tasks/waitlist/carousel/user-value-3-dark.jpg`,
-      alt: "Copilot planning and organizing a project.",
-      headline: "Plan and organize",
-      description: "Copilot helps you plan trips, compare options, and organize your findings.",
+      srcLight: `${ASSET_BASE}/images/revaea/carousel/illusion-garden-light.png`,
+      srcDark: `${ASSET_BASE}/images/revaea/carousel/illusion-garden-dark.png`,
+      alt: "A translucent flower corridor in the Illusion Painting Garden.",
+      headline: "Illusion Painting Garden",
+      description:
+        "Artists paint with intention; where the brush falls, glass-bright flowers rise into day.",
     },
   ],
 };

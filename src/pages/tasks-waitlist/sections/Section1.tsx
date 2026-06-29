@@ -1,7 +1,7 @@
 /**
  * Section1 - Hero section.
  *
- * Full-viewport intro with a background photo, Copilot wordmark in the top-left,
+ * Full-viewport intro with a background photo, brand wordmark in the top-left,
  * headline and CTA at the bottom. On wide viewports, the background scales/blurs
  * and content fades as the user scrolls down.
  */
@@ -95,7 +95,7 @@ export function Section1({ sectionRef: externalSectionRef }: Section1Props) {
             {/* Top: Copilot wordmark */}
             <div className="mt-16 p-5 @[768px]/section-one:mt-0 @[768px]/section-one:px-12 @[768px]/section-one:py-16">
               <CopilotWordmark
-                className="h-[64px] w-[130px] origin-top-left scale-90 @[768px]/section-one:scale-100 rtl:origin-top-right"
+                className="h-[64px] w-[196px] origin-top-left scale-90 @[768px]/section-one:scale-100 rtl:origin-top-right"
                 title={template.brand.wordmarkAlt}
               />
             </div>

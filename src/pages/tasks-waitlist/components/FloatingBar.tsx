@@ -1,5 +1,5 @@
 /**
- * FloatingBar - Fixed bottom pill with the Copilot Tasks logo and CTA button.
+ * FloatingBar - Fixed bottom pill with the brand logo and CTA button.
  *
  * Appears when section-2 scrolls past the viewport bottom and hides
  * when the SectionEnd card is sufficiently inside the viewport. Uses element-based scroll
@@ -14,7 +14,6 @@ import { useTemplateConfig } from "@/template/useTemplateConfig";
 import { SHOW_LOGO_ICON } from "../constants";
 import { useLenisScrollContext } from "../context/useLenisScrollContext";
 import { useScrollProgress } from "../hooks/useScrollProgress";
-import { CopilotTasksLogo } from "../icons";
 import { WaitlistButton } from "./WaitlistButton";
 
 export function FloatingBar({ className }: { className?: string }) {
@@ -126,8 +125,8 @@ export function FloatingBar({ className }: { className?: string }) {
         <div className="flex items-center justify-center gap-2">
           <div className="flex shrink-0 items-center justify-center gap-1 px-2.5">
             {SHOW_LOGO_ICON}
-            <div className="ms-1 mt-px shrink-0 pt-0.5">
-              <CopilotTasksLogo className="h-[18px]" title={template.brand.name} />
+            <div className="ms-1 shrink-0 text-base-dense-medium leading-none">
+              {template.brand.name}
             </div>
           </div>
           <WaitlistButton placement="floating" />

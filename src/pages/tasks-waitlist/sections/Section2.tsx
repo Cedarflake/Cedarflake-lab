@@ -69,15 +69,19 @@ export function Section2({ sectionRef: externalSectionRef }: Section2Props) {
     childRef: refContentRef,
     threshold: LAYOUT_CONFIG.layoutSwitchThreshold,
   });
-  const layout: RolodexLayout = isOverflowing ? "5-line" : "3-line";
+  const layout: RolodexLayout = isNarrow ? "6-line" : isOverflowing ? "5-line" : "3-line";
   const layoutItems =
-    layout === "5-line" ? template.rolodex.layouts.fiveLine : template.rolodex.layouts.threeLine;
+    layout === "6-line"
+      ? template.rolodex.layouts.sixLine
+      : layout === "5-line"
+        ? template.rolodex.layouts.fiveLine
+        : template.rolodex.layouts.threeLine;
   const items = useMemo(() => prepareItems(layoutItems), [layoutItems]);
   const referenceItems = useMemo(
     () => prepareItems(template.rolodex.layouts.threeLine),
     [template.rolodex.layouts.threeLine],
   );
-  const rowCount = layout === "5-line" ? 5 : 3;
+  const rowCount = layout === "6-line" ? 6 : layout === "5-line" ? 5 : 3;
   const rows = useMemo(
     () => Array.from({ length: rowCount }, (_, i) => items.filter((item) => item.row === i)),
     [rowCount, items],

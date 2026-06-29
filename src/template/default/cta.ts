@@ -1,11 +1,11 @@
 import type { TemplateCtaConfig, TemplateFinalCtaConfig } from "../types";
 
 export const ctaConfig: TemplateCtaConfig = {
-  label: "Join the waitlist",
-  href: "https://copilot.microsoft.com/tasks/preview",
-  target: "_blank",
+  label: "Enter Revaea",
+  href: "#storyboard-main",
+  target: "_self",
 };
 
 export const finalCtaConfig: TemplateFinalCtaConfig = {
-  headline: "Ready to get things done?",
+  headline: "Let the dream breathe softly",
 };
