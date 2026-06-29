@@ -2,7 +2,7 @@ import type { TemplateCtaConfig, TemplateFinalCtaConfig } from "../types";
 
 export const ctaConfig: TemplateCtaConfig = {
   label: "Enter Revaea",
-  href: "#storyboard-main",
+  href: "https://story.revaea.com",
   target: "_self",
 };
 

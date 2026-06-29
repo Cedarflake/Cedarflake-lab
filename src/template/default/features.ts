@@ -10,8 +10,8 @@ export const featuresConfig: TemplateFeaturesConfig = {
       description:
         "Revaea is not held by iron law. The clearer a belief becomes, the more firmly mountains, rivers, streets, and stars answer it.",
       actionItems: [
-        { label: "Will", icon: "search" },
-        { label: "Manifestation", icon: "arrowRefresh" },
+        { label: "Will", icon: "will" },
+        { label: "Manifestation", icon: "manifestation" },
       ],
     },
     {
@@ -19,8 +19,8 @@ export const featuresConfig: TemplateFeaturesConfig = {
       description:
         "Gothic towers, floating islands, pastoral lanes, and soul-conducting arrays let distant minds whisper across cloud and stone.",
       actionItems: [
-        { label: "Resonance", icon: "cursorClick" },
-        { label: "Soul arrays", icon: "edge" },
+        { label: "Resonance", icon: "resonance" },
+        { label: "Soul arrays", icon: "soulArray" },
       ],
     },
     {
@@ -28,9 +28,9 @@ export const featuresConfig: TemplateFeaturesConfig = {
       description:
         "Manifestation blooms from emotion, mind-rings gather shared thought, and dream-weaving anchors night whispers into day.",
       actionItems: [
-        { label: "Manifesting", icon: "artifactSlides" },
-        { label: "Mind-rings", icon: "onedrive" },
-        { label: "Dream-weaving", icon: "artifactDocuments" },
+        { label: "Manifesting", icon: "bloom" },
+        { label: "Mind-rings", icon: "mindRing" },
+        { label: "Dream-weaving", icon: "dreamWeave" },
       ],
     },
     {
@@ -38,9 +38,9 @@ export const featuresConfig: TemplateFeaturesConfig = {
       description:
         "Kindred souls gather naturally into loose circles: tea for healing, libraries for memory, gardens where art becomes air.",
       actionItems: [
-        { label: "Pure Tea Circle", icon: "googleCalendar" },
-        { label: "Memory Library", icon: "artifactSheets" },
-        { label: "Illusion Garden", icon: "sendEmail" },
+        { label: "Pure Tea Circle", icon: "teaCircle" },
+        { label: "Memory Library", icon: "memoryLibrary" },
+        { label: "Illusion Garden", icon: "illusionGarden" },
       ],
     },
     {
@@ -48,8 +48,8 @@ export const featuresConfig: TemplateFeaturesConfig = {
       description:
         "Revaea does not write epics of conquest. Its time is slow enough to hear mist parting over warm springs and silver songs.",
       actionItems: [
-        { label: "Healing", icon: "schedule" },
-        { label: "Star songs", icon: "arrowRefresh" },
+        { label: "Healing", icon: "healing" },
+        { label: "Star songs", icon: "starSong" },
       ],
     },
   ],
