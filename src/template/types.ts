@@ -21,6 +21,7 @@ export interface TemplateRolodexConfig {
   layouts: {
     threeLine: RolodexItem[];
     fiveLine: RolodexItem[];
+    sixLine: RolodexItem[];
   };
 }
 

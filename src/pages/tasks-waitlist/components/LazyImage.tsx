@@ -30,14 +30,14 @@ export function LazyImage({ src, alt, className, style }: LazyImageProps) {
   }
 
   return (
-    <>
+    <div className={cn(className, "image-theme-mask overflow-hidden")}>
       {/* Skeleton placeholder while loading */}
-      {!isLoaded && <div className={cn(className, "bg-background-200 animate-pulse")} />}
+      {!isLoaded && <div className="bg-background-200 absolute inset-0 animate-pulse" />}
 
       <img
         src={src}
         alt={alt}
-        className={className}
+        className="size-full object-cover"
         style={{
           ...style,
           opacity: isLoaded ? 1 : 0,
@@ -46,7 +46,7 @@ export function LazyImage({ src, alt, className, style }: LazyImageProps) {
         onLoad={() => setIsLoaded(true)}
         onError={() => setHasError(true)}
       />
-    </>
+    </div>
   );
 }
 
@@ -81,5 +81,9 @@ export function MotionImage({ src, alt, className, style }: MotionImageProps) {
     );
   }
 
-  return <motion.img src={src} alt={alt} className={className} style={style} />;
+  return (
+    <motion.div className={cn(className, "image-theme-mask overflow-hidden")} style={style}>
+      <img src={src} alt={alt} className="size-full object-cover" />
+    </motion.div>
+  );
 }

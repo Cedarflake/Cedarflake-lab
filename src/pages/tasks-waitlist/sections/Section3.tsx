@@ -133,7 +133,7 @@ function Section3Content({ isNarrow, sectionRef }: Section3ContentProps) {
           )}
           style={{ opacity: headerOpacity, scale: headerScale }}
         >
-          <h1 className="text-foreground-900 text-2xl-medium md:text-3xl">
+          <h1 className="font-display-revaea text-foreground-900 text-2xl-medium md:text-3xl">
             {template.features.headline}
           </h1>
           <p className="text-foreground-700 text-base-dense-medium md:text-md max-w-[95%] md:max-w-[70%]">
@@ -325,7 +325,7 @@ function FeatureItem({
         style={{ opacity: contentOpacity }}
       >
         <motion.h1
-          className="text-lg-medium gpu-text w-full origin-left will-change-transform md:text-xl rtl:origin-right"
+          className="font-display-revaea text-lg-medium gpu-text w-full origin-left will-change-transform md:text-xl rtl:origin-right"
           style={{ scale: shouldReduceMotion || isNarrow ? undefined : titleScale }}
         >
           {feature.title}
@@ -375,7 +375,7 @@ function CheckCircleColorLight({ className }: { className?: string }) {
         <path
           opacity={0.5}
           d="M10 2C14.4183 2 18 5.58172 18 10C18 14.4183 14.4183 18 10 18C5.58172 18 2 14.4183 2 10C2 5.58172 5.58172 2 10 2Z"
-          fill="#0C5D2A"
+          fill="rgb(var(--color-background-650))"
         />
         <path
           opacity={0.4}
@@ -383,8 +383,8 @@ function CheckCircleColorLight({ className }: { className?: string }) {
           stroke={`url(#${id}-grad)`}
           strokeWidth={0.5}
         />
-        <path d={CHECK_PATH} fill="#272320" />
-        <path d={CHECK_PATH} fill="#63F092" />
+        <path d={CHECK_PATH} fill="rgb(var(--color-background-900))" />
+        <path d={CHECK_PATH} fill="rgb(var(--color-accent-100))" />
       </g>
       <defs>
         <linearGradient
@@ -395,8 +395,8 @@ function CheckCircleColorLight({ className }: { className?: string }) {
           y2={18}
           gradientUnits="userSpaceOnUse"
         >
-          <stop stopColor="#6CCF90" />
-          <stop offset={1} stopColor="#4AA46B" />
+          <stop stopColor="rgb(var(--color-background-200))" />
+          <stop offset={1} stopColor="rgb(var(--color-accent-100))" />
         </linearGradient>
         <clipPath id={`${id}-clip`}>
           <rect width={20} height={20} fill="white" />
@@ -414,15 +414,15 @@ function CheckCircleColorDark({ className }: { className?: string }) {
       <g clipPath={`url(#${id}-clip)`}>
         <path
           d="M10 2C14.4183 2 18 5.58172 18 10C18 14.4183 14.4183 18 10 18C5.58172 18 2 14.4183 2 10C2 5.58172 5.58172 2 10 2Z"
-          fill="#C8E8D4"
+          fill="rgb(var(--color-background-200))"
         />
         <path
           d="M10 2.25C14.2802 2.25 17.75 5.71979 17.75 10C17.75 14.2802 14.2802 17.75 10 17.75C5.71979 17.75 2.25 14.2802 2.25 10C2.25 5.71979 5.71979 2.25 10 2.25Z"
           stroke={`url(#${id}-grad)`}
           strokeWidth={0.5}
         />
-        <path d={CHECK_PATH} fill="#272320" />
-        <path d={CHECK_PATH} fill="#0D682B" />
+        <path d={CHECK_PATH} fill="rgb(var(--color-background-900))" />
+        <path d={CHECK_PATH} fill="rgb(var(--color-background-650))" />
       </g>
       <defs>
         <linearGradient
@@ -433,8 +433,8 @@ function CheckCircleColorDark({ className }: { className?: string }) {
           y2={18}
           gradientUnits="userSpaceOnUse"
         >
-          <stop stopColor="#6CCF90" />
-          <stop offset={1} stopColor="#4AA46B" />
+          <stop stopColor="rgb(var(--color-background-200))" />
+          <stop offset={1} stopColor="rgb(var(--color-accent-100))" />
         </linearGradient>
         <clipPath id={`${id}-clip`}>
           <rect width={20} height={20} fill="white" />

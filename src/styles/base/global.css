@@ -7,7 +7,7 @@ body,
   padding: 0;
   height: 100%;
   font-family:
-    Ginto, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    RevaeaSerif, Georgia, "Times New Roman", serif, "Apple Color Emoji", "Segoe UI Emoji",
     "Segoe UI Symbol", "Noto Color Emoji";
   background: rgb(var(--color-background-100));
   color: rgb(var(--color-foreground-800));

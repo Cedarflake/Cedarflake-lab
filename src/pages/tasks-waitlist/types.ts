@@ -60,7 +60,7 @@ export interface RolodexItemWithStagger extends RolodexItem {
   diagonalStagger: number;
 }
 
-export type RolodexLayout = "3-line" | "5-line";
+export type RolodexLayout = "3-line" | "5-line" | "6-line";
 
 export interface TransitionRange {
   images: [number, number];

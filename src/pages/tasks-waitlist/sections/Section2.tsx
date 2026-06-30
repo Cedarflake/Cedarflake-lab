@@ -29,6 +29,7 @@ import { useScrollProgress } from "../hooks/useScrollProgress";
 import type { RolodexItem as RolodexItemData, RolodexLayout, RolodexItemWithStagger } from "../types";
 
 const CONTENT_TEXT_CLASSES = cn(
+  "font-display-revaea",
   "!text-[52px] !leading-[52px] text-4xl-medium",
   "lg:!text-[80px] lg:!leading-[80px]",
   "lg:p-12",
@@ -69,15 +70,19 @@ export function Section2({ sectionRef: externalSectionRef }: Section2Props) {
     childRef: refContentRef,
     threshold: LAYOUT_CONFIG.layoutSwitchThreshold,
   });
-  const layout: RolodexLayout = isOverflowing ? "5-line" : "3-line";
+  const layout: RolodexLayout = isNarrow ? "6-line" : isOverflowing ? "5-line" : "3-line";
   const layoutItems =
-    layout === "5-line" ? template.rolodex.layouts.fiveLine : template.rolodex.layouts.threeLine;
+    layout === "6-line"
+      ? template.rolodex.layouts.sixLine
+      : layout === "5-line"
+        ? template.rolodex.layouts.fiveLine
+        : template.rolodex.layouts.threeLine;
   const items = useMemo(() => prepareItems(layoutItems), [layoutItems]);
   const referenceItems = useMemo(
     () => prepareItems(template.rolodex.layouts.threeLine),
     [template.rolodex.layouts.threeLine],
   );
-  const rowCount = layout === "5-line" ? 5 : 3;
+  const rowCount = layout === "6-line" ? 6 : layout === "5-line" ? 5 : 3;
   const rows = useMemo(
     () => Array.from({ length: rowCount }, (_, i) => items.filter((item) => item.row === i)),
     [rowCount, items],
@@ -235,7 +240,7 @@ export function Section2({ sectionRef: externalSectionRef }: Section2Props) {
       {/* Dark background layer - only when NOT narrow */}
       {!isNarrow && (
         <motion.div
-          className="dark:bg-background-150 absolute inset-0 bg-[#423B3E] will-change-[opacity]"
+          className="theme-panel-bg absolute inset-0 will-change-[opacity]"
           style={{ opacity: finalDarkOpacity }}
         />
       )}
@@ -249,7 +254,7 @@ export function Section2({ sectionRef: externalSectionRef }: Section2Props) {
         <motion.div
           ref={squircleRef}
           className={cn(
-            "squircle-24 dark:bg-background-150 md:squircle-48 pointer-events-none absolute size-full bg-[#423B3E] will-change-[transform,opacity]",
+            "theme-panel-bg squircle-24 md:squircle-48 pointer-events-none absolute size-full will-change-[transform,opacity]",
             CONTENT_MAX_WIDTH,
           )}
           style={{

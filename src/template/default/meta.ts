@@ -1,3 +1,3 @@
 export const metaConfig = {
-  pageViewId: "tasksWaitlistPreview",
+  pageViewId: "revaeaWorldEntry",
 };

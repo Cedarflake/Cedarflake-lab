@@ -80,10 +80,10 @@ export function RolodexImage({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="squircle-16 lg:squircle-24 [@media(max-height:720px)]:squircle-16 inline-block size-12 overflow-hidden lg:size-20 [@media(max-height:720px)]:size-12"
+          className="image-theme-tint squircle-16 lg:squircle-24 [@media(max-height:720px)]:squircle-16 inline-block size-12 overflow-hidden lg:size-20 [@media(max-height:720px)]:size-12"
           style={{ y: 12 }}
         >
-          <img src={allImages[contentIndex]} alt="" className="size-full object-cover" />
+          <img src={allImages[contentIndex]} alt="" className="size-full object-contain" />
         </motion.div>
       </span>
     );
@@ -101,7 +101,7 @@ export function RolodexImage({
   return (
     <span className="inline-block">
       <motion.div
-        className="squircle-16 lg:squircle-24 [@media(max-height:720px)]:squircle-16 inline-block size-12 overflow-hidden lg:size-20 [@media(max-height:720px)]:size-12"
+        className="image-theme-tint squircle-16 lg:squircle-24 [@media(max-height:720px)]:squircle-16 inline-block size-12 overflow-hidden lg:size-20 [@media(max-height:720px)]:size-12"
         style={{ y: 12 }}
       >
         <div className="relative size-full transform-gpu overflow-hidden">
@@ -117,7 +117,7 @@ export function RolodexImage({
                 key={key}
                 src={src}
                 alt={`Rolodex image ${i + 1}`}
-                className="size-full shrink-0 transform-gpu object-cover"
+                className="size-full shrink-0 transform-gpu object-contain"
                 style={{ height: `${100 / images.length}%` }}
                 loading="eager"
                 decoding="sync"

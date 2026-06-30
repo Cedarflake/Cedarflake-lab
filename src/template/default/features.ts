@@ -1,49 +1,56 @@
 import type { TemplateFeaturesConfig } from "../types";
 
 export const featuresConfig: TemplateFeaturesConfig = {
-  headline: "What can Copilot Tasks do?",
+  headline: "What holds Revaea together?",
   subtitle:
-    "Copilot Tasks can handle complex, multi-step work -- so you can focus on what matters most.",
+    "A world without hard borders or cold machinery, sustained by clear will, shared dreams, and the quiet labor of healing hearts.",
   items: [
     {
-      title: "Stays on top of your tasks",
+      title: "Will gives shape to reality",
       description:
-        "Copilot monitors your tasks and proactively keeps things moving -- refreshing research, checking for updates, and nudging you when something needs attention.",
-      actionItems: [{ label: "Auto-refresh", icon: "arrowRefresh" }],
-    },
-    {
-      title: "Works across the web",
-      description:
-        "Copilot uses Microsoft Edge to browse, click, and interact with websites on your behalf.",
+        "Revaea is not held by iron law. The clearer a belief becomes, the more firmly mountains, rivers, streets, and stars answer it.",
       actionItems: [
-        { label: "Edge", icon: "edge" },
-        { label: "Click & interact", icon: "cursorClick" },
+        { label: "Will", icon: "will" },
+        { label: "Manifestation", icon: "manifestation" },
       ],
     },
     {
-      title: "Connects your services",
+      title: "Civilization moves by resonance",
       description:
-        "Copilot integrates with OneDrive, Outlook, Google Calendar, and more to complete tasks that span multiple services.",
+        "Gothic towers, floating islands, pastoral lanes, and soul-conducting arrays let distant minds whisper across cloud and stone.",
       actionItems: [
-        { label: "OneDrive", icon: "onedrive" },
-        { label: "Outlook", icon: "outlook" },
-        { label: "Google Calendar", icon: "googleCalendar" },
+        { label: "Resonance", icon: "resonance" },
+        { label: "Soul arrays", icon: "soulArray" },
       ],
     },
     {
-      title: "Creates polished artifacts",
+      title: "Magic is the weather of the soul",
       description:
-        "Copilot produces professional documents, slide decks, and spreadsheets ready to share.",
+        "Manifestation blooms from emotion, mind-rings gather shared thought, and dream-weaving anchors night whispers into day.",
       actionItems: [
-        { label: "Slides", icon: "artifactSlides" },
-        { label: "Documents", icon: "artifactDocuments" },
-        { label: "Sheets", icon: "artifactSheets" },
+        { label: "Manifesting", icon: "bloom" },
+        { label: "Mind-rings", icon: "mindRing" },
+        { label: "Dream-weaving", icon: "dreamWeave" },
       ],
     },
     {
-      title: "Schedules and sends for you",
-      description: "Copilot can schedule meetings, send emails, and manage your calendar.",
-      actionItems: [{ label: "Schedule", icon: "schedule" }],
+      title: "Dream Circles replace borders",
+      description:
+        "Kindred souls gather naturally into loose circles: tea for healing, libraries for memory, gardens where art becomes air.",
+      actionItems: [
+        { label: "Pure Tea Circle", icon: "teaCircle" },
+        { label: "Memory Library", icon: "memoryLibrary" },
+        { label: "Illusion Garden", icon: "illusionGarden" },
+      ],
+    },
+    {
+      title: "Peace is the oldest spell",
+      description:
+        "Revaea does not write epics of conquest. Its time is slow enough to hear mist parting over warm springs and silver songs.",
+      actionItems: [
+        { label: "Healing", icon: "healing" },
+        { label: "Star songs", icon: "starSong" },
+      ],
     },
   ],
 };

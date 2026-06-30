@@ -23,7 +23,7 @@ const MOCK_TRANSLATIONS: Record<string, string> = {
     "Copilot Tasks can handle complex, multi-step work -- so you can focus on what matters most.",
   "tasks.waitList.section3.items.title1": "Stays on top of your tasks",
   "tasks.waitList.section3.items.description1":
-    "Copilot monitors your tasks and proactively keeps things moving — refreshing research, checking for updates, and nudging you when something needs attention.",
+    "Copilot monitors your tasks and proactively keeps things moving -- refreshing research, checking for updates, and nudging you when something needs attention.",
   "tasks.waitList.section3.items.title2": "Works across the web",
   "tasks.waitList.section3.items.description2":
     "Copilot uses Microsoft Edge to browse, click, and interact with websites on your behalf.",

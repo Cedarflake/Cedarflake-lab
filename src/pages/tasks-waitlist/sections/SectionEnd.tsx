@@ -47,7 +47,7 @@ export function SectionEnd() {
         >
           <div className="text-foreground-250 dark:text-foreground-650 relative flex size-full flex-col items-center justify-center gap-8 p-5 md:gap-10">
             {/* Headline */}
-            <div className="px-8 text-center text-xl sm:text-3xl md:text-4xl">
+            <div className="font-display-revaea px-8 text-center text-xl sm:text-3xl md:text-4xl">
               {template.finalCta.headline}
             </div>
 

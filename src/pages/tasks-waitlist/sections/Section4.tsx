@@ -367,7 +367,7 @@ function ImageOverlay({
       >
         <motion.div
           className={cn(
-            "bg-background-400/20 relative size-full overflow-hidden will-change-transform",
+            "image-theme-mask bg-background-400/20 relative size-full overflow-hidden will-change-transform",
             !isLoaded && "animate-pulse",
           )}
           style={{
@@ -440,7 +440,9 @@ function TextOverlay({
       )}
       style={{ opacity }}
     >
-      <div className="text-foreground-800 text-lg-medium max-w-4xl">{headline}</div>
+      <div className="font-display-revaea text-foreground-800 text-lg-medium max-w-4xl">
+        {headline}
+      </div>
       <div className="text-foreground-450 text-base-dense dark:text-foreground-650 max-w-4xl">
         {description}
       </div>
@@ -505,14 +507,14 @@ function NarrowCard({
 
   return (
     <div ref={cardRef} className="grid grid-cols-6 grid-rows-[1fr_auto] gap-y-6">
-      <motion.img
-        src={src}
-        alt={alt}
-        className="squircle-24 [grid-column:1/7] [grid-row:1] aspect-square w-full origin-bottom object-cover"
+      <motion.div
+        className="image-theme-mask squircle-24 [grid-column:1/7] [grid-row:1] aspect-square w-full origin-bottom overflow-hidden"
         style={{ scale: cardScale }}
-      />
+      >
+        <img src={src} alt={alt} className="size-full object-cover" />
+      </motion.div>
       <div className="[grid-column:1/7] [grid-row:2] flex flex-col gap-2">
-        <div className="text-foreground-800 text-lg-medium">{headline}</div>
+        <div className="font-display-revaea text-foreground-800 text-lg-medium">{headline}</div>
         <div className="text-foreground-600 text-base-dense dark:text-foreground-650">
           {description}
         </div>

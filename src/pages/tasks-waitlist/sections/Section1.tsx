@@ -1,7 +1,7 @@
 /**
  * Section1 - Hero section.
  *
- * Full-viewport intro with a background photo, Copilot wordmark in the top-left,
+ * Full-viewport intro with a background photo, brand wordmark in the top-left,
  * headline and CTA at the bottom. On wide viewports, the background scales/blurs
  * and content fades as the user scrolls down.
  */
@@ -71,7 +71,7 @@ export function Section1({ sectionRef: externalSectionRef }: Section1Props) {
     <StickyContainer sticky={sticky} className="relative">
       <div className={cn("size-full", sticky ? "fixed inset-0" : "relative")}>
         <motion.div
-          className="dark:bg-background-150 @container/section-one absolute size-full overflow-hidden bg-[#423B3E] will-change-[opacity]"
+          className="theme-panel-bg @container/section-one absolute size-full overflow-hidden will-change-[opacity]"
           style={{ opacity: outerOp }}
         >
           {/* Background image layer */}
@@ -80,11 +80,11 @@ export function Section1({ sectionRef: externalSectionRef }: Section1Props) {
             style={{ scale: bgSc, opacity: bgOp, filter: bgFi }}
           >
             <img
-              className="absolute inset-0 size-full object-cover object-right rtl:-scale-x-100"
+              className="absolute inset-0 z-0 size-full object-cover object-right rtl:-scale-x-100"
               src={theme === "dark" ? template.hero.backgroundDark : template.hero.backgroundLight}
               alt="Background"
             />
-            <div className="to-background-250 absolute bottom-0 h-32 w-full bg-gradient-to-b from-transparent" />
+            <div className="to-background-250 absolute bottom-0 z-[3] h-32 w-full bg-gradient-to-b from-transparent" />
           </motion.div>
 
           {/* Content layer */}
@@ -95,7 +95,7 @@ export function Section1({ sectionRef: externalSectionRef }: Section1Props) {
             {/* Top: Copilot wordmark */}
             <div className="mt-16 p-5 @[768px]/section-one:mt-0 @[768px]/section-one:px-12 @[768px]/section-one:py-16">
               <CopilotWordmark
-                className="h-[64px] w-[130px] origin-top-left scale-90 @[768px]/section-one:scale-100 rtl:origin-top-right"
+                className="h-[64px] w-[196px] origin-top-left scale-90 @[768px]/section-one:scale-100 rtl:origin-top-right"
                 title={template.brand.wordmarkAlt}
               />
             </div>
@@ -103,7 +103,7 @@ export function Section1({ sectionRef: externalSectionRef }: Section1Props) {
             {/* Bottom: headline + description + CTA + scroll indicator */}
             <div className="absolute bottom-0 mb-0 flex w-full flex-col flex-wrap justify-between gap-x-10 gap-y-4 p-5 @[768px]/section-one:flex-row @[768px]/section-one:items-end @[768px]/section-one:gap-8 @[768px]/section-one:p-12 @[768px]/section-one:pe-6">
               {/* Headline */}
-              <div className="text-3xl-medium @[768px]/section-one:text-4xl-medium inline-block max-w-[min(420px,75%)] shrink-0 grow @[768px]/section-one:flex @[768px]/section-one:max-w-full @[768px]/section-one:flex-col @[768px]/section-one:!text-[60px] @[768px]/section-one:!leading-[60px]">
+              <div className="font-display-revaea text-3xl-medium @[768px]/section-one:text-4xl-medium inline-block max-w-[min(420px,75%)] shrink-0 grow @[768px]/section-one:flex @[768px]/section-one:max-w-full @[768px]/section-one:flex-col @[768px]/section-one:!text-[66px] @[768px]/section-one:!leading-[62px]">
                 <span>{template.hero.headlineTop}</span>
                 <span>{template.hero.headlineBottom}</span>
               </div>

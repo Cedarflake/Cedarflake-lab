@@ -46,7 +46,7 @@ export function RolodexItem({
 
   if (type === "text" && !animate) {
     return (
-      <span className="inline-block" style={{ transform: "translateZ(0)" }}>
+      <span className="inline-block whitespace-nowrap" style={{ transform: "translateZ(0)" }}>
         {content1}
       </span>
     );
@@ -162,14 +162,18 @@ function AnimatedFlipText({
 
   return (
     <span
-      className="relative inline-flex flex-col whitespace-nowrap"
+      className="relative inline-grid whitespace-nowrap align-baseline"
       style={{ perspective: "1000px" }}
     >
-      {/* Invisible measurement layer to reserve max width */}
-      <span className="invisible flex h-0 flex-col whitespace-nowrap" aria-hidden="true">
-        <span>{content1}</span>
-        <span>{content2}</span>
-        <span>{content3}</span>
+      {/* Invisible measurement layer reserves max one-line width and height. */}
+      <span
+        className="invisible inline-grid whitespace-nowrap"
+        style={{ gridArea: "1 / 1" }}
+        aria-hidden="true"
+      >
+        <span style={{ gridArea: "1 / 1" }}>{content1}</span>
+        <span style={{ gridArea: "1 / 1" }}>{content2}</span>
+        <span style={{ gridArea: "1 / 1" }}>{content3}</span>
       </span>
 
       <span className="absolute inset-0">
