@@ -1,10 +1,3 @@
-/**
- * SVG brand components for the Revaea world-entry page.
- *
- * Component names stay stable because the section components import them as part
- * of the reusable template surface.
- */
-
 import React from "react";
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {
@@ -12,7 +5,7 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
   titleId?: string;
 }
 
-function RevaeaMark({
+function AgentMark({
   size = 72,
   x = 0,
   y = 0,
@@ -25,7 +18,7 @@ function RevaeaMark({
 }) {
   return (
     <image
-      href="/Revaea-o.svg"
+      href="/favicon.svg"
       x={x}
       y={y}
       width={size}
@@ -36,9 +29,7 @@ function RevaeaMark({
   );
 }
 
-const revaeaLogoFont = 'RevaeaSerif, Georgia, "Times New Roman", serif';
-
-// ===================== Revaea Wordmark (Section 1) =====================
+const agentLogoFont = 'AgentSerif, Georgia, "Times New Roman", serif';
 
 export const CopilotWordmark: React.FC<IconProps> = ({ title, titleId, ...props }) => (
   <svg
@@ -49,22 +40,20 @@ export const CopilotWordmark: React.FC<IconProps> = ({ title, titleId, ...props 
     {...props}
   >
     {title ? <title id={titleId}>{title}</title> : null}
-    <RevaeaMark size={42} y={12} />
+    <AgentMark size={42} y={12} />
     <text
       x="54"
       y="49"
       fill="currentColor"
-      fontFamily={revaeaLogoFont}
+      fontFamily={agentLogoFont}
       fontSize="40"
       fontWeight="700"
       letterSpacing="0.2"
     >
-      Revaea
+      AI Agent
     </text>
   </svg>
 );
-
-// ===================== Revaea Logo (Footer) =====================
 
 export const CopilotTasksLogo: React.FC<IconProps> = ({ title, titleId, ...props }) => (
   <svg
@@ -75,18 +64,18 @@ export const CopilotTasksLogo: React.FC<IconProps> = ({ title, titleId, ...props
     {...props}
   >
     {title ? <title id={titleId}>{title}</title> : null}
-    <g transform="translate(206 22)">
-      <RevaeaMark size={62} y={0} />
+    <g transform="translate(172 22)">
+      <AgentMark size={62} y={0} />
       <text
         x="92"
         y="61"
         fill="currentColor"
-        fontFamily={revaeaLogoFont}
+        fontFamily={agentLogoFont}
         fontSize="82"
         fontWeight="700"
         letterSpacing="0.2"
       >
-        Revaea
+        AI Agent
       </text>
     </g>
     <text
@@ -94,18 +83,16 @@ export const CopilotTasksLogo: React.FC<IconProps> = ({ title, titleId, ...props
       y="140"
       fill="currentColor"
       fillOpacity="0.55"
-      fontFamily={revaeaLogoFont}
+      fontFamily={agentLogoFont}
       fontSize="30"
       fontWeight="700"
       letterSpacing="0.2"
       textAnchor="middle"
     >
-      Woven by Will, Lit by Peace
+      Workflows that move with you
     </text>
   </svg>
 );
-
-// ===================== Chevron Down (Scroll Indicator) =====================
 
 export const ChevronDownIcon: React.FC<IconProps> = ({ title, titleId, ...props }) => (
   <svg

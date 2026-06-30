@@ -5,30 +5,30 @@ export const carouselConfig: TemplateCarouselConfig = {
   images: [
     {
       id: "image-1",
-      srcLight: `${ASSET_BASE}/images/revaea/carousel/pure-tea-light.png`,
-      srcDark: `${ASSET_BASE}/images/revaea/carousel/pure-tea-dark.png`,
-      alt: "A floating tea pavilion of the Pure Tea Dream Circle.",
-      headline: "Pure Tea Dream Circle",
+      srcLight: `${ASSET_BASE}/images/tasks/waitlist/carousel/user-value-1-light.jpg`,
+      srcDark: `${ASSET_BASE}/images/tasks/waitlist/carousel/user-value-1-dark.jpg`,
+      alt: "An AI assistant organizing a user's task flow.",
+      headline: "Plan the messy work",
       description:
-        "Tea steam curls into quiet rings, washing yesterday's dust from weary spirits.",
+        "Capture goals, constraints, and open questions, then turn them into a sequence your team can actually follow.",
     },
     {
       id: "image-2",
-      srcLight: `${ASSET_BASE}/images/revaea/carousel/memory-library-light.png`,
-      srcDark: `${ASSET_BASE}/images/revaea/carousel/memory-library-dark.png`,
-      alt: "A luminous gothic memory library filled with floating pages.",
-      headline: "Memory Library",
+      srcLight: `${ASSET_BASE}/images/tasks/waitlist/carousel/user-value-2-light.jpg`,
+      srcDark: `${ASSET_BASE}/images/tasks/waitlist/carousel/user-value-2-dark.jpg`,
+      alt: "An AI assistant reviewing project context across documents.",
+      headline: "Work with context",
       description:
-        "Open a book and touch not ink, but the warmest image from a life once lived.",
+        "Let the agent read nearby decisions, files, and notes before it recommends the next move.",
     },
     {
       id: "image-3",
-      srcLight: `${ASSET_BASE}/images/revaea/carousel/illusion-garden-light.png`,
-      srcDark: `${ASSET_BASE}/images/revaea/carousel/illusion-garden-dark.png`,
-      alt: "A translucent flower corridor in the Illusion Painting Garden.",
-      headline: "Illusion Painting Garden",
+      srcLight: `${ASSET_BASE}/images/tasks/waitlist/carousel/user-value-3-light.jpg`,
+      srcDark: `${ASSET_BASE}/images/tasks/waitlist/carousel/user-value-3-dark.jpg`,
+      alt: "An AI assistant handing off completed task results.",
+      headline: "Finish with proof",
       description:
-        "Artists paint with intention; where the brush falls, glass-bright flowers rise into day.",
+        "Ship with concise summaries, validation notes, and artifacts that make review faster.",
     },
   ],
 };

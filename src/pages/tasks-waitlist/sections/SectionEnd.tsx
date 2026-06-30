@@ -42,12 +42,13 @@ export function SectionEnd() {
       >
         {/* Dark card */}
         <div
+          id="waitlist"
           data-section-end-card
           className="bg-background-800 squircle-24 dark:bg-background-100 relative z-[60] mt-8 flex h-[max(50vh,500px)] w-full flex-col items-center px-4 sm:-mt-22 sm:px-8"
         >
           <div className="text-foreground-250 dark:text-foreground-650 relative flex size-full flex-col items-center justify-center gap-8 p-5 md:gap-10">
             {/* Headline */}
-            <div className="font-display-revaea px-8 text-center text-xl sm:text-3xl md:text-4xl">
+            <div className="font-display-agent px-8 text-center text-xl sm:text-3xl md:text-4xl">
               {template.finalCta.headline}
             </div>
 

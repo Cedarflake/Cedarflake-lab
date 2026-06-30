@@ -103,7 +103,7 @@ export function Section1({ sectionRef: externalSectionRef }: Section1Props) {
             {/* Bottom: headline + description + CTA + scroll indicator */}
             <div className="absolute bottom-0 mb-0 flex w-full flex-col flex-wrap justify-between gap-x-10 gap-y-4 p-5 @[768px]/section-one:flex-row @[768px]/section-one:items-end @[768px]/section-one:gap-8 @[768px]/section-one:p-12 @[768px]/section-one:pe-6">
               {/* Headline */}
-              <div className="font-display-revaea text-3xl-medium @[768px]/section-one:text-4xl-medium inline-block max-w-[min(420px,75%)] shrink-0 grow @[768px]/section-one:flex @[768px]/section-one:max-w-full @[768px]/section-one:flex-col @[768px]/section-one:!text-[66px] @[768px]/section-one:!leading-[62px]">
+              <div className="font-display-agent text-3xl-medium @[768px]/section-one:text-4xl-medium inline-block max-w-[min(420px,75%)] shrink-0 grow @[768px]/section-one:flex @[768px]/section-one:max-w-full @[768px]/section-one:flex-col @[768px]/section-one:!text-[66px] @[768px]/section-one:!leading-[62px]">
                 <span>{template.hero.headlineTop}</span>
                 <span>{template.hero.headlineBottom}</span>
               </div>

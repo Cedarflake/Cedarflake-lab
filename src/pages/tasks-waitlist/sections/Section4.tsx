@@ -440,7 +440,7 @@ function TextOverlay({
       )}
       style={{ opacity }}
     >
-      <div className="font-display-revaea text-foreground-800 text-lg-medium max-w-4xl">
+      <div className="font-display-agent text-foreground-800 text-lg-medium max-w-4xl">
         {headline}
       </div>
       <div className="text-foreground-450 text-base-dense dark:text-foreground-650 max-w-4xl">
@@ -514,7 +514,7 @@ function NarrowCard({
         <img src={src} alt={alt} className="size-full object-cover" />
       </motion.div>
       <div className="[grid-column:1/7] [grid-row:2] flex flex-col gap-2">
-        <div className="font-display-revaea text-foreground-800 text-lg-medium">{headline}</div>
+        <div className="font-display-agent text-foreground-800 text-lg-medium">{headline}</div>
         <div className="text-foreground-600 text-base-dense dark:text-foreground-650">
           {description}
         </div>

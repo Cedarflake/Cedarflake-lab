@@ -29,7 +29,7 @@ import { useScrollProgress } from "../hooks/useScrollProgress";
 import type { RolodexItem as RolodexItemData, RolodexLayout, RolodexItemWithStagger } from "../types";
 
 const CONTENT_TEXT_CLASSES = cn(
-  "font-display-revaea",
+  "font-display-agent",
   "!text-[52px] !leading-[52px] text-4xl-medium",
   "lg:!text-[80px] lg:!leading-[80px]",
   "lg:p-12",

@@ -1,55 +1,55 @@
 import type { TemplateFeaturesConfig } from "../types";
 
 export const featuresConfig: TemplateFeaturesConfig = {
-  headline: "What holds Revaea together?",
+  headline: "What makes the assistant useful?",
   subtitle:
-    "A world without hard borders or cold machinery, sustained by clear will, shared dreams, and the quiet labor of healing hearts.",
+    "A practical AI Agent layer for turning scattered intent into tracked plans, clear context, and finished work.",
   items: [
     {
-      title: "Will gives shape to reality",
+      title: "Turns intent into a plan",
       description:
-        "Revaea is not held by iron law. The clearer a belief becomes, the more firmly mountains, rivers, streets, and stars answer it.",
+        "Describe the outcome once, then let the assistant break it into ordered steps, surface blockers, and keep the next action visible.",
       actionItems: [
-        { label: "Will", icon: "will" },
-        { label: "Manifestation", icon: "manifestation" },
+        { label: "Planning", icon: "will" },
+        { label: "Next steps", icon: "manifestation" },
       ],
     },
     {
-      title: "Civilization moves by resonance",
+      title: "Reads the room before acting",
       description:
-        "Gothic towers, floating islands, pastoral lanes, and soul-conducting arrays let distant minds whisper across cloud and stone.",
+        "It gathers relevant files, recent decisions, and product context before suggesting changes, so work starts with the right shape.",
       actionItems: [
-        { label: "Resonance", icon: "resonance" },
-        { label: "Soul arrays", icon: "soulArray" },
+        { label: "Context", icon: "resonance" },
+        { label: "Memory", icon: "soulArray" },
       ],
     },
     {
-      title: "Magic is the weather of the soul",
+      title: "Drafts, edits, and verifies",
       description:
-        "Manifestation blooms from emotion, mind-rings gather shared thought, and dream-weaving anchors night whispers into day.",
+        "From copy and code to checklists and summaries, the assistant can produce the first pass, refine it, and validate the result.",
       actionItems: [
-        { label: "Manifesting", icon: "bloom" },
-        { label: "Mind-rings", icon: "mindRing" },
-        { label: "Dream-weaving", icon: "dreamWeave" },
+        { label: "Drafting", icon: "bloom" },
+        { label: "Review", icon: "mindRing" },
+        { label: "Validation", icon: "dreamWeave" },
       ],
     },
     {
-      title: "Dream Circles replace borders",
+      title: "Connects everyday tools",
       description:
-        "Kindred souls gather naturally into loose circles: tea for healing, libraries for memory, gardens where art becomes air.",
+        "Bring together project files, documents, issues, and design assets without forcing your workflow through a new command center.",
       actionItems: [
-        { label: "Pure Tea Circle", icon: "teaCircle" },
-        { label: "Memory Library", icon: "memoryLibrary" },
-        { label: "Illusion Garden", icon: "illusionGarden" },
+        { label: "Files", icon: "teaCircle" },
+        { label: "Docs", icon: "memoryLibrary" },
+        { label: "Boards", icon: "illusionGarden" },
       ],
     },
     {
-      title: "Peace is the oldest spell",
+      title: "Keeps you in the loop",
       description:
-        "Revaea does not write epics of conquest. Its time is slow enough to hear mist parting over warm springs and silver songs.",
+        "Progress updates, reviewable diffs, and clear handoff notes make the agent feel dependable instead of mysterious.",
       actionItems: [
-        { label: "Healing", icon: "healing" },
-        { label: "Star songs", icon: "starSong" },
+        { label: "Status", icon: "healing" },
+        { label: "Handoffs", icon: "starSong" },
       ],
     },
   ],

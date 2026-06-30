@@ -2,11 +2,11 @@ import type { TemplateHeroConfig } from "../types";
 import { ASSET_BASE } from "./assets";
 
 export const heroConfig: TemplateHeroConfig = {
-  headlineTop: "The far shore of",
-  headlineBottom: "woven dreams",
+  headlineTop: "Your AI Agent",
+  headlineBottom: "for focused work",
   description:
-    "Woven by Will, Lit by Peace. A gentle realm where belief steadies mountains, dreams take root at dawn, and love can wake the sleeping stars.",
-  backgroundLight: `${ASSET_BASE}/images/revaea/background/background-light-sky.png`,
-  backgroundDark: `${ASSET_BASE}/images/revaea/background/background-dark-sky.png`,
-  scrollIndicator: "Explore",
+    "An always-ready assistant that plans tasks, gathers context, drafts next steps, and keeps projects moving while you stay in control.",
+  backgroundLight: `${ASSET_BASE}/images/tasks/waitlist/background/background-light.jpg`,
+  backgroundDark: `${ASSET_BASE}/images/tasks/waitlist/background/background-dark.jpg`,
+  scrollIndicator: "See how it works",
 };

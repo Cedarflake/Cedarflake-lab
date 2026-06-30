@@ -70,7 +70,7 @@ export function SkipToContent() {
 
   return (
     <a
-      href="https://story.revaea.com"
+      href="#main-content"
       tabIndex={isVisible ? 0 : -1}
       aria-hidden={!isVisible}
       className={cn(

@@ -1,3 +1,3 @@
 export const metaConfig = {
-  pageViewId: "revaeaWorldEntry",
+  pageViewId: "aiAgentAssistantWaitlist",
 };

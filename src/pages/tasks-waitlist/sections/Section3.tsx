@@ -133,7 +133,7 @@ function Section3Content({ isNarrow, sectionRef }: Section3ContentProps) {
           )}
           style={{ opacity: headerOpacity, scale: headerScale }}
         >
-          <h1 className="font-display-revaea text-foreground-900 text-2xl-medium md:text-3xl">
+          <h1 className="font-display-agent text-foreground-900 text-2xl-medium md:text-3xl">
             {template.features.headline}
           </h1>
           <p className="text-foreground-700 text-base-dense-medium md:text-md max-w-[95%] md:max-w-[70%]">
@@ -325,7 +325,7 @@ function FeatureItem({
         style={{ opacity: contentOpacity }}
       >
         <motion.h1
-          className="font-display-revaea text-lg-medium gpu-text w-full origin-left will-change-transform md:text-xl rtl:origin-right"
+          className="font-display-agent text-lg-medium gpu-text w-full origin-left will-change-transform md:text-xl rtl:origin-right"
           style={{ scale: shouldReduceMotion || isNarrow ? undefined : titleScale }}
         >
           {feature.title}

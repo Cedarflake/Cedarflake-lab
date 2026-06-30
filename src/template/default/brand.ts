@@ -1,6 +1,6 @@
 import type { TemplateBrandConfig } from "../types";
 
 export const brandConfig: TemplateBrandConfig = {
-  name: "Revaea",
-  wordmarkAlt: "Revaea",
+  name: "AI Agent",
+  wordmarkAlt: "AI Agent assistant",
 };
