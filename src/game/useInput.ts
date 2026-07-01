@@ -3,13 +3,6 @@ import { useEffect, useRef } from "react"
 import { useInputStore } from "@/game/useInputStore"
 import type { PlayerInput } from "@/shared/types"
 
-const initialInput: PlayerInput = {
-  steer: 0,
-  throttle: 0,
-  brake: 0,
-  isDrifting: false,
-}
-
 const keyboardListenerOptions = { capture: true } as const
 
 function resolveKeyboardInput(keys: Set<string>): PlayerInput {
@@ -30,7 +23,7 @@ export function useKeyboardInput() {
   const keysRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
-    const setKeyboardInput = useInputStore.getState().setKeyboardInput
+    const { resetKeyboardInput, resetTouchInput, setKeyboardInput } = useInputStore.getState()
 
     function updateInput() {
       setKeyboardInput(resolveKeyboardInput(keysRef.current))
@@ -48,11 +41,19 @@ export function useKeyboardInput() {
 
     function resetInput() {
       keysRef.current.clear()
-      setKeyboardInput(initialInput)
+      resetKeyboardInput()
+      resetTouchInput()
+    }
+
+    function resetWhenHidden() {
+      if (document.visibilityState === "hidden") {
+        resetInput()
+      }
     }
 
     document.addEventListener("keydown", handleKeyDown, keyboardListenerOptions)
     document.addEventListener("keyup", handleKeyUp, keyboardListenerOptions)
+    document.addEventListener("visibilitychange", resetWhenHidden)
     window.addEventListener("keydown", handleKeyDown, keyboardListenerOptions)
     window.addEventListener("keyup", handleKeyUp, keyboardListenerOptions)
     window.addEventListener("blur", resetInput)
@@ -60,6 +61,7 @@ export function useKeyboardInput() {
     return () => {
       document.removeEventListener("keydown", handleKeyDown, keyboardListenerOptions)
       document.removeEventListener("keyup", handleKeyUp, keyboardListenerOptions)
+      document.removeEventListener("visibilitychange", resetWhenHidden)
       window.removeEventListener("keydown", handleKeyDown, keyboardListenerOptions)
       window.removeEventListener("keyup", handleKeyUp, keyboardListenerOptions)
       window.removeEventListener("blur", resetInput)
