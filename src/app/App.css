@@ -425,6 +425,16 @@
   border-radius: 8px;
   box-shadow: 0 14px 34px rgba(80, 58, 78, 0.18);
   backdrop-filter: blur(16px);
+  transition:
+    background-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
+}
+
+.touch-controls button:active {
+  background: rgba(255, 242, 186, 0.9);
+  box-shadow: 0 8px 22px rgba(80, 58, 78, 0.2);
+  transform: translateY(2px) scale(0.98);
 }
 
 .touch-controls__go {

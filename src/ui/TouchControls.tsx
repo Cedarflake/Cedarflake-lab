@@ -21,7 +21,10 @@ function ControlButton({ label, press, release, className }: ControlButtonProps)
   }
 
   function handleRelease(event: PointerEvent<HTMLButtonElement>) {
-    event.currentTarget.releasePointerCapture(event.pointerId)
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+
     setInput(release)
   }
 
