@@ -1,6 +1,6 @@
 import { useRef } from "react"
 
-import { Environment, PerspectiveCamera, Stars } from "@react-three/drei"
+import { PerspectiveCamera, Stars } from "@react-three/drei"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import type { Group } from "three"
 
@@ -138,13 +138,13 @@ function RacerWorld() {
       runtime.x * 0.38,
       Math.min(delta * 2.4, 1),
     )
-    const cameraY = isPortrait ? 3.7 + runtime.speed * 0.005 : 5.8 + runtime.speed * 0.015
-    const cameraZ = isPortrait ? 5.8 + runtime.speed * 0.008 : 10.5 + runtime.speed * 0.025
-    const lookAtZ = isPortrait ? 1.6 : -8
+    const cameraY = isPortrait ? 3.7 + runtime.speed * 0.005 : 2.6 + runtime.speed * 0.004
+    const cameraZ = isPortrait ? 5.8 + runtime.speed * 0.008 : 4.4 + runtime.speed * 0.007
+    const lookAtZ = isPortrait ? 1.6 : 0.7
 
     state.camera.position.y = lerp(state.camera.position.y, cameraY, Math.min(delta * 2.4, 1))
     state.camera.position.z = lerp(state.camera.position.z, cameraZ, Math.min(delta * 2.4, 1))
-    state.camera.lookAt(runtime.x * 0.28, isPortrait ? 0.36 : 0.55, lookAtZ)
+    state.camera.lookAt(runtime.x * 0.28, isPortrait ? 0.36 : 0.32, lookAtZ)
 
     const obstacleIndex = Math.max(0, Math.floor((runtime.distance - 90) / 46))
     pruneHandledEvents(runtime.handledObstacles, obstacleIndex)
@@ -228,13 +228,12 @@ function RacerWorld() {
 
   return (
     <>
-      <PerspectiveCamera makeDefault position={[0, 5.8, 10.5]} rotation={[-0.28, 0, 0]} fov={54} />
+      <PerspectiveCamera makeDefault position={[0, 2.6, 4.4]} rotation={[-0.28, 0, 0]} fov={58} />
       <color attach="background" args={[dreamPalette.skyTop]} />
       <fog attach="fog" args={[dreamPalette.fog, 24, 170]} />
       <ambientLight intensity={0.82} />
       <directionalLight position={[8, 11, 7]} intensity={2.4} castShadow={!isPortrait} />
       <pointLight position={[0, 5, 2]} color={dreamPalette.carGlow} intensity={10} distance={14} />
-      {isPortrait ? null : <Environment preset="sunset" />}
       <Stars
         radius={120}
         depth={42}
