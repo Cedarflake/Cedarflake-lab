@@ -26,6 +26,8 @@ interface GameTelemetry {
   distance: number
 }
 
+const bestScoreKey = "liminal-drift:best-score"
+
 const initialRunState = {
   score: 0,
   speed: 0,
@@ -36,9 +38,30 @@ const initialRunState = {
   impactId: 0,
 }
 
+function readBestScore() {
+  const value = window.localStorage.getItem(bestScoreKey)
+  const score = Number(value)
+
+  return Number.isFinite(score) ? score : 0
+}
+
+function saveBestScore(score: number) {
+  window.localStorage.setItem(bestScoreKey, String(score))
+}
+
+function resolveBestScore(currentBest: number, nextScore: number) {
+  const bestScore = Math.max(currentBest, nextScore)
+
+  if (bestScore > currentBest) {
+    saveBestScore(bestScore)
+  }
+
+  return bestScore
+}
+
 export const useGameStore = create<GameState>((set) => ({
   status: "ready",
-  bestScore: 0,
+  bestScore: readBestScore(),
   ...initialRunState,
   start: () => set({ status: "running", ...initialRunState }),
   pause: () => set((state) => (state.status === "running" ? { status: "paused" } : state)),
@@ -52,7 +75,7 @@ export const useGameStore = create<GameState>((set) => ({
 
       return {
         score: nextScore,
-        bestScore: Math.max(state.bestScore, nextScore),
+        bestScore: resolveBestScore(state.bestScore, nextScore),
         combo: nextCombo,
         lastEvent: event,
       }
@@ -67,7 +90,7 @@ export const useGameStore = create<GameState>((set) => ({
         score: nextScore,
         combo: 1,
         status: integrity <= 0 ? "ended" : state.status,
-        bestScore: Math.max(state.bestScore, nextScore),
+        bestScore: resolveBestScore(state.bestScore, nextScore),
         lastEvent: integrity <= 0 ? "The road folded in on itself" : "Static in the headlights",
         impactId: state.impactId + 1,
       }
