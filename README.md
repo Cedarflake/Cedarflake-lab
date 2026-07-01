@@ -20,6 +20,7 @@ pnpm dev
 pnpm build
 pnpm lint
 pnpm format
+pnpm format:check
 pnpm check
 pnpm check:canvas -- <dev-server-url>
 pnpm check:interaction -- <dev-server-url>
@@ -27,7 +28,7 @@ pnpm check:interaction -- <dev-server-url>
 
 ## Verification
 
-- `pnpm check` runs lint, procedural generation checks, and production build.
+- `pnpm check` runs formatting checks, lint, procedural generation checks, and production build.
 - `pnpm check:canvas -- <url>` captures desktop and mobile screenshots, checks the 3D scene is visible, and verifies speed / distance telemetry advances.
 - `pnpm check:interaction -- <url>` verifies mobile Start + Go touch driving advances speed and distance.
 

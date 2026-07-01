@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "format": "prettier . --write",
-    "check": "pnpm lint && pnpm run check:generation && pnpm build",
+    "format:check": "prettier . --check",
+    "check": "pnpm run format:check && pnpm lint && pnpm run check:generation && pnpm build",
     "check:canvas": "node scripts/checkCanvas.mjs",
     "check:generation": "tsx scripts/checkGeneration.ts",
     "check:interaction": "node scripts/checkInteraction.mjs"
