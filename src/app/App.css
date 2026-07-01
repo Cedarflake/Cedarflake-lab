@@ -49,6 +49,55 @@
   z-index: 0;
 }
 
+.speed-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 34px,
+      rgba(255, 255, 255, 0.18) 35px 36px,
+      transparent 37px 70px
+    ),
+    radial-gradient(
+      circle at 50% 72%,
+      transparent 0 18%,
+      rgba(255, 255, 255, 0.18) 46%,
+      transparent 72%
+    );
+  filter: blur(0.4px);
+  mix-blend-mode: screen;
+  transform: perspective(600px) rotateX(52deg) translateY(16%);
+  transition: opacity 160ms ease;
+}
+
+.impact-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 58%,
+    rgba(255, 238, 173, 0.48),
+    rgba(239, 133, 146, 0.18),
+    transparent 62%
+  );
+  animation: impact-flash 520ms ease-out both;
+}
+
+@keyframes impact-flash {
+  from {
+    opacity: 1;
+    transform: scale(0.98);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+}
 .hud {
   position: absolute;
   inset: 24px 24px auto;
@@ -281,6 +330,55 @@
   background: rgba(211, 244, 237, 0.76);
 }
 @media (max-width: 760px) {
+  .speed-veil {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background:
+      repeating-linear-gradient(
+        90deg,
+        transparent 0 34px,
+        rgba(255, 255, 255, 0.18) 35px 36px,
+        transparent 37px 70px
+      ),
+      radial-gradient(
+        circle at 50% 72%,
+        transparent 0 18%,
+        rgba(255, 255, 255, 0.18) 46%,
+        transparent 72%
+      );
+    filter: blur(0.4px);
+    mix-blend-mode: screen;
+    transform: perspective(600px) rotateX(52deg) translateY(16%);
+    transition: opacity 160ms ease;
+  }
+
+  .impact-flash {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    background: radial-gradient(
+      circle at 50% 58%,
+      rgba(255, 238, 173, 0.48),
+      rgba(239, 133, 146, 0.18),
+      transparent 62%
+    );
+    animation: impact-flash 520ms ease-out both;
+  }
+
+  @keyframes impact-flash {
+    from {
+      opacity: 1;
+      transform: scale(0.98);
+    }
+
+    to {
+      opacity: 0;
+      transform: scale(1.04);
+    }
+  }
   .hud {
     inset: 12px 12px auto;
     grid-template-columns: repeat(2, minmax(0, 1fr));

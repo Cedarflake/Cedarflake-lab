@@ -11,6 +11,7 @@ interface GameState {
   combo: number
   bestScore: number
   lastEvent: string
+  impactId: number
   start: () => void
   pause: () => void
   resume: () => void
@@ -32,6 +33,7 @@ const initialRunState = {
   integrity: 100,
   combo: 1,
   lastEvent: "Find the exit ramp",
+  impactId: 0,
 }
 
 export const useGameStore = create<GameState>((set) => ({
@@ -67,6 +69,7 @@ export const useGameStore = create<GameState>((set) => ({
         status: integrity <= 0 ? "ended" : state.status,
         bestScore: Math.max(state.bestScore, nextScore),
         lastEvent: integrity <= 0 ? "The road folded in on itself" : "Static in the headlights",
+        impactId: state.impactId + 1,
       }
     }),
 }))

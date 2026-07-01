@@ -1,5 +1,6 @@
 ﻿import { lazy, Suspense } from "react"
 
+import { DrivingFeedback } from "@/ui/DrivingFeedback"
 import { GameOverlay } from "@/ui/GameOverlay"
 import { Hud } from "@/ui/Hud"
 import { TouchControls } from "@/ui/TouchControls"
@@ -18,6 +19,7 @@ export function App() {
       <Suspense fallback={<div className="scene-loading" aria-hidden="true" />}>
         <LiminalRacerScene />
       </Suspense>
+      <DrivingFeedback />
       <Hud />
       <TouchControls />
       <GameOverlay />
