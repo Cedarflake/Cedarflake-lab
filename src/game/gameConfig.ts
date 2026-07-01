@@ -14,6 +14,7 @@
   normalGrip: 0.86,
   collisionDamage: 22,
   checkpointScore: 900,
+  checkpointRepair: 8,
   passScore: 80,
   nearMissScore: 260,
   boostScore: 220,

@@ -26,6 +26,7 @@ interface GameState {
   addDriftCharge: (score: number) => void
   cashOutDrift: () => void
   damage: (amount: number) => void
+  repair: (amount: number) => void
 }
 
 interface GameTelemetry {
@@ -148,4 +149,8 @@ export const useGameStore = create<GameState>((set) => ({
         impactId: state.impactId + 1,
       }
     }),
+  repair: (amount) =>
+    set((state) => ({
+      integrity: Math.min(100, state.integrity + amount),
+    })),
 }))

@@ -72,6 +72,7 @@ function RacerWorld() {
   const setTelemetry = useGameStore((state) => state.setTelemetry)
   const addScore = useGameStore((state) => state.addScore)
   const damage = useGameStore((state) => state.damage)
+  const repair = useGameStore((state) => state.repair)
   const addDriftCharge = useGameStore((state) => state.addDriftCharge)
   const cashOutDrift = useGameStore((state) => state.cashOutDrift)
   const isPortrait = useThree((state) => state.size.width / state.size.height < 0.76)
@@ -214,6 +215,7 @@ function RacerWorld() {
       ) {
         runtime.handledCheckpoints.add(checkpointId)
         addScore(trackConfig.checkpointScore + runtime.speed * 6, "Checkpoint slipped through")
+        repair(trackConfig.checkpointRepair)
       }
     }
 
