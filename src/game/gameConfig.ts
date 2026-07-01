@@ -19,6 +19,7 @@
   nearMissScore: 260,
   boostScore: 220,
   boostSpeed: 16,
+  memoryShardScore: 140,
 } as const
 
 export const dreamPalette = {

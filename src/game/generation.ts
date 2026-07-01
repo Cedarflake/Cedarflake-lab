@@ -1,4 +1,4 @@
-import type { BoostGate, Checkpoint, Obstacle } from "@/shared/types"
+import type { BoostGate, Checkpoint, MemoryShard, Obstacle } from "@/shared/types"
 
 import { trackConfig } from "./gameConfig"
 
@@ -39,6 +39,14 @@ export function createBoostGateAt(index: number): BoostGate {
   }
 }
 
+export function createMemoryShardAt(index: number): MemoryShard {
+  return {
+    id: `memory-shard-${index}`,
+    lane: Math.floor(hash(index + 71) * 5) - 2,
+    distance: 70 + index * 92 + hash(index + 83) * 18,
+  }
+}
+
 export function createVisibleObstacles(distance: number, lookBehind = 24, lookAhead = 270) {
   const spacing = 46
   const startIndex = Math.max(0, Math.floor((distance - 90 - lookBehind) / spacing))
@@ -68,5 +76,15 @@ export function createVisibleBoostGates(distance: number, lookBehind = 24, lookA
 
   return Array.from({ length: endIndex - startIndex + 1 }, (_, offset) =>
     createBoostGateAt(startIndex + offset),
+  )
+}
+
+export function createVisibleMemoryShards(distance: number, lookBehind = 24, lookAhead = 270) {
+  const spacing = 92
+  const startIndex = Math.max(0, Math.floor((distance - 70 - lookBehind) / spacing))
+  const endIndex = Math.ceil((distance + lookAhead - 70) / spacing)
+
+  return Array.from({ length: endIndex - startIndex + 1 }, (_, offset) =>
+    createMemoryShardAt(startIndex + offset),
   )
 }

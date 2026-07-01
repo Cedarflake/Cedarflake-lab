@@ -132,6 +132,13 @@
     inset 0 0 44px rgba(183, 241, 221, 0.2);
 }
 
+.feedback-ripple--shard {
+  background: radial-gradient(circle, rgba(255, 240, 184, 0.26), transparent 66%);
+  box-shadow:
+    0 0 42px rgba(255, 240, 184, 0.34),
+    inset 0 0 44px rgba(247, 168, 184, 0.24);
+}
+
 @keyframes impact-flash {
   from {
     opacity: 1;

@@ -27,3 +27,9 @@ export interface BoostGate {
   distance: number
   width: number
 }
+
+export interface MemoryShard {
+  id: string
+  lane: number
+  distance: number
+}

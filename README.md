@@ -2,12 +2,13 @@
 
 A dreamcore 3D driving game prototype built with React 19, TypeScript, Vite, Three.js, React Three Fiber, Drei, and Zustand.
 
-Drive through a soft, empty highway made of pastel road plates, pool-blue edges, floating mall signs, signal boost gates, near misses, and checkpoints that feel like half-remembered exits.
+Drive through a soft, empty highway made of pastel road plates, pool-blue edges, floating mall signs, memory shards, signal boost gates, near misses, and checkpoints that feel like half-remembered exits.
 
 ## Gameplay
 
 - Chase checkpoints to score and repair the car.
 - Hit signal boost gates for speed bursts and score pulses.
+- Collect memory shards for small score pulses between bigger hazards.
 - Drift through bends to bank charge, then release to cash out.
 - Slip past obstacles for near-miss rewards, but collisions damage integrity.
 - Keep a local best score across runs.

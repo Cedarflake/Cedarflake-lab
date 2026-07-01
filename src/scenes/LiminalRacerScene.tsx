@@ -7,13 +7,16 @@ import type { Group } from "three"
 import { BoostGates } from "@/entities/BoostGates"
 import { Checkpoints } from "@/entities/Checkpoints"
 import { DreamObjects } from "@/entities/DreamObjects"
+import { MemoryShards } from "@/entities/MemoryShards"
 import { PlayerCar } from "@/entities/PlayerCar"
 import { Track } from "@/entities/Track"
 import {
   createBoostGateAt,
+  createMemoryShardAt,
   createObstacleAt,
   createVisibleBoostGates,
   createVisibleCheckpoints,
+  createVisibleMemoryShards,
   createVisibleObstacles,
 } from "@/game/generation"
 import { dreamPalette, trackConfig } from "@/game/gameConfig"
@@ -30,6 +33,7 @@ interface RuntimeState {
   handledObstacles: Set<string>
   handledCheckpoints: Set<string>
   handledBoostGates: Set<string>
+  handledMemoryShards: Set<string>
 }
 
 const initialRuntime: RuntimeState = {
@@ -41,6 +45,7 @@ const initialRuntime: RuntimeState = {
   handledObstacles: new Set(),
   handledCheckpoints: new Set(),
   handledBoostGates: new Set(),
+  handledMemoryShards: new Set(),
 }
 
 function createRuntimeState(): RuntimeState {
@@ -49,6 +54,7 @@ function createRuntimeState(): RuntimeState {
     handledObstacles: new Set(),
     handledCheckpoints: new Set(),
     handledBoostGates: new Set(),
+    handledMemoryShards: new Set(),
   }
 }
 
@@ -197,6 +203,28 @@ function RacerWorld() {
       }
     }
 
+    const memoryShardIndex = Math.max(0, Math.floor((runtime.distance - 70) / 92))
+    pruneHandledEvents(runtime.handledMemoryShards, memoryShardIndex)
+
+    for (let index = memoryShardIndex; index <= memoryShardIndex + 3; index += 1) {
+      const memoryShard = createMemoryShardAt(index)
+      const distanceToShard = memoryShard.distance - runtime.distance
+
+      if (
+        distanceToShard < 1.5 &&
+        distanceToShard > -3.4 &&
+        !runtime.handledMemoryShards.has(memoryShard.id)
+      ) {
+        const shardX = memoryShard.lane * trackConfig.laneWidth
+
+        if (Math.abs(runtime.x - shardX) < 1.05) {
+          addScore(trackConfig.memoryShardScore + runtime.speed * 2.5, "Memory shard")
+        }
+
+        runtime.handledMemoryShards.add(memoryShard.id)
+      }
+    }
+
     const checkpointIndex = Math.max(
       0,
       Math.floor(runtime.distance / trackConfig.checkpointSpacing),
@@ -225,6 +253,7 @@ function RacerWorld() {
   const visibleObstacles = createVisibleObstacles(runtimeRef.current.distance)
   const visibleBoostGates = createVisibleBoostGates(runtimeRef.current.distance)
   const visibleCheckpoints = createVisibleCheckpoints(runtimeRef.current.distance)
+  const visibleMemoryShards = createVisibleMemoryShards(runtimeRef.current.distance)
 
   return (
     <>
@@ -245,6 +274,7 @@ function RacerWorld() {
       />
       <Track distance={runtimeRef.current.distance} />
       <BoostGates distance={runtimeRef.current.distance} boostGates={visibleBoostGates} />
+      <MemoryShards distance={runtimeRef.current.distance} memoryShards={visibleMemoryShards} />
       <DreamObjects distance={runtimeRef.current.distance} obstacles={visibleObstacles} />
       <Checkpoints distance={runtimeRef.current.distance} checkpoints={visibleCheckpoints} />
       <PlayerCar carRef={carRef} steering={runtimeRef.current.steering} isDrifting={isDrifting} />

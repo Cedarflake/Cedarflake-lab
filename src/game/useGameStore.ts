@@ -2,7 +2,7 @@
 
 import type { GameStatus } from "@/shared/types"
 
-type FeedbackKind = "boost" | "checkpoint" | "drift" | "near-miss"
+type FeedbackKind = "boost" | "checkpoint" | "drift" | "near-miss" | "shard"
 
 interface GameState {
   status: GameStatus
@@ -73,6 +73,7 @@ function resolveBestScore(currentBest: number, nextScore: number) {
 function resolveFeedbackKind(event: string): FeedbackKind | null {
   if (event === "Signal boost") return "boost"
   if (event === "Near miss") return "near-miss"
+  if (event === "Memory shard") return "shard"
   if (event.startsWith("Checkpoint")) return "checkpoint"
   if (event.startsWith("Drift cashed")) return "drift"
 
