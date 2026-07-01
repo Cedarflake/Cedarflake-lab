@@ -1,3 +1,5 @@
-﻿dist
+dist
 node_modules
 pnpm-lock.yaml
+artifacts
+*.log
