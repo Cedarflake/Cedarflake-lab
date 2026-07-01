@@ -15,6 +15,7 @@
   collisionDamage: 22,
   checkpointScore: 900,
   passScore: 80,
+  nearMissScore: 260,
   boostScore: 220,
   boostSpeed: 16,
 } as const

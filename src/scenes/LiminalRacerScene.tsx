@@ -162,6 +162,8 @@ function RacerWorld() {
 
         if (hit) {
           damage(trackConfig.collisionDamage)
+        } else if (Math.abs(runtime.x - obstacleX) < obstacle.width + 1.75) {
+          addScore(trackConfig.nearMissScore + runtime.speed * 4, "Near miss")
         } else {
           addScore(trackConfig.passScore + runtime.speed * 2, "Clean pass")
         }
