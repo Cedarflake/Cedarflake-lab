@@ -9,8 +9,9 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "format": "prettier . --write",
-    "check": "pnpm lint && pnpm build",
-    "check:canvas": "node scripts/checkCanvas.mjs"
+    "check": "pnpm lint && pnpm run check:generation && pnpm build",
+    "check:canvas": "node scripts/checkCanvas.mjs",
+    "check:generation": "tsx scripts/checkGeneration.ts"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
@@ -30,6 +31,7 @@
     "playwright": "1.61.1",
     "pngjs": "7.0.0",
     "prettier": "3.9.4",
+    "tsx": "4.22.4",
     "typescript": "~6.0.2",
     "vite": "^8.1.1"
   },

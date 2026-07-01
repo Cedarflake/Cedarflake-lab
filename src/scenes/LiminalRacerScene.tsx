@@ -1,4 +1,4 @@
-﻿import { useMemo, useRef } from "react"
+import { useRef } from "react"
 
 import { Environment, PerspectiveCamera, Stars } from "@react-three/drei"
 import { Canvas, useFrame } from "@react-three/fiber"
@@ -8,12 +8,16 @@ import { Checkpoints } from "@/entities/Checkpoints"
 import { DreamObjects } from "@/entities/DreamObjects"
 import { PlayerCar } from "@/entities/PlayerCar"
 import { Track } from "@/entities/Track"
-import { createCheckpoints, createObstacles } from "@/game/generation"
+import {
+  createObstacleAt,
+  createVisibleCheckpoints,
+  createVisibleObstacles,
+} from "@/game/generation"
 import { dreamPalette, trackConfig } from "@/game/gameConfig"
-import { useGameStore } from "@/game/useGameStore"
-import { useInputStore } from "@/game/useInputStore"
-import { useInput } from "@/game/useInput"
 import { clamp, lerp } from "@/game/number"
+import { useGameStore } from "@/game/useGameStore"
+import { useInput } from "@/game/useInput"
+import { useInputStore } from "@/game/useInputStore"
 
 interface RuntimeState {
   x: number
@@ -21,8 +25,8 @@ interface RuntimeState {
   speed: number
   distance: number
   steering: number
-  lastObstacleIndex: number
-  lastCheckpointIndex: number
+  handledObstacles: Set<string>
+  handledCheckpoints: Set<string>
 }
 
 const initialRuntime: RuntimeState = {
@@ -31,16 +35,32 @@ const initialRuntime: RuntimeState = {
   speed: 0,
   distance: 0,
   steering: 0,
-  lastObstacleIndex: -1,
-  lastCheckpointIndex: -1,
+  handledObstacles: new Set(),
+  handledCheckpoints: new Set(),
+}
+
+function createRuntimeState(): RuntimeState {
+  return {
+    ...initialRuntime,
+    handledObstacles: new Set(),
+    handledCheckpoints: new Set(),
+  }
+}
+
+function pruneHandledEvents(handledEvents: Set<string>, currentIndex: number) {
+  for (const id of handledEvents) {
+    const index = Number(id.split("-").at(-1))
+
+    if (Number.isFinite(index) && index < currentIndex - 8) {
+      handledEvents.delete(id)
+    }
+  }
 }
 
 function RacerWorld() {
   const carRef = useRef<Group | null>(null)
-  const runtimeRef = useRef<RuntimeState>({ ...initialRuntime })
+  const runtimeRef = useRef<RuntimeState>(createRuntimeState())
   const inputRef = useInput()
-  const obstacles = useMemo(() => createObstacles(), [])
-  const checkpoints = useMemo(() => createCheckpoints(), [])
   const status = useGameStore((state) => state.status)
   const setTelemetry = useGameStore((state) => state.setTelemetry)
   const addScore = useGameStore((state) => state.addScore)
@@ -108,14 +128,18 @@ function RacerWorld() {
     )
     state.camera.lookAt(runtime.x * 0.28, 0.65, -8)
 
-    const nextObstacleIndex = obstacles.findIndex((obstacle, index) => {
-      if (index <= runtime.lastObstacleIndex) return false
-      return obstacle.distance - runtime.distance < 1.8
-    })
+    const obstacleIndex = Math.max(0, Math.floor((runtime.distance - 90) / 46))
+    pruneHandledEvents(runtime.handledObstacles, obstacleIndex)
 
-    if (nextObstacleIndex >= 0) {
-      const obstacle = obstacles[nextObstacleIndex]
-      if (obstacle) {
+    for (let index = obstacleIndex; index <= obstacleIndex + 3; index += 1) {
+      const obstacle = createObstacleAt(index)
+      const distanceToObstacle = obstacle.distance - runtime.distance
+
+      if (
+        distanceToObstacle < 1.8 &&
+        distanceToObstacle > -4 &&
+        !runtime.handledObstacles.has(obstacle.id)
+      ) {
         const obstacleX = obstacle.lane * trackConfig.laneWidth
         const hit = Math.abs(runtime.x - obstacleX) < obstacle.width + 0.9
 
@@ -125,22 +149,36 @@ function RacerWorld() {
           addScore(trackConfig.passScore + runtime.speed * 2, "Clean pass")
         }
 
-        runtime.lastObstacleIndex = nextObstacleIndex
+        runtime.handledObstacles.add(obstacle.id)
       }
     }
 
-    const nextCheckpointIndex = checkpoints.findIndex((checkpoint, index) => {
-      if (index <= runtime.lastCheckpointIndex) return false
-      return checkpoint.distance - runtime.distance < 1.5
-    })
+    const checkpointIndex = Math.max(
+      0,
+      Math.floor(runtime.distance / trackConfig.checkpointSpacing),
+    )
+    pruneHandledEvents(runtime.handledCheckpoints, checkpointIndex)
 
-    if (nextCheckpointIndex >= 0) {
-      runtime.lastCheckpointIndex = nextCheckpointIndex
-      addScore(trackConfig.checkpointScore + runtime.speed * 6, "Checkpoint slipped through")
+    for (let index = checkpointIndex; index <= checkpointIndex + 2; index += 1) {
+      const checkpointDistance = trackConfig.checkpointSpacing * (index + 1)
+      const checkpointId = `checkpoint-${index}`
+      const distanceToCheckpoint = checkpointDistance - runtime.distance
+
+      if (
+        distanceToCheckpoint < 1.5 &&
+        distanceToCheckpoint > -5 &&
+        !runtime.handledCheckpoints.has(checkpointId)
+      ) {
+        runtime.handledCheckpoints.add(checkpointId)
+        addScore(trackConfig.checkpointScore + runtime.speed * 6, "Checkpoint slipped through")
+      }
     }
 
     setTelemetry({ speed: runtime.speed, distance: runtime.distance })
   })
+
+  const visibleObstacles = createVisibleObstacles(runtimeRef.current.distance)
+  const visibleCheckpoints = createVisibleCheckpoints(runtimeRef.current.distance)
 
   return (
     <>
@@ -153,8 +191,8 @@ function RacerWorld() {
       <Environment preset="sunset" />
       <Stars radius={120} depth={42} count={1400} factor={2.3} saturation={0.2} fade speed={0.28} />
       <Track distance={runtimeRef.current.distance} />
-      <DreamObjects distance={runtimeRef.current.distance} obstacles={obstacles} />
-      <Checkpoints distance={runtimeRef.current.distance} checkpoints={checkpoints} />
+      <DreamObjects distance={runtimeRef.current.distance} obstacles={visibleObstacles} />
+      <Checkpoints distance={runtimeRef.current.distance} checkpoints={visibleCheckpoints} />
       <PlayerCar
         carRef={carRef}
         steering={runtimeRef.current.steering}

@@ -4,3 +4,4 @@ overrides:
   use-sync-external-store: 1.4.0
 allowBuilds:
   "@react-spring/core": true
+  esbuild: true
