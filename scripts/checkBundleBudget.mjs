@@ -49,6 +49,16 @@ function assertExpectedChunks(assetNames) {
   }
 }
 
+/**
+ * @param {Array<{name: string}>} reports
+ * @param {string} label
+ */
+function assertAssetReports(reports, label) {
+  if (reports.length === 0) {
+    throw new Error(`Missing ${label} assets in production build`)
+  }
+}
+
 const assetNames = await readdir(distAssetsPath)
 const assetReports = await Promise.all(
   assetNames
@@ -75,6 +85,8 @@ const largestAsset = assetReports.reduce(
   { name: "", rawBytes: 0, gzipBytes: 0 },
 )
 
+assertAssetReports(jsReports, "JavaScript")
+assertAssetReports(cssReports, "CSS")
 assertExpectedChunks(assetReports.map((report) => report.name))
 assertBudget(totalJsGzipBytes, budgets.totalJsGzipBytes, "Total JS gzip size")
 assertBudget(totalCssGzipBytes, budgets.cssGzipBytes, "Total CSS gzip size")
