@@ -111,6 +111,18 @@ async function assertModalDialog(page, label) {
   }
 }
 
+async function assertActiveButton(page, label) {
+  const activeLabel = await page.evaluate(() => {
+    const activeElement = document.activeElement
+
+    return activeElement instanceof HTMLButtonElement ? activeElement.innerText.trim() : ""
+  })
+
+  if (activeLabel !== label) {
+    throw new Error(`Expected focused button "${label}", got "${activeLabel}"`)
+  }
+}
+
 function measureSceneDifference(beforeBuffer, afterBuffer) {
   const before = PNG.sync.read(beforeBuffer)
   const after = PNG.sync.read(afterBuffer)
@@ -157,6 +169,7 @@ try {
     })
     await page.goto(url, { waitUntil: "domcontentloaded" })
     await assertModalDialog(page, "Start race")
+    await assertActiveButton(page, "Start driving")
     await page.getByRole("button", { name: "Start driving" }).click()
     await page.locator("canvas").waitFor()
     await context.close()
@@ -170,6 +183,7 @@ try {
 
     await page.goto(url, { waitUntil: "domcontentloaded" })
     await assertModalDialog(page, "Start race")
+    await assertActiveButton(page, "Start driving")
     await page.getByRole("button", { name: "Start driving" }).click()
     await page.locator("canvas").waitFor()
     await page.getByRole("button", { name: "Pause" }).waitFor()
@@ -246,6 +260,7 @@ try {
 
     await page.getByRole("button", { name: "Pause" }).click()
     await assertModalDialog(page, "Paused")
+    await assertActiveButton(page, "Resume")
 
     await context.close()
 

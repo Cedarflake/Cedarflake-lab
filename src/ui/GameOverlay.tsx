@@ -97,7 +97,7 @@ export function GameOverlay() {
             score={score}
           />
           <div className="overlay__actions">
-            <button type="button" onClick={resume}>
+            <button type="button" onClick={resume} autoFocus>
               Resume
             </button>
             <button type="button" className="button-secondary" onClick={restart}>
@@ -125,7 +125,7 @@ export function GameOverlay() {
             showBest
           />
           <div className="overlay__actions">
-            <button type="button" onClick={restart}>
+            <button type="button" onClick={restart} autoFocus>
               Drive again
             </button>
           </div>
@@ -144,7 +144,7 @@ export function GameOverlay() {
           feel half remembered.
         </p>
         <div className="overlay__actions">
-          <button type="button" onClick={start}>
+          <button type="button" onClick={start} autoFocus>
             Start driving
           </button>
         </div>

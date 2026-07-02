@@ -90,10 +90,15 @@ export function useKeyboardInput() {
     function handleKeyDown(event: KeyboardEvent) {
       const key = event.key.toLowerCase()
 
-      if (useGameStore.getState().status === "running" && drivingKeys.has(key)) {
-        event.preventDefault()
+      if (!drivingKeys.has(key)) {
+        return
       }
 
+      if (useGameStore.getState().status !== "running") {
+        return
+      }
+
+      event.preventDefault()
       keysRef.current.add(key)
       updateInput()
     }
@@ -101,7 +106,11 @@ export function useKeyboardInput() {
     function handleKeyUp(event: KeyboardEvent) {
       const key = event.key.toLowerCase()
 
-      if (useGameStore.getState().status === "running" && drivingKeys.has(key)) {
+      if (!drivingKeys.has(key)) {
+        return
+      }
+
+      if (useGameStore.getState().status === "running") {
         event.preventDefault()
       }
 
