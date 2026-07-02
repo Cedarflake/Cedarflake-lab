@@ -1,5 +1,6 @@
 import { create } from "zustand"
 
+import { willEndRunAfterDamage } from "@/game/runState"
 import type { GameStatus } from "@/shared/types"
 
 type FeedbackKind = "boost" | "checkpoint" | "drift" | "near-miss" | "shard"
@@ -150,6 +151,7 @@ export const useGameStore = create<GameState>((set) => ({
     }),
   damage: (amount) =>
     set((state) => {
+      const willEndRun = willEndRunAfterDamage(state.integrity, amount)
       const integrity = Math.max(0, state.integrity - amount)
       const nextScore = Math.max(0, state.score - 120)
 
@@ -158,9 +160,9 @@ export const useGameStore = create<GameState>((set) => ({
         score: nextScore,
         combo: 1,
         driftCharge: 0,
-        status: integrity <= 0 ? "ended" : state.status,
+        status: willEndRun ? "ended" : state.status,
         bestScore: resolveBestScore(state.bestScore, nextScore),
-        lastEvent: integrity <= 0 ? "The road folded in on itself" : "Static in the headlights",
+        lastEvent: willEndRun ? "The road folded in on itself" : "Static in the headlights",
         impactId: state.impactId + 1,
       }
     }),

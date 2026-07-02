@@ -28,14 +28,16 @@ pnpm check
 pnpm check:bundle
 pnpm check:canvas -- <server-url>
 pnpm check:interaction -- <server-url>
+pnpm check:rules
 ```
 
 ## Verification
 
-- `pnpm check` runs formatting checks, lint, procedural generation checks, production build, and bundle budget checks.
+- `pnpm check` runs formatting checks, lint, procedural generation checks, game-rule checks, production build, and bundle budget checks.
 - `pnpm check:bundle` verifies the built JS/CSS assets stay within raw and gzip size budgets.
 - `pnpm check:canvas -- <url>` captures desktop and mobile screenshots, checks the 3D scene is visible and moving, verifies modal focus / telemetry / progress semantics, and covers blocked local storage, invalid best-score storage, reduced-motion CSS, and repeated Escape input.
 - `pnpm check:interaction -- <url>` verifies mobile Start + Go touch driving advances speed and distance, and that touch input resets when pausing.
+- `pnpm check:rules` verifies small gameplay rule boundaries that do not need a browser.
 
 ## Controls
 
@@ -59,6 +61,7 @@ src/
 scripts/
   checkBundleBudget.mjs  Production bundle size budget check
   checkCanvas.mjs       Playwright screenshot and canvas pixel verification
+  checkGameRules.ts     Gameplay rule boundary checks
   checkInteraction.mjs  Playwright mobile touch driving smoke check
 public/
   fonts/                Bundled UI font subset and license

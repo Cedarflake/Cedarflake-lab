@@ -13,11 +13,12 @@
     "preview": "vite preview",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "check": "pnpm run format:check && pnpm lint && pnpm run check:generation && pnpm build && pnpm run check:bundle",
+    "check": "pnpm run format:check && pnpm lint && pnpm run check:generation && pnpm run check:rules && pnpm build && pnpm run check:bundle",
     "check:bundle": "node scripts/checkBundleBudget.mjs",
     "check:canvas": "node scripts/checkCanvas.mjs",
     "check:generation": "tsx scripts/checkGeneration.ts",
-    "check:interaction": "node scripts/checkInteraction.mjs"
+    "check:interaction": "node scripts/checkInteraction.mjs",
+    "check:rules": "tsx scripts/checkGameRules.ts"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",

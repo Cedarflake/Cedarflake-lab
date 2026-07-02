@@ -21,6 +21,7 @@ import {
 } from "@/game/generation"
 import { dreamPalette, trackConfig } from "@/game/gameConfig"
 import { clamp, lerp } from "@/game/number"
+import { willEndRunAfterDamage } from "@/game/runState"
 import { resolveRelativeTrackCenter } from "@/game/trackPath"
 import { useGameStore } from "@/game/useGameStore"
 import { useInputStore } from "@/game/useInputStore"
@@ -188,7 +189,17 @@ function RacerWorld() {
         const hit = Math.abs(runtime.x - obstacleX) < obstacle.width + 0.9
 
         if (hit) {
+          const willEndRun = willEndRunAfterDamage(
+            useGameStore.getState().integrity,
+            trackConfig.collisionDamage,
+          )
+
           damage(trackConfig.collisionDamage)
+
+          if (willEndRun) {
+            runtime.handledObstacles.add(obstacle.id)
+            return
+          }
         } else if (Math.abs(runtime.x - obstacleX) < obstacle.width + 1.75) {
           addScore(trackConfig.nearMissScore + runtime.speed * 4, "Near miss")
         } else {
