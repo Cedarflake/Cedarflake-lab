@@ -48,6 +48,7 @@ const initialRuntime: RuntimeState = {
   handledBoostGates: new Set(),
   handledMemoryShards: new Set(),
 }
+const maxFrameDelta = 0.1
 
 function createRuntimeState(): RuntimeState {
   return {
@@ -95,11 +96,12 @@ function RacerWorld() {
   }, [runId, setTelemetry])
 
   useFrame((state, delta) => {
+    const frameDelta = Math.min(delta, maxFrameDelta)
     const runtime = runtimeRef.current
     distanceRef.current = runtime.distance
 
     if (status !== "running") {
-      runtime.speed = lerp(runtime.speed, 0, Math.min(delta * 2.2, 1))
+      runtime.speed = lerp(runtime.speed, 0, Math.min(frameDelta * 2.2, 1))
       distanceRef.current = runtime.distance
       const elapsedTime = state.clock.getElapsedTime()
       if (elapsedTime - lastTelemetryAtRef.current > 1 / 20) {
@@ -120,28 +122,28 @@ function RacerWorld() {
     const acceleration =
       input.throttle * trackConfig.baseAcceleration - input.brake * trackConfig.braking
     runtime.speed = clamp(
-      runtime.speed + acceleration * delta - trackConfig.drag * delta,
+      runtime.speed + acceleration * frameDelta - trackConfig.drag * frameDelta,
       input.throttle > 0 ? 12 : 0,
       trackConfig.maxSpeed,
     )
     runtime.velocityX = lerp(
       runtime.velocityX,
       input.steer * trackConfig.steering * (0.55 + runtime.speed / trackConfig.maxSpeed),
-      Math.min(delta * 4.6 * grip, 1),
+      Math.min(frameDelta * 4.6 * grip, 1),
     )
     runtime.x = clamp(
-      runtime.x + runtime.velocityX * delta,
+      runtime.x + runtime.velocityX * frameDelta,
       -trackConfig.roadHalfWidth + 1.05,
       trackConfig.roadHalfWidth - 1.05,
     )
-    runtime.distance += runtime.speed * delta
+    runtime.distance += runtime.speed * frameDelta
     distanceRef.current = runtime.distance
-    runtime.steering = lerp(runtime.steering, input.steer, Math.min(delta * 7, 1))
+    runtime.steering = lerp(runtime.steering, input.steer, Math.min(frameDelta * 7, 1))
 
     const isScoringDrift =
       input.isDrifting && Math.abs(runtime.velocityX) > 4.2 && runtime.speed > 22
     if (isScoringDrift) {
-      addDriftCharge((Math.abs(runtime.velocityX) + runtime.speed * 0.18) * delta * 18)
+      addDriftCharge((Math.abs(runtime.velocityX) + runtime.speed * 0.18) * frameDelta * 18)
     }
 
     if (!input.isDrifting && wasDriftingRef.current) {
@@ -151,21 +153,21 @@ function RacerWorld() {
 
     const car = carRef.current
     if (car) {
-      car.position.x = lerp(car.position.x, runtime.x, Math.min(delta * 11, 1))
+      car.position.x = lerp(car.position.x, runtime.x, Math.min(frameDelta * 11, 1))
       car.position.y = 0.62 + Math.sin(runtime.distance * 0.12) * 0.035
       car.rotation.y = -runtime.velocityX * 0.018
       car.rotation.z = input.isDrifting ? -runtime.steering * 0.08 : 0
     }
 
     const cameraX = runtime.x * (isPortrait ? 0.28 : 0.18)
-    state.camera.position.x = lerp(state.camera.position.x, cameraX, Math.min(delta * 2.4, 1))
+    state.camera.position.x = lerp(state.camera.position.x, cameraX, Math.min(frameDelta * 2.4, 1))
     const cameraY = isPortrait ? 5.6 + runtime.speed * 0.004 : 5.2 + runtime.speed * 0.006
     const cameraZ = isPortrait ? 10.2 + runtime.speed * 0.009 : 11.2 + runtime.speed * 0.012
     const lookAtY = isPortrait ? 1.35 : 1.55
     const lookAtZ = isPortrait ? -8.8 : -13.5
 
-    state.camera.position.y = lerp(state.camera.position.y, cameraY, Math.min(delta * 2.4, 1))
-    state.camera.position.z = lerp(state.camera.position.z, cameraZ, Math.min(delta * 2.4, 1))
+    state.camera.position.y = lerp(state.camera.position.y, cameraY, Math.min(frameDelta * 2.4, 1))
+    state.camera.position.z = lerp(state.camera.position.z, cameraZ, Math.min(frameDelta * 2.4, 1))
     state.camera.lookAt(runtime.x * 0.2, lookAtY, lookAtZ)
 
     const obstacleIndex = Math.max(0, Math.floor((runtime.distance - 90) / 46))
