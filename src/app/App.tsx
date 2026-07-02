@@ -19,7 +19,11 @@ export function App() {
 
   return (
     <main className="game-shell" tabIndex={-1}>
-      <Suspense fallback={<div className="scene-loading" aria-hidden="true" />}>
+      <Suspense
+        fallback={
+          <div className="scene-loading" role="status" aria-label="Loading 3D racing scene" />
+        }
+      >
         <LiminalRacerScene />
       </Suspense>
       <DrivingFeedback />
