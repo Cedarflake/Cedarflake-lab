@@ -201,6 +201,19 @@ async function assertReducedMotionStyles(page) {
 }
 
 /**
+ * @param {import("playwright").Page} page
+ */
+async function assertFontPreload(page) {
+  const fontPreload = await page
+    .locator('link[rel="preload"][href="/fonts/space-grotesk-latin.woff2"][as="font"]')
+    .getAttribute("type")
+
+  if (fontPreload !== "font/woff2") {
+    throw new Error(`Expected Space Grotesk font preload, got ${fontPreload}`)
+  }
+}
+
+/**
  * @param {Buffer | Uint8Array} beforeBuffer
  * @param {Buffer | Uint8Array} afterBuffer
  */
@@ -249,6 +262,7 @@ try {
       })
     })
     await page.goto(url, { waitUntil: "domcontentloaded" })
+    await assertFontPreload(page)
     await assertModalDialog(page, "Start race")
     await assertActiveButton(page, "Start driving")
     await page.locator("canvas").waitFor()
