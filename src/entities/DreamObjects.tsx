@@ -6,6 +6,7 @@ import { useFrame } from "@react-three/fiber"
 import type { Group } from "three"
 
 import { dreamPalette, trackConfig } from "@/game/gameConfig"
+import { wrapDistance } from "@/game/number"
 import { resolveRelativeTrackCenter } from "@/game/trackPath"
 import type { Obstacle } from "@/shared/types"
 
@@ -40,7 +41,7 @@ function SetPieceNode({ distanceRef, index, side }: SetPieceNodeProps) {
     if (!setPiece) return
 
     const distance = distanceRef.current
-    const z = -((index * 36 - distance * 0.75) % 1080) - 24
+    const z = -wrapDistance(index * 36 - distance * 0.75, 1080) - 24
     const x = side * (11 + (index % 4) * 3.2)
 
     setPiece.position.set(x, 0.5, z)
@@ -76,7 +77,7 @@ function SignNode({ distanceRef, index, side }: SignNodeProps) {
     if (!sign) return
 
     const distance = distanceRef.current
-    const z = -((index * 64 + 28 - distance * 0.9) % 1120) - 42
+    const z = -wrapDistance(index * 64 + 28 - distance * 0.9, 1120) - 42
     const x = side * (trackConfig.roadHalfWidth + 3.8 + (index % 3) * 1.2)
 
     sign.position.set(x, 2.25 + (index % 2) * 0.8, z)
