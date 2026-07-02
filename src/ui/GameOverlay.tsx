@@ -55,6 +55,10 @@ export function GameOverlay() {
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
+      if (event.repeat) {
+        return
+      }
+
       if (event.key === "Escape") {
         if (status === "running") pause()
         if (status === "paused") resume()

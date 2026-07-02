@@ -144,6 +144,18 @@ async function assertActiveButton(page, label) {
 }
 
 /**
+ * @param {import("playwright").Page} page
+ */
+async function pressEscapeWithRepeat(page) {
+  await page.evaluate(() => {
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))
+    window.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", repeat: true, bubbles: true }),
+    )
+  })
+}
+
+/**
  * @param {Buffer | Uint8Array} beforeBuffer
  * @param {Buffer | Uint8Array} afterBuffer
  */
@@ -304,7 +316,7 @@ try {
       await page.keyboard.up("w")
     }
 
-    await page.getByRole("button", { name: "Pause" }).click()
+    await pressEscapeWithRepeat(page)
     await assertModalDialog(page, "Paused")
     await assertActiveButton(page, "Resume")
 
