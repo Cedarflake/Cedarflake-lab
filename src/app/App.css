@@ -2,6 +2,7 @@
   position: relative;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   background:
     radial-gradient(circle at 18% 12%, rgba(255, 249, 202, 0.94), transparent 26%),
@@ -359,6 +360,13 @@
   background: #fff7d4;
   box-shadow: 0 16px 36px rgba(121, 84, 98, 0.22);
   transform: translateY(-1px);
+}
+
+.overlay button:focus-visible,
+.pause-button:focus-visible,
+.touch-controls button:focus-visible {
+  outline: 3px solid rgba(70, 190, 184, 0.9);
+  outline-offset: 3px;
 }
 
 .overlay .button-secondary {
