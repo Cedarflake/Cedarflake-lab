@@ -25,13 +25,15 @@ pnpm lint
 pnpm format
 pnpm format:check
 pnpm check
+pnpm check:bundle
 pnpm check:canvas -- <server-url>
 pnpm check:interaction -- <server-url>
 ```
 
 ## Verification
 
-- `pnpm check` runs formatting checks, lint, procedural generation checks, and production build.
+- `pnpm check` runs formatting checks, lint, procedural generation checks, production build, and bundle budget checks.
+- `pnpm check:bundle` verifies the built JS/CSS assets stay within raw and gzip size budgets.
 - `pnpm check:canvas -- <url>` captures desktop and mobile screenshots, checks the 3D scene is visible and moving, verifies modal focus / telemetry / progress semantics, and covers blocked local storage, invalid best-score storage, reduced-motion CSS, and repeated Escape input.
 - `pnpm check:interaction -- <url>` verifies mobile Start + Go touch driving advances speed and distance, and that touch input resets when pausing.
 
@@ -55,6 +57,7 @@ src/
   shared/   Shared TypeScript types
   ui/       HUD and menu overlays
 scripts/
+  checkBundleBudget.mjs  Production bundle size budget check
   checkCanvas.mjs       Playwright screenshot and canvas pixel verification
   checkInteraction.mjs  Playwright mobile touch driving smoke check
 public/
