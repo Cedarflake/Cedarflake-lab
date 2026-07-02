@@ -25,15 +25,15 @@ pnpm lint
 pnpm format
 pnpm format:check
 pnpm check
-pnpm check:canvas -- <dev-server-url>
-pnpm check:interaction -- <dev-server-url>
+pnpm check:canvas -- <server-url>
+pnpm check:interaction -- <server-url>
 ```
 
 ## Verification
 
 - `pnpm check` runs formatting checks, lint, procedural generation checks, and production build.
-- `pnpm check:canvas -- <url>` captures desktop and mobile screenshots, checks the 3D scene is visible, and verifies speed / distance telemetry advances.
-- `pnpm check:interaction -- <url>` verifies mobile Start + Go touch driving advances speed and distance.
+- `pnpm check:canvas -- <url>` captures desktop and mobile screenshots, checks the 3D scene is visible and moving, verifies modal focus / telemetry / progress semantics, and covers blocked local storage.
+- `pnpm check:interaction -- <url>` verifies mobile Start + Go touch driving advances speed and distance, and that touch input resets when pausing.
 
 ## Controls
 
@@ -65,5 +65,5 @@ public/
 
 - The project targets React 19 and the current React Three Fiber 9 / Drei 10 line.
 - UI text uses a bundled Space Grotesk subset under the SIL Open Font License.
-- `pnpm-workspace.yaml` contains the pnpm 11 project settings, including the `use-sync-external-store` override used to keep peer dependencies clean.
+- `pnpm-workspace.yaml` contains the pnpm 11 project settings, including engine checks against Node 22.22.2 and the `use-sync-external-store` override used to keep peer dependencies clean.
 - Mobile rendering is verified with Playwright. The scene keeps the canvas DPR at `1` for stable headless mobile WebGL output.
