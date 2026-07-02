@@ -124,7 +124,9 @@ export function useKeyboardInput() {
 
     function syncGamepadInput() {
       if (useGameStore.getState().status === "running") {
-        setGamepadInput(resolveGamepadInput(navigator.getGamepads()))
+        const gamepads = typeof navigator.getGamepads === "function" ? navigator.getGamepads() : []
+
+        setGamepadInput(resolveGamepadInput(gamepads))
       } else {
         resetGamepadInput()
       }
