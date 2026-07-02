@@ -312,7 +312,12 @@ function RacerWorld() {
 
 export function LiminalRacerScene() {
   return (
-    <Canvas shadows dpr={1} gl={{ antialias: true, alpha: false, preserveDrawingBuffer: true }}>
+    <Canvas
+      aria-label="Liminal Drift 3D racing scene"
+      shadows
+      dpr={1}
+      gl={{ antialias: true, alpha: false, preserveDrawingBuffer: true }}
+    >
       <RacerWorld />
     </Canvas>
   )
