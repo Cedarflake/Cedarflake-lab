@@ -1,6 +1,6 @@
 # Liminal Drift
 
-A dreamcore 3D driving game prototype built with React 19, TypeScript, Vite, Three.js, React Three Fiber, Drei, and Zustand.
+A dreamcore 3D driving game built with React 19, TypeScript, Vite, Three.js, React Three Fiber, Drei, and Zustand.
 
 Drive through a soft, empty highway made of pastel road plates, pool-blue edges, floating mall signs, memory shards, signal boost gates, near misses, and checkpoints that feel like half-remembered exits.
 
