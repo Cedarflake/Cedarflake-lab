@@ -91,6 +91,18 @@ function readMetric(lines, label) {
   return value
 }
 
+async function readProgressValue(page, label) {
+  const value = Number(
+    await page.getByRole("progressbar", { name: label }).getAttribute("aria-valuenow"),
+  )
+
+  if (!Number.isFinite(value)) {
+    throw new Error(`Invalid progress value for ${label}`)
+  }
+
+  return value
+}
+
 function measureSceneDifference(beforeBuffer, afterBuffer) {
   const before = PNG.sync.read(beforeBuffer)
   const after = PNG.sync.read(afterBuffer)
@@ -178,9 +190,24 @@ try {
       speed: readMetric(telemetryLines, "Speed"),
       distance: readMetric(telemetryLines, "Distance"),
     }
+    const progressValues = {
+      driftCharge: await readProgressValue(page, "Drift charge"),
+      integrity: await readProgressValue(page, "Vehicle integrity"),
+    }
 
     if (telemetry.speed <= 0 || telemetry.distance <= 0) {
       throw new Error(`${viewport.name} telemetry did not advance: ${JSON.stringify(telemetry)}`)
+    }
+
+    if (
+      progressValues.integrity < 0 ||
+      progressValues.integrity > 100 ||
+      progressValues.driftCharge < 0 ||
+      progressValues.driftCharge > 100
+    ) {
+      throw new Error(
+        `${viewport.name} progress values are out of range: ${JSON.stringify(progressValues)}`,
+      )
     }
 
     await page.screenshot({
@@ -203,7 +230,12 @@ try {
       throw new Error(`${viewport.name} scene did not visibly move: ${sceneDifference.toFixed(2)}`)
     }
 
-    console.log(`${viewport.name} canvas ok`, { ...sample, sceneDifference, telemetry })
+    console.log(`${viewport.name} canvas ok`, {
+      ...sample,
+      progressValues,
+      sceneDifference,
+      telemetry,
+    })
   }
 } finally {
   await browser.close()
