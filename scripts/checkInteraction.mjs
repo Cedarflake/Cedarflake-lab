@@ -16,6 +16,12 @@ try {
   const page = await context.newPage()
 
   await page.goto(url, { waitUntil: "domcontentloaded" })
+  const hiddenGoButtonCount = await page.getByRole("button", { name: "Go" }).count()
+
+  if (hiddenGoButtonCount > 0) {
+    throw new Error("Expected touch controls to stay hidden before the race starts")
+  }
+
   await page.getByRole("button", { name: "Start driving" }).click()
   await page.locator("canvas").waitFor()
   await page.waitForTimeout(500)

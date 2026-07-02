@@ -1,5 +1,6 @@
-﻿import type { PointerEvent } from "react"
+import type { PointerEvent } from "react"
 
+import { useGameStore } from "@/game/useGameStore"
 import { useInputStore } from "@/game/useInputStore"
 import type { PlayerInput } from "@/shared/types"
 
@@ -44,6 +45,12 @@ function ControlButton({ label, press, release, className }: ControlButtonProps)
 }
 
 export function TouchControls() {
+  const status = useGameStore((state) => state.status)
+
+  if (status !== "running") {
+    return null
+  }
+
   return (
     <section className="touch-controls" aria-label="Touch driving controls">
       <div className="touch-controls__steer">
