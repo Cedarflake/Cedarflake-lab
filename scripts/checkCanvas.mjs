@@ -227,6 +227,29 @@ async function assertFontPreload(page) {
 }
 
 /**
+ * @param {import("playwright").Page} page
+ */
+async function assertDocumentMetadata(page) {
+  const metadata = await page.evaluate(() => ({
+    description: document.querySelector('meta[name="description"]')?.getAttribute("content"),
+    ogTitle: document.querySelector('meta[property="og:title"]')?.getAttribute("content"),
+    themeColor: document.querySelector('meta[name="theme-color"]')?.getAttribute("content"),
+    title: document.title,
+    viewport: document.querySelector('meta[name="viewport"]')?.getAttribute("content"),
+  }))
+
+  if (
+    metadata.title !== "Liminal Drift" ||
+    metadata.ogTitle !== "Liminal Drift" ||
+    metadata.themeColor !== "#f7d6cb" ||
+    !metadata.description?.includes("dreamcore 3D racing game") ||
+    !metadata.viewport?.includes("viewport-fit=cover")
+  ) {
+    throw new Error(`Unexpected document metadata: ${JSON.stringify(metadata)}`)
+  }
+}
+
+/**
  * @param {Buffer | Uint8Array} beforeBuffer
  * @param {Buffer | Uint8Array} afterBuffer
  */
@@ -276,6 +299,7 @@ try {
     })
     await page.goto(url, { waitUntil: "domcontentloaded" })
     await assertFontPreload(page)
+    await assertDocumentMetadata(page)
     await assertModalDialog(page, "Start race")
     await assertActiveButton(page, "Start driving")
     await assertDialogTabWrap(page, "Start driving", "Start driving")
