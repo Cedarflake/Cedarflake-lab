@@ -11,6 +11,7 @@ const outputPath = fileURLToPath(outputDir)
 
 await mkdir(outputDir, { recursive: true })
 
+/** @type {Array<{name: string, options: import("playwright").BrowserContextOptions}>} */
 const viewports = [
   {
     name: "desktop",
@@ -27,15 +28,18 @@ const viewports = [
   },
 ]
 
+/**
+ * @param {Buffer | Uint8Array} buffer
+ */
 function samplePng(buffer) {
   const png = PNG.sync.read(buffer)
   const points = Array.from({ length: 9 }, (_, yIndex) =>
-    Array.from({ length: 9 }, (_, xIndex) => [
-      0.15 + ((xIndex + 0.5) / 9) * 0.7,
-      0.32 + ((yIndex + 0.5) / 9) * 0.44,
-    ]),
+    Array.from({ length: 9 }, (_, xIndex) => ({
+      xRatio: 0.15 + ((xIndex + 0.5) / 9) * 0.7,
+      yRatio: 0.32 + ((yIndex + 0.5) / 9) * 0.44,
+    })),
   ).flat()
-  const colors = points.map(([xRatio, yRatio]) => {
+  const colors = points.map(({ xRatio, yRatio }) => {
     const x = Math.floor(png.width * xRatio)
     const y = Math.floor(png.height * yRatio)
     const index = (png.width * y + x) * 4
@@ -75,6 +79,10 @@ function samplePng(buffer) {
   }
 }
 
+/**
+ * @param {string[]} lines
+ * @param {string} label
+ */
 function readMetric(lines, label) {
   const labelIndex = lines.findIndex((line) => line.toLowerCase() === label.toLowerCase())
 
@@ -91,6 +99,10 @@ function readMetric(lines, label) {
   return value
 }
 
+/**
+ * @param {import("playwright").Page} page
+ * @param {string} label
+ */
 async function readProgressValue(page, label) {
   const value = Number(
     await page.getByRole("progressbar", { name: label }).getAttribute("aria-valuenow"),
@@ -103,6 +115,10 @@ async function readProgressValue(page, label) {
   return value
 }
 
+/**
+ * @param {import("playwright").Page} page
+ * @param {string} label
+ */
 async function assertModalDialog(page, label) {
   const modal = await page.getByRole("dialog", { name: label }).getAttribute("aria-modal")
 
@@ -111,6 +127,10 @@ async function assertModalDialog(page, label) {
   }
 }
 
+/**
+ * @param {import("playwright").Page} page
+ * @param {string} label
+ */
 async function assertActiveButton(page, label) {
   const activeLabel = await page.evaluate(() => {
     const activeElement = document.activeElement
@@ -123,6 +143,10 @@ async function assertActiveButton(page, label) {
   }
 }
 
+/**
+ * @param {Buffer | Uint8Array} beforeBuffer
+ * @param {Buffer | Uint8Array} afterBuffer
+ */
 function measureSceneDifference(beforeBuffer, afterBuffer) {
   const before = PNG.sync.read(beforeBuffer)
   const after = PNG.sync.read(afterBuffer)
