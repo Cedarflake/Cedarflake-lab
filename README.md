@@ -32,7 +32,7 @@ pnpm check:interaction -- <server-url>
 ## Verification
 
 - `pnpm check` runs formatting checks, lint, procedural generation checks, and production build.
-- `pnpm check:canvas -- <url>` captures desktop and mobile screenshots, checks the 3D scene is visible and moving, verifies modal focus / telemetry / progress semantics, and covers blocked local storage.
+- `pnpm check:canvas -- <url>` captures desktop and mobile screenshots, checks the 3D scene is visible and moving, verifies modal focus / telemetry / progress semantics, and covers blocked local storage, invalid best-score storage, reduced-motion CSS, and repeated Escape input.
 - `pnpm check:interaction -- <url>` verifies mobile Start + Go touch driving advances speed and distance, and that touch input resets when pausing.
 
 ## Controls
