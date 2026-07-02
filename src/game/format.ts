@@ -1,3 +1,5 @@
+const numberFormatter = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 })
+
 export function formatNumber(value: number) {
-  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value)
+  return numberFormatter.format(value)
 }
