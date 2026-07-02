@@ -3,6 +3,8 @@ import { create } from "zustand"
 import { willEndRunAfterDamage } from "@/game/runState"
 import type { GameStatus } from "@/shared/types"
 
+import { readBestScore, saveBestScore } from "./bestScoreStorage"
+
 type FeedbackKind = "boost" | "checkpoint" | "drift" | "near-miss" | "shard"
 
 interface GameState {
@@ -36,8 +38,6 @@ interface GameTelemetry {
   distance: number
 }
 
-const bestScoreKey = "liminal-drift:best-score"
-
 const initialRunState = {
   score: 0,
   speed: 0,
@@ -49,28 +49,6 @@ const initialRunState = {
   impactId: 0,
   feedbackId: 0,
   feedbackKind: null,
-}
-
-function readBestScore() {
-  let value: string | null = null
-
-  try {
-    value = window.localStorage.getItem(bestScoreKey)
-  } catch {
-    return 0
-  }
-
-  const score = Number(value)
-
-  return Number.isFinite(score) && score > 0 ? score : 0
-}
-
-function saveBestScore(score: number) {
-  try {
-    window.localStorage.setItem(bestScoreKey, String(score))
-  } catch {
-    return
-  }
 }
 
 function resolveBestScore(currentBest: number, nextScore: number) {
