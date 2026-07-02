@@ -42,12 +42,12 @@ jobs:
 
       - name: Browser smoke checks
         run: |
-          pnpm exec vite --host 127.0.0.1 --port 5173 > /tmp/liminal-drift-vite.log 2>&1 &
+          pnpm exec vite preview --host 127.0.0.1 --port 4173 > /tmp/liminal-drift-vite.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
 
           for attempt in {1..30}; do
-            if curl --fail --silent --show-error http://127.0.0.1:5173/ >/dev/null; then
+            if curl --fail --silent --show-error http://127.0.0.1:4173/ >/dev/null; then
               break
             fi
             if [ "$attempt" -eq 30 ]; then
@@ -58,8 +58,8 @@ jobs:
             sleep 1
           done
 
-          node scripts/checkCanvas.mjs http://127.0.0.1:5173/
-          node scripts/checkInteraction.mjs http://127.0.0.1:5173/
+          node scripts/checkCanvas.mjs http://127.0.0.1:4173/
+          node scripts/checkInteraction.mjs http://127.0.0.1:4173/
 
       - name: Upload browser artifacts
         if: ${{ !cancelled() }}
