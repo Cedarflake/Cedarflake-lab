@@ -122,87 +122,89 @@ function measureSceneDifference(beforeBuffer, afterBuffer) {
 
 const browser = await chromium.launch()
 
-{
-  const context = await browser.newContext()
-  const page = await context.newPage()
+try {
+  {
+    const context = await browser.newContext()
+    const page = await context.newPage()
 
-  await page.addInitScript(() => {
-    Object.defineProperty(window, "localStorage", {
-      configurable: true,
-      get() {
-        throw new DOMException("localStorage is unavailable", "SecurityError")
-      },
+    await page.addInitScript(() => {
+      Object.defineProperty(window, "localStorage", {
+        configurable: true,
+        get() {
+          throw new DOMException("localStorage is unavailable", "SecurityError")
+        },
+      })
     })
-  })
-  await page.goto(url, { waitUntil: "domcontentloaded" })
-  await page.getByRole("button", { name: "Start driving" }).click()
-  await page.locator("canvas").waitFor()
-  await context.close()
+    await page.goto(url, { waitUntil: "domcontentloaded" })
+    await page.getByRole("button", { name: "Start driving" }).click()
+    await page.locator("canvas").waitFor()
+    await context.close()
 
-  console.log("blocked storage ok")
-}
+    console.log("blocked storage ok")
+  }
 
-for (const viewport of viewports) {
-  const context = await browser.newContext(viewport.options)
-  const page = await context.newPage()
+  for (const viewport of viewports) {
+    const context = await browser.newContext(viewport.options)
+    const page = await context.newPage()
 
-  await page.goto(url, { waitUntil: "domcontentloaded" })
-  await page.getByRole("button", { name: "Start driving" }).click()
-  await page.locator("canvas").waitFor()
-  await page.getByRole("button", { name: "Pause" }).waitFor()
-  await page.waitForTimeout(700)
-  const beforeMotion = await page.locator("canvas").screenshot()
+    await page.goto(url, { waitUntil: "domcontentloaded" })
+    await page.getByRole("button", { name: "Start driving" }).click()
+    await page.locator("canvas").waitFor()
+    await page.getByRole("button", { name: "Pause" }).waitFor()
+    await page.waitForTimeout(700)
+    const beforeMotion = await page.locator("canvas").screenshot()
 
-  if (viewport.name === "mobile") {
-    const goButton = page.getByRole("button", { name: "Go" })
-    const box = await goButton.boundingBox()
+    if (viewport.name === "mobile") {
+      const goButton = page.getByRole("button", { name: "Go" })
+      const box = await goButton.boundingBox()
 
-    if (!box) {
-      throw new Error("Expected Go button to be visible")
+      if (!box) {
+        throw new Error("Expected Go button to be visible")
+      }
+
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+      await page.mouse.down()
+    } else {
+      await page.keyboard.down("w")
     }
 
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
-    await page.mouse.down()
-  } else {
-    await page.keyboard.down("w")
+    await page.waitForTimeout(2600)
+
+    const telemetryLines = (await page.locator(".hud").innerText())
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+    const telemetry = {
+      speed: readMetric(telemetryLines, "Speed"),
+      distance: readMetric(telemetryLines, "Distance"),
+    }
+
+    if (telemetry.speed <= 0 || telemetry.distance <= 0) {
+      throw new Error(`${viewport.name} telemetry did not advance: ${JSON.stringify(telemetry)}`)
+    }
+
+    await page.screenshot({
+      path: join(outputPath, `${viewport.name}.png`),
+      fullPage: true,
+    })
+
+    const screenshot = await page.screenshot()
+    const afterMotion = await page.locator("canvas").screenshot()
+    const sample = samplePng(screenshot)
+    const sceneDifference = measureSceneDifference(beforeMotion, afterMotion)
+
+    await context.close()
+
+    if (!sample.ok) {
+      throw new Error(`${viewport.name} canvas check failed: ${JSON.stringify(sample)}`)
+    }
+
+    if (sceneDifference < 2) {
+      throw new Error(`${viewport.name} scene did not visibly move: ${sceneDifference.toFixed(2)}`)
+    }
+
+    console.log(`${viewport.name} canvas ok`, { ...sample, sceneDifference, telemetry })
   }
-
-  await page.waitForTimeout(2600)
-
-  const telemetryLines = (await page.locator(".hud").innerText())
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-  const telemetry = {
-    speed: readMetric(telemetryLines, "Speed"),
-    distance: readMetric(telemetryLines, "Distance"),
-  }
-
-  if (telemetry.speed <= 0 || telemetry.distance <= 0) {
-    throw new Error(`${viewport.name} telemetry did not advance: ${JSON.stringify(telemetry)}`)
-  }
-
-  await page.screenshot({
-    path: join(outputPath, `${viewport.name}.png`),
-    fullPage: true,
-  })
-
-  const screenshot = await page.screenshot()
-  const afterMotion = await page.locator("canvas").screenshot()
-  const sample = samplePng(screenshot)
-  const sceneDifference = measureSceneDifference(beforeMotion, afterMotion)
-
-  await context.close()
-
-  if (!sample.ok) {
-    throw new Error(`${viewport.name} canvas check failed: ${JSON.stringify(sample)}`)
-  }
-
-  if (sceneDifference < 2) {
-    throw new Error(`${viewport.name} scene did not visibly move: ${sceneDifference.toFixed(2)}`)
-  }
-
-  console.log(`${viewport.name} canvas ok`, { ...sample, sceneDifference, telemetry })
+} finally {
+  await browser.close()
 }
-
-await browser.close()
