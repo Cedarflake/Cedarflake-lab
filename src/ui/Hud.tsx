@@ -10,6 +10,7 @@ export function Hud() {
   const combo = useGameStore((state) => state.combo)
   const driftCharge = useGameStore((state) => state.driftCharge)
   const lastEvent = useGameStore((state) => state.lastEvent)
+  const driftPercent = Math.min((driftCharge / 1600) * 100, 100)
 
   return (
     <section className="hud" aria-label="Race telemetry">
@@ -38,11 +39,25 @@ export function Hud() {
       </div>
 
       <div className="hud__meters">
-        <div className="hud__integrity" aria-label="Vehicle integrity">
+        <div
+          className="hud__integrity"
+          role="progressbar"
+          aria-label="Vehicle integrity"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(integrity)}
+        >
           <span style={{ inlineSize: `${integrity}%` }} />
         </div>
-        <div className="hud__drift" aria-label="Drift charge">
-          <span style={{ inlineSize: `${Math.min((driftCharge / 1600) * 100, 100)}%` }} />
+        <div
+          className="hud__drift"
+          role="progressbar"
+          aria-label="Drift charge"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(driftPercent)}
+        >
+          <span style={{ inlineSize: `${driftPercent}%` }} />
         </div>
       </div>
     </section>
