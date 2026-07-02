@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import type { PointerEvent } from "react"
 
 import { useGameStore } from "@/game/useGameStore"
@@ -46,6 +47,17 @@ function ControlButton({ label, press, release, className }: ControlButtonProps)
 
 export function TouchControls() {
   const status = useGameStore((state) => state.status)
+  const resetTouchInput = useInputStore((state) => state.resetTouchInput)
+
+  useEffect(() => {
+    if (status !== "running") {
+      resetTouchInput()
+
+      return
+    }
+
+    return resetTouchInput
+  }, [resetTouchInput, status])
 
   if (status !== "running") {
     return null

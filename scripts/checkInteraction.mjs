@@ -40,6 +40,18 @@ try {
   const text = await page.locator("body").innerText()
   speed = readMetric(text, "SPEED")
   distance = readMetric(text, "DISTANCE")
+
+  await page.keyboard.press("Escape")
+  await page.getByRole("dialog", { name: "Paused" }).waitFor()
+  await page.getByRole("button", { name: "Resume" }).click()
+  await page.waitForTimeout(1000)
+
+  const resumedText = await page.locator("body").innerText()
+  const resumedSpeed = readMetric(resumedText, "SPEED")
+
+  if (resumedSpeed > speed + 5) {
+    throw new Error(`Expected touch input to reset on pause, got ${speed} -> ${resumedSpeed}`)
+  }
 } finally {
   await browser.close()
 }
