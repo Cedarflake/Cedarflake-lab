@@ -121,6 +121,7 @@ export function GameOverlay() {
   const status = useGameStore((state) => state.status)
   const score = useGameStore((state) => state.score)
   const bestScore = useGameStore((state) => state.bestScore)
+  const hasNewBest = useGameStore((state) => state.hasNewBest)
   const distance = useGameStore((state) => state.distance)
   const integrity = useGameStore((state) => state.integrity)
   const combo = useGameStore((state) => state.combo)
@@ -200,8 +201,13 @@ export function GameOverlay() {
         aria-label="Race ended"
       >
         <div className="overlay__panel">
-          <p className="overlay__eyebrow">Signal lost at {Math.round(score)} points</p>
+          <p className="overlay__eyebrow">
+            {hasNewBest ? "New best signal recorded" : `Signal lost at ${Math.round(score)} points`}
+          </p>
           <h1>The mall closes itself</h1>
+          {hasNewBest ? (
+            <p className="overlay__best-badge">Best {formatNumber(bestScore)}</p>
+          ) : null}
           <p>The car is still warm. The corridor is longer than before.</p>
           <RunStats
             bestScore={bestScore}

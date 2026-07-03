@@ -47,6 +47,18 @@
   line-height: 1.7;
 }
 
+.overlay__best-badge {
+  display: inline-block;
+  padding: 7px 12px;
+  color: rgba(47, 37, 53, 0.9);
+  font-weight: 740;
+  line-height: 1;
+  background: rgba(255, 240, 184, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 8px;
+  box-shadow: 0 14px 34px rgba(121, 84, 98, 0.14);
+}
+
 .overlay__stats {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));

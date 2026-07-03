@@ -15,6 +15,7 @@ interface GameState {
   integrity: number
   combo: number
   bestScore: number
+  hasNewBest: boolean
   driftCharge: number
   lastEvent: string
   impactId: number
@@ -45,6 +46,7 @@ const initialRunState = {
   distance: 0,
   integrity: 100,
   combo: 1,
+  hasNewBest: false,
   driftCharge: 0,
   lastEvent: "Find the exit ramp",
   impactId: 0,
@@ -90,10 +92,12 @@ export const useGameStore = create<GameState>((set) => ({
       const nextCombo = Math.min(state.combo + 0.08, 5)
       const feedbackKind = resolveFeedbackKind(event)
       const feedbackPoints = nextScore - state.score
+      const hasNewBest = state.hasNewBest || nextScore > state.bestScore
 
       return {
         score: nextScore,
         bestScore: resolveBestScore(state.bestScore, nextScore),
+        hasNewBest,
         combo: nextCombo,
         lastEvent: event,
         feedbackId: feedbackKind ? state.feedbackId + 1 : state.feedbackId,
@@ -120,10 +124,12 @@ export const useGameStore = create<GameState>((set) => ({
 
       const driftScore = Math.round(state.driftCharge * state.combo)
       const nextScore = state.score + driftScore
+      const hasNewBest = state.hasNewBest || nextScore > state.bestScore
 
       return {
         score: nextScore,
         bestScore: resolveBestScore(state.bestScore, nextScore),
+        hasNewBest,
         combo: Math.min(state.combo + 0.35, 5),
         driftCharge: 0,
         lastEvent: `Drift cashed +${driftScore}`,
