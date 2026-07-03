@@ -48,7 +48,7 @@ function ControlButton({ label, press, release, className }: ControlButtonProps)
       onPointerDown={handlePress}
       onPointerUp={handleRelease}
       onPointerCancel={handleRelease}
-      onPointerLeave={handleRelease}
+      onLostPointerCapture={handleRelease}
     >
       {label}
     </button>

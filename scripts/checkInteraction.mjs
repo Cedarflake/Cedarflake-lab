@@ -87,6 +87,16 @@ try {
       throw new Error("Expected Go button to remain visually pressed while held")
     }
 
+    await page.mouse.move(box.x + box.width + 36, box.y + box.height + 36)
+
+    const heldOutsideClass = await goButton.evaluate((button) =>
+      button.classList.contains("touch-controls__button--pressed"),
+    )
+
+    if (!heldOutsideClass) {
+      throw new Error("Expected Go button to stay pressed after the pointer leaves its bounds")
+    }
+
     await page.waitForTimeout(1600)
 
     const text = await page.locator("body").innerText()
