@@ -16,6 +16,7 @@ export const trackConfig = {
   driftMinimumVelocity: 3.6,
   normalGrip: 0.86,
   collisionDamage: 22,
+  collisionRecoverySeconds: 1.15,
   checkpointScore: 900,
   checkpointRepair: 8,
   passScore: 80,

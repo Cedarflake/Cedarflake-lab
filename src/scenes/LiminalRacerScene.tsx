@@ -23,7 +23,7 @@ import {
 } from "@/game/generation"
 import { dreamPalette, trackConfig } from "@/game/gameConfig"
 import { clamp, lerp } from "@/game/number"
-import { willEndRunAfterDamage } from "@/game/runState"
+import { isCollisionRecovering, willEndRunAfterDamage } from "@/game/runState"
 import { resolveRelativeTrackCenter } from "@/game/trackPath"
 import { useGameStore } from "@/game/useGameStore"
 import { useInputStore } from "@/game/useInputStore"
@@ -81,6 +81,7 @@ function RacerWorld() {
   const distanceRef = useRef(0)
   const isDriftingRef = useRef(false)
   const wasDriftingRef = useRef(false)
+  const lastCollisionAtRef = useRef(Number.NEGATIVE_INFINITY)
   const lastTelemetryAtRef = useRef(0)
   const runId = useGameStore((state) => state.runId)
   const status = useGameStore((state) => state.status)
@@ -98,6 +99,7 @@ function RacerWorld() {
     distanceRef.current = 0
     isDriftingRef.current = false
     wasDriftingRef.current = false
+    lastCollisionAtRef.current = Number.NEGATIVE_INFINITY
     lastTelemetryAtRef.current = 0
     setTelemetry({ speed: 0, distance: 0 })
   }, [runId, setTelemetry])
@@ -105,13 +107,13 @@ function RacerWorld() {
   useFrame((state, delta) => {
     const frameDelta = Math.min(delta, maxFrameDelta)
     const runtime = runtimeRef.current
+    const elapsedTime = state.clock.getElapsedTime()
     distanceRef.current = runtime.distance
 
     if (status !== "running") {
       isDriftingRef.current = false
       runtime.speed = lerp(runtime.speed, 0, Math.min(frameDelta * 2.2, 1))
       distanceRef.current = runtime.distance
-      const elapsedTime = state.clock.getElapsedTime()
       if (elapsedTime - lastTelemetryAtRef.current > 1 / 20) {
         lastTelemetryAtRef.current = elapsedTime
         setTelemetry({ speed: runtime.speed, distance: runtime.distance })
@@ -212,11 +214,23 @@ function RacerWorld() {
         const hit = Math.abs(runtime.x - obstacleX) < obstacle.width + 0.9
 
         if (hit) {
+          const isRecovering = isCollisionRecovering(
+            elapsedTime,
+            lastCollisionAtRef.current,
+            trackConfig.collisionRecoverySeconds,
+          )
+
+          if (isRecovering) {
+            runtime.handledObstacles.add(obstacle.id)
+            continue
+          }
+
           const willEndRun = willEndRunAfterDamage(
             useGameStore.getState().integrity,
             trackConfig.collisionDamage,
           )
 
+          lastCollisionAtRef.current = elapsedTime
           runtime.speed *= 0.58
           runtime.velocityX *= -0.28
           damage(trackConfig.collisionDamage)
@@ -307,7 +321,6 @@ function RacerWorld() {
       }
     }
 
-    const elapsedTime = state.clock.getElapsedTime()
     if (elapsedTime - lastTelemetryAtRef.current > 1 / 20) {
       lastTelemetryAtRef.current = elapsedTime
       setTelemetry({ speed: runtime.speed, distance: runtime.distance })

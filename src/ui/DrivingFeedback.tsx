@@ -63,7 +63,12 @@ export function DrivingFeedback() {
           </output>
         </>
       ) : null}
-      {impactId > 0 ? <div key={impactId} className="impact-flash" aria-hidden="true" /> : null}
+      {impactId > 0 ? (
+        <>
+          <div key={`impact-${impactId}`} className="impact-flash" aria-hidden="true" />
+          <div key={`recovery-${impactId}`} className="recovery-shield" aria-hidden="true" />
+        </>
+      ) : null}
     </>
   )
 }

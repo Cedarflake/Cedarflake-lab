@@ -36,6 +36,20 @@
   animation: impact-flash 520ms ease-out both;
 }
 
+.recovery-shield {
+  position: absolute;
+  inset: 9% 15% 15%;
+  z-index: 4;
+  pointer-events: none;
+  border: 1px solid rgba(183, 241, 221, 0.72);
+  border-radius: 999px;
+  box-shadow:
+    0 0 34px rgba(183, 241, 221, 0.28),
+    inset 0 0 52px rgba(255, 255, 255, 0.22);
+  mix-blend-mode: screen;
+  animation: recovery-shield 1150ms ease-out both;
+}
+
 .integrity-veil {
   position: absolute;
   inset: 0;
@@ -156,6 +170,22 @@
   }
 }
 
+@keyframes recovery-shield {
+  0% {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+
+  18% {
+    opacity: 0.72;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+}
+
 @keyframes feedback-ripple {
   0% {
     opacity: 0;
@@ -207,6 +237,7 @@
   .speed-veil,
   .feedback-ripple,
   .impact-flash,
+  .recovery-shield,
   .feedback-toast {
     display: none;
   }

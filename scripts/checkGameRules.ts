@@ -1,7 +1,8 @@
 import { readBestScore } from "../src/game/bestScoreStorage"
 import { resolveRunDifficulty } from "../src/game/difficulty"
+import { trackConfig } from "../src/game/gameConfig"
 import { clamp, lerp, wrapDistance } from "../src/game/number"
-import { willEndRunAfterDamage } from "../src/game/runState"
+import { isCollisionRecovering, willEndRunAfterDamage } from "../src/game/runState"
 
 function assert(condition: boolean, message: string) {
   if (!condition) {
@@ -12,6 +13,14 @@ function assert(condition: boolean, message: string) {
 assert(!willEndRunAfterDamage(23, 22), "Expected non-fatal damage above the threshold")
 assert(willEndRunAfterDamage(22, 22), "Expected exact-threshold damage to end the run")
 assert(willEndRunAfterDamage(12, 22), "Expected overkill damage to end the run")
+assert(
+  isCollisionRecovering(10.8, 10, trackConfig.collisionRecoverySeconds),
+  "Expected a recent collision to keep the car recovering",
+)
+assert(
+  !isCollisionRecovering(12, 10, trackConfig.collisionRecoverySeconds),
+  "Expected recovery to expire after the configured window",
+)
 assert(readBestScore() === 0, "Expected best score storage to initialize outside the browser")
 assert(clamp(-2, 0, 1) === 0, "Expected clamp to honor the lower bound")
 assert(clamp(3, 0, 1) === 1, "Expected clamp to honor the upper bound")
