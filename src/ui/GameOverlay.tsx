@@ -7,15 +7,30 @@ import type { GameStatus } from "@/shared/types"
 import "./GameOverlay.css"
 
 interface RunStatsProps {
+  bestDriftScore: number
   bestScore: number
+  checkpointCount: number
   combo: number
   distance: number
   integrity: number
   score: number
   showBest?: boolean
+  showHighlights?: boolean
+  topSpeed: number
 }
 
-function RunStats({ bestScore, combo, distance, integrity, score, showBest }: RunStatsProps) {
+function RunStats({
+  bestDriftScore,
+  bestScore,
+  checkpointCount,
+  combo,
+  distance,
+  integrity,
+  score,
+  showBest,
+  showHighlights,
+  topSpeed,
+}: RunStatsProps) {
   return (
     <dl className="overlay__stats">
       <div>
@@ -34,6 +49,22 @@ function RunStats({ bestScore, combo, distance, integrity, score, showBest }: Ru
         <dt>Integrity</dt>
         <dd>{formatNumber(integrity)}%</dd>
       </div>
+      {showHighlights ? (
+        <>
+          <div>
+            <dt>Top speed</dt>
+            <dd>{formatNumber(topSpeed * 3.1)} km/h</dd>
+          </div>
+          <div>
+            <dt>Best drift</dt>
+            <dd>{formatNumber(bestDriftScore)}</dd>
+          </div>
+          <div>
+            <dt>Exits</dt>
+            <dd>{formatNumber(checkpointCount)}</dd>
+          </div>
+        </>
+      ) : null}
       {showBest ? (
         <div>
           <dt>Best</dt>
@@ -121,10 +152,13 @@ export function GameOverlay() {
   const status = useGameStore((state) => state.status)
   const score = useGameStore((state) => state.score)
   const bestScore = useGameStore((state) => state.bestScore)
+  const bestDriftScore = useGameStore((state) => state.bestDriftScore)
+  const checkpointCount = useGameStore((state) => state.checkpointCount)
   const hasNewBest = useGameStore((state) => state.hasNewBest)
   const distance = useGameStore((state) => state.distance)
   const integrity = useGameStore((state) => state.integrity)
   const combo = useGameStore((state) => state.combo)
+  const topSpeed = useGameStore((state) => state.topSpeed)
   const start = useGameStore((state) => state.start)
   const pause = useGameStore((state) => state.pause)
   const resume = useGameStore((state) => state.resume)
@@ -172,11 +206,15 @@ export function GameOverlay() {
           <h1>Liminal Drift</h1>
           <p>Resume before the road forgets where it was going.</p>
           <RunStats
+            bestDriftScore={bestDriftScore}
             bestScore={bestScore}
+            checkpointCount={checkpointCount}
             combo={combo}
             distance={distance}
             integrity={integrity}
             score={score}
+            showHighlights
+            topSpeed={topSpeed}
           />
           <div className="overlay__actions">
             <button type="button" onClick={resume}>
@@ -210,12 +248,16 @@ export function GameOverlay() {
           ) : null}
           <p>The car is still warm. The corridor is longer than before.</p>
           <RunStats
+            bestDriftScore={bestDriftScore}
             bestScore={bestScore}
+            checkpointCount={checkpointCount}
             combo={combo}
             distance={distance}
             integrity={integrity}
             score={score}
             showBest
+            showHighlights
+            topSpeed={topSpeed}
           />
           <div className="overlay__actions">
             <button type="button" onClick={restart}>

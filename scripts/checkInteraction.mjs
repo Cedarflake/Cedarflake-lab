@@ -72,7 +72,15 @@ try {
     distance = readMetric(text, "DISTANCE")
 
     await page.keyboard.press("Escape")
-    await page.getByRole("dialog", { name: "Paused" }).waitFor()
+    const pausedDialog = page.getByRole("dialog", { name: "Paused" })
+    await pausedDialog.waitFor()
+    const pausedText = await pausedDialog.innerText()
+    const normalizedPausedText = pausedText.toLowerCase()
+
+    if (!normalizedPausedText.includes("top speed") || !normalizedPausedText.includes("exits")) {
+      throw new Error("Expected paused stats to include run highlights")
+    }
+
     await page.getByRole("button", { name: "Resume" }).click()
     await page.waitForTimeout(1000)
 

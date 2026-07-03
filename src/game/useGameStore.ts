@@ -15,6 +15,9 @@ interface GameState {
   integrity: number
   combo: number
   bestScore: number
+  topSpeed: number
+  checkpointCount: number
+  bestDriftScore: number
   hasNewBest: boolean
   driftCharge: number
   lastEvent: string
@@ -46,6 +49,9 @@ const initialRunState = {
   distance: 0,
   integrity: 100,
   combo: 1,
+  topSpeed: 0,
+  checkpointCount: 0,
+  bestDriftScore: 0,
   hasNewBest: false,
   driftCharge: 0,
   lastEvent: "Find the exit ramp",
@@ -85,7 +91,11 @@ export const useGameStore = create<GameState>((set) => ({
   resume: () => set((state) => (state.status === "paused" ? { status: "running" } : state)),
   restart: () =>
     set((state) => ({ status: "running", runId: state.runId + 1, ...initialRunState })),
-  setTelemetry: (telemetry) => set(telemetry),
+  setTelemetry: (telemetry) =>
+    set((state) => ({
+      ...telemetry,
+      topSpeed: Math.max(state.topSpeed, telemetry.speed),
+    })),
   addScore: (score, event) =>
     set((state) => {
       const nextScore = state.score + Math.round(score * state.combo)
@@ -99,6 +109,8 @@ export const useGameStore = create<GameState>((set) => ({
         bestScore: resolveBestScore(state.bestScore, nextScore),
         hasNewBest,
         combo: nextCombo,
+        checkpointCount:
+          feedbackKind === "checkpoint" ? state.checkpointCount + 1 : state.checkpointCount,
         lastEvent: event,
         feedbackId: feedbackKind ? state.feedbackId + 1 : state.feedbackId,
         feedbackKind: feedbackKind ?? state.feedbackKind,
@@ -131,6 +143,7 @@ export const useGameStore = create<GameState>((set) => ({
         bestScore: resolveBestScore(state.bestScore, nextScore),
         hasNewBest,
         combo: Math.min(state.combo + 0.35, 5),
+        bestDriftScore: Math.max(state.bestDriftScore, driftScore),
         driftCharge: 0,
         lastEvent: `Drift cashed +${driftScore}`,
         feedbackId: state.feedbackId + 1,
