@@ -4,6 +4,7 @@ import { trackConfig } from "../src/game/gameConfig"
 import { clamp, lerp, wrapDistance } from "../src/game/number"
 import { isCollisionRecovering, willEndRunAfterDamage } from "../src/game/runState"
 import { resolveScoreFeedback } from "../src/game/scoring"
+import { resolveTouchInput } from "../src/game/touchInput"
 
 function assert(condition: boolean, message: string) {
   if (!condition) {
@@ -46,5 +47,19 @@ assert(
   resolveScoreFeedback({ label: "Clean pass" }) === null,
   "Expected plain score events to skip feedback",
 )
+
+const activeTouchControls = new Set(["go", "drift", "left", "right"] as const)
+assert(
+  resolveTouchInput(activeTouchControls).steer === 0,
+  "Expected opposite touch steer to cancel",
+)
+assert(
+  resolveTouchInput(activeTouchControls).throttle === 1,
+  "Expected touch throttle to stay active",
+)
+assert(resolveTouchInput(activeTouchControls).isDrifting, "Expected touch drift to stay active")
+
+activeTouchControls.delete("right")
+assert(resolveTouchInput(activeTouchControls).steer === -1, "Expected held left touch to survive")
 
 console.log("game rules ok")
