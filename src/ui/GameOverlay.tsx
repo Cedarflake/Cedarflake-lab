@@ -290,19 +290,31 @@ export function GameOverlay() {
         <dl className="controls">
           <div className="glass-card controls__item">
             <dt>Drive</dt>
-            <dd>W / S / Up / Down</dd>
+            <dd>
+              <span className="controls__desktop">W / S / Up / Down</span>
+              <span className="controls__touch">Go / Brake</span>
+            </dd>
           </div>
           <div className="glass-card controls__item">
             <dt>Steer</dt>
-            <dd>A / D / Left / Right</dd>
+            <dd>
+              <span className="controls__desktop">A / D / Left / Right</span>
+              <span className="controls__touch">Left / Right</span>
+            </dd>
           </div>
           <div className="glass-card controls__item">
             <dt>Drift</dt>
-            <dd>Space / Shift</dd>
+            <dd>
+              <span className="controls__desktop">Space / Shift</span>
+              <span className="controls__touch">Drift button</span>
+            </dd>
           </div>
           <div className="glass-card controls__item">
             <dt>Pause</dt>
-            <dd>Esc</dd>
+            <dd>
+              <span className="controls__desktop">Esc</span>
+              <span className="controls__touch">Pause</span>
+            </dd>
           </div>
         </dl>
       </div>

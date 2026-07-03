@@ -118,9 +118,21 @@
   overflow-wrap: anywhere;
 }
 
+.controls__touch {
+  display: none;
+}
+
 @media (max-width: 760px) {
   .controls {
     grid-template-columns: 1fr;
+  }
+
+  .controls__desktop {
+    display: none;
+  }
+
+  .controls__touch {
+    display: inline;
   }
 
   .overlay__stats {

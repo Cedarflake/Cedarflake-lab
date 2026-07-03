@@ -17,7 +17,7 @@ const outputPath = fileURLToPath(outputDir)
 
 await mkdir(outputDir, { recursive: true })
 
-/** @type {Array<{name: string, options: import("playwright").BrowserContextOptions}>} */
+/** @type {Array<{name: "desktop" | "mobile", options: import("playwright").BrowserContextOptions}>} */
 const viewports = [
   {
     name: "desktop",
@@ -109,6 +109,34 @@ async function assertDialogTabWrap(page, firstLabel, lastLabel) {
   await assertActiveButton(page, lastLabel)
   await page.keyboard.press("Tab")
   await assertActiveButton(page, firstLabel)
+}
+
+/**
+ * @param {import("playwright").Page} page
+ * @param {"desktop" | "mobile"} viewportName
+ */
+async function assertControlLegend(page, viewportName) {
+  const text = await page.getByRole("dialog", { name: "Start race" }).innerText()
+
+  if (viewportName === "mobile") {
+    if (!text.includes("Go / Brake") || !text.includes("Drift button")) {
+      throw new Error(`Expected mobile touch control legend, got "${text}"`)
+    }
+
+    if (text.includes("W / S / Up / Down") || text.includes("Space / Shift")) {
+      throw new Error(`Expected keyboard legend to stay hidden on mobile, got "${text}"`)
+    }
+
+    return
+  }
+
+  if (!text.includes("W / S / Up / Down") || !text.includes("Space / Shift")) {
+    throw new Error(`Expected desktop keyboard control legend, got "${text}"`)
+  }
+
+  if (text.includes("Go / Brake") || text.includes("Drift button")) {
+    throw new Error(`Expected touch legend to stay hidden on desktop, got "${text}"`)
+  }
 }
 
 /**
@@ -275,6 +303,7 @@ try {
     await assertModalDialog(page, "Start race")
     await assertActiveButton(page, "Start driving")
     await assertDialogTabWrap(page, "Start driving", "Start driving")
+    await assertControlLegend(page, viewport.name)
     await page.getByRole("button", { name: "Start driving" }).click()
     await page.locator("canvas").waitFor()
     await assertAmbientGameHidden(page, false)
