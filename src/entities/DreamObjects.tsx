@@ -32,6 +32,13 @@ interface ObstacleNodeProps {
   obstacle: Obstacle
 }
 
+const setPieceCycleDistance = 420
+const signCycleDistance = 360
+
+function resolveSceneryZ(originDistance: number, distance: number, speed: number, cycle: number) {
+  return 10 - wrapDistance(originDistance - distance * speed, cycle)
+}
+
 function SetPieceNode({ distanceRef, index, side }: SetPieceNodeProps) {
   const setPieceRef = useRef<Group | null>(null)
   const scale = 0.8 + (index % 5) * 0.16
@@ -41,7 +48,7 @@ function SetPieceNode({ distanceRef, index, side }: SetPieceNodeProps) {
     if (!setPiece) return
 
     const distance = distanceRef.current
-    const z = -wrapDistance(index * 36 - distance * 0.75, 1080) - 24
+    const z = resolveSceneryZ(24 + index * 34, distance, 1.18, setPieceCycleDistance)
     const x = side * (11 + (index % 4) * 3.2)
 
     setPiece.position.set(x, 0.5, z)
@@ -77,7 +84,7 @@ function SignNode({ distanceRef, index, side }: SignNodeProps) {
     if (!sign) return
 
     const distance = distanceRef.current
-    const z = -wrapDistance(index * 64 + 28 - distance * 0.9, 1120) - 42
+    const z = resolveSceneryZ(18 + index * 44, distance, 1.34, signCycleDistance)
     const x = side * (trackConfig.roadHalfWidth + 3.8 + (index % 3) * 1.2)
 
     sign.position.set(x, 2.25 + (index % 2) * 0.8, z)
