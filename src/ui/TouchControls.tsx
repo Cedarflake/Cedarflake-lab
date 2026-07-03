@@ -52,6 +52,7 @@ function ControlButton({ label, controlId, onActiveChange, className }: ControlB
       type="button"
       className={buttonClassName || undefined}
       aria-label={label}
+      aria-pressed={isPressed}
       onPointerDown={handlePress}
       onPointerUp={handleRelease}
       onPointerCancel={handleRelease}

@@ -85,8 +85,9 @@ try {
     const pressedClass = await goButton.evaluate((button) =>
       button.classList.contains("touch-controls__button--pressed"),
     )
+    const pressedAria = await goButton.getAttribute("aria-pressed")
 
-    if (!pressedClass) {
+    if (!pressedClass || pressedAria !== "true") {
       throw new Error("Expected Go button to remain visually pressed while held")
     }
 
@@ -95,8 +96,9 @@ try {
     const heldOutsideClass = await goButton.evaluate((button) =>
       button.classList.contains("touch-controls__button--pressed"),
     )
+    const heldOutsideAria = await goButton.getAttribute("aria-pressed")
 
-    if (!heldOutsideClass) {
+    if (!heldOutsideClass || heldOutsideAria !== "true") {
       throw new Error("Expected Go button to stay pressed after the pointer leaves its bounds")
     }
 
@@ -118,6 +120,13 @@ try {
 
     await page.getByRole("button", { name: "Resume" }).click()
     await page.waitForTimeout(1000)
+
+    const resumedGoButton = page.getByRole("button", { name: "Go" })
+    const resumedPressedAria = await resumedGoButton.getAttribute("aria-pressed")
+
+    if (resumedPressedAria !== "false") {
+      throw new Error(`Expected Go button aria-pressed to reset, got ${resumedPressedAria}`)
+    }
 
     const resumedText = await page.locator("body").innerText()
     const resumedSpeed = readMetric(resumedText, "SPEED")
