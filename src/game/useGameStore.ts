@@ -20,6 +20,7 @@ interface GameState {
   impactId: number
   feedbackId: number
   feedbackKind: FeedbackKind | null
+  feedbackPoints: number
   runId: number
   start: () => void
   pause: () => void
@@ -49,6 +50,7 @@ const initialRunState = {
   impactId: 0,
   feedbackId: 0,
   feedbackKind: null,
+  feedbackPoints: 0,
 }
 
 function resolveBestScore(currentBest: number, nextScore: number) {
@@ -87,6 +89,7 @@ export const useGameStore = create<GameState>((set) => ({
       const nextScore = state.score + Math.round(score * state.combo)
       const nextCombo = Math.min(state.combo + 0.08, 5)
       const feedbackKind = resolveFeedbackKind(event)
+      const feedbackPoints = nextScore - state.score
 
       return {
         score: nextScore,
@@ -95,6 +98,7 @@ export const useGameStore = create<GameState>((set) => ({
         lastEvent: event,
         feedbackId: feedbackKind ? state.feedbackId + 1 : state.feedbackId,
         feedbackKind: feedbackKind ?? state.feedbackKind,
+        feedbackPoints: feedbackKind ? feedbackPoints : state.feedbackPoints,
       }
     }),
   addDriftCharge: (score) =>
@@ -125,6 +129,7 @@ export const useGameStore = create<GameState>((set) => ({
         lastEvent: `Drift cashed +${driftScore}`,
         feedbackId: state.feedbackId + 1,
         feedbackKind: "drift",
+        feedbackPoints: driftScore,
       }
     }),
   damage: (amount) =>

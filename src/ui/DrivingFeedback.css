@@ -84,6 +84,54 @@
     inset 0 0 44px rgba(247, 168, 184, 0.24);
 }
 
+.feedback-toast {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  z-index: 3;
+  display: grid;
+  gap: 2px;
+  min-width: 148px;
+  padding: 10px 14px;
+  color: rgba(47, 37, 53, 0.88);
+  text-align: center;
+  pointer-events: none;
+  background: rgba(255, 247, 226, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 8px;
+  box-shadow: 0 18px 44px rgba(82, 58, 84, 0.18);
+  backdrop-filter: blur(18px) saturate(1.16);
+  transform: translate(-50%, 0);
+  animation: feedback-toast 920ms ease-out both;
+}
+
+.feedback-toast span {
+  overflow: hidden;
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.feedback-toast strong {
+  font-size: 1.18rem;
+  line-height: 1;
+}
+
+.feedback-toast--boost {
+  background: rgba(211, 244, 237, 0.78);
+}
+
+.feedback-toast--checkpoint,
+.feedback-toast--shard {
+  background: rgba(255, 247, 218, 0.82);
+}
+
+.feedback-toast--drift,
+.feedback-toast--near-miss {
+  background: rgba(255, 235, 224, 0.8);
+}
+
 @keyframes impact-flash {
   from {
     opacity: 1;
@@ -112,10 +160,32 @@
   }
 }
 
+@keyframes feedback-toast {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 14px) scale(0.96);
+  }
+
+  18% {
+    opacity: 1;
+  }
+
+  74% {
+    opacity: 1;
+    transform: translate(-50%, -10px) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -18px) scale(0.98);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .speed-veil,
   .feedback-ripple,
-  .impact-flash {
+  .impact-flash,
+  .feedback-toast {
     display: none;
   }
 }
