@@ -1,0 +1,55 @@
+.ui-button {
+  min-height: 44px;
+  padding: 0 18px;
+  color: var(--color-text-strong);
+  cursor: pointer;
+  background: var(--color-accent);
+  border: var(--border-glass);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-control);
+  transition:
+    background-color var(--duration-normal) var(--ease-standard),
+    box-shadow var(--duration-normal) var(--ease-standard),
+    transform var(--duration-normal) var(--ease-standard);
+}
+
+.ui-button:hover {
+  background: var(--color-accent-hover);
+  box-shadow: var(--shadow-control-hover);
+  transform: translateY(-1px);
+}
+
+.ui-button:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+
+.ui-button--secondary {
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.glass-panel {
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: var(--border-glass);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-panel);
+  backdrop-filter: var(--blur-panel);
+}
+
+.glass-card {
+  min-width: 0;
+  background: var(--color-surface-soft);
+  border: var(--border-glass-soft);
+  border-radius: var(--radius-control);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-button {
+    transition: none;
+  }
+
+  .ui-button:hover {
+    transform: none;
+  }
+}

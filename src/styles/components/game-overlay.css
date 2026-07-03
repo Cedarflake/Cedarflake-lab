@@ -15,12 +15,6 @@
 .overlay__panel {
   width: min(560px, 100%);
   padding: clamp(24px, 5vw, 42px);
-  color: var(--color-text);
-  background: var(--color-surface);
-  border: var(--border-glass);
-  border-radius: var(--radius-control);
-  box-shadow: var(--shadow-panel);
-  backdrop-filter: var(--blur-panel);
 }
 
 .overlay__eyebrow {
@@ -66,12 +60,8 @@
   margin: 22px 0 0;
 }
 
-.overlay__stats div {
-  min-width: 0;
+.overlay__stat {
   padding: 10px 11px;
-  background: rgba(255, 255, 255, 0.34);
-  border: 1px solid rgba(255, 255, 255, 0.42);
-  border-radius: var(--radius-control);
 }
 
 .overlay__stats dt {
@@ -98,39 +88,6 @@
   margin-block-start: 26px;
 }
 
-.overlay button,
-.pause-button {
-  min-height: 44px;
-  padding: 0 18px;
-  color: var(--color-text-strong);
-  cursor: pointer;
-  background: var(--color-accent);
-  border: var(--border-glass);
-  border-radius: var(--radius-control);
-  box-shadow: var(--shadow-control);
-  transition:
-    background-color var(--duration-normal) var(--ease-standard),
-    box-shadow var(--duration-normal) var(--ease-standard),
-    transform var(--duration-normal) var(--ease-standard);
-}
-
-.overlay button:hover,
-.pause-button:hover {
-  background: var(--color-accent-hover);
-  box-shadow: var(--shadow-control-hover);
-  transform: translateY(-1px);
-}
-
-.overlay button:focus-visible,
-.pause-button:focus-visible {
-  outline: 3px solid rgba(70, 190, 184, 0.9);
-  outline-offset: 3px;
-}
-
-.overlay .button-secondary {
-  background: rgba(255, 255, 255, 0.62);
-}
-
 .pause-button {
   position: absolute;
   right: calc(24px + env(safe-area-inset-right));
@@ -145,11 +102,8 @@
   margin: 28px 0 0;
 }
 
-.controls div {
-  min-width: 0;
+.controls__item {
   padding: 12px;
-  background: rgba(255, 255, 255, 0.42);
-  border-radius: var(--radius-control);
 }
 
 .controls dt {
@@ -162,18 +116,6 @@
 .controls dd {
   margin: 0;
   overflow-wrap: anywhere;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .overlay button,
-  .pause-button {
-    transition: none;
-  }
-
-  .overlay button:hover,
-  .pause-button:hover {
-    transform: none;
-  }
 }
 
 @media (max-width: 760px) {

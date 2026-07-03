@@ -27,32 +27,32 @@ export function Hud() {
       aria-label="Race telemetry"
       aria-hidden={status !== "running"}
     >
-      <div className="hud__cluster hud__cluster--primary">
+      <div className="glass-card hud__cluster hud__cluster--primary">
         <span className="hud__label">Score</span>
         <strong>{formatNumber(score)}</strong>
         <small>Best {formatNumber(bestScore)}</small>
       </div>
 
-      <div className="hud__cluster">
+      <div className="glass-card hud__cluster">
         <span className="hud__label">Speed</span>
         <strong>{formatNumber(speed * 3.1)}</strong>
         <small>km/h</small>
       </div>
 
-      <div className="hud__cluster">
+      <div className="glass-card hud__cluster">
         <span className="hud__label">Distance</span>
         <strong>{formatNumber(distance)}</strong>
         <small>Next exit {formatNumber(nextCheckpointDistance)} m</small>
       </div>
 
-      <div className="hud__cluster">
+      <div className="glass-card hud__cluster">
         <span className="hud__label">Combo</span>
         <strong>{combo.toFixed(1)}x</strong>
         <small>{lastEvent}</small>
       </div>
 
       <div className="hud__meters">
-        <div className="hud__meter">
+        <div className="glass-card hud__meter">
           <span className="hud__meter-label">Integrity</span>
           <div
             className="hud__integrity"
@@ -66,7 +66,7 @@ export function Hud() {
           </div>
           <span className="hud__meter-value">{formatNumber(integrity)}%</span>
         </div>
-        <div className="hud__meter">
+        <div className="glass-card hud__meter">
           <span className="hud__meter-label">Drift</span>
           <div
             className="hud__drift"
@@ -80,7 +80,7 @@ export function Hud() {
           </div>
           <span className="hud__meter-value">{formatNumber(driftCharge)}</span>
         </div>
-        <div className="hud__meter">
+        <div className="glass-card hud__meter">
           <span className="hud__meter-label">Exit</span>
           <div
             className="hud__checkpoint"

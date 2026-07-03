@@ -42,7 +42,7 @@ class SceneErrorBoundary extends Component<SceneErrorBoundaryProps, SceneErrorBo
       return (
         <div className="scene-error" role="alert">
           <strong>Scene failed to load</strong>
-          <button type="button" onClick={this.reload}>
+          <button type="button" className="ui-button" onClick={this.reload}>
             Reload
           </button>
         </div>

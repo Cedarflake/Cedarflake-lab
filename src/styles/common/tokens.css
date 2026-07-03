@@ -15,6 +15,7 @@
   --color-accent-mint: #94dccf;
   --color-accent-warm: #f4dc8c;
   --color-danger: #f0a58f;
+  --color-focus-ring: rgba(70, 190, 184, 0.9);
   --border-glass: 1px solid rgba(255, 255, 255, 0.7);
   --border-glass-soft: 1px solid rgba(255, 255, 255, 0.42);
   --radius-control: 8px;

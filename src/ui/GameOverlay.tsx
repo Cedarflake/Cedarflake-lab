@@ -31,40 +31,40 @@ function RunStats({
 }: RunStatsProps) {
   return (
     <dl className="overlay__stats">
-      <div>
+      <div className="glass-card overlay__stat">
         <dt>Score</dt>
         <dd>{formatNumber(score)}</dd>
       </div>
-      <div>
+      <div className="glass-card overlay__stat">
         <dt>Distance</dt>
         <dd>{formatNumber(distance)} m</dd>
       </div>
-      <div>
+      <div className="glass-card overlay__stat">
         <dt>Combo</dt>
         <dd>{combo.toFixed(1)}x</dd>
       </div>
-      <div>
+      <div className="glass-card overlay__stat">
         <dt>Integrity</dt>
         <dd>{formatNumber(integrity)}%</dd>
       </div>
       {showHighlights ? (
         <>
-          <div>
+          <div className="glass-card overlay__stat">
             <dt>Top speed</dt>
             <dd>{formatNumber(topSpeed * 3.1)} km/h</dd>
           </div>
-          <div>
+          <div className="glass-card overlay__stat">
             <dt>Best drift</dt>
             <dd>{formatNumber(bestDriftScore)}</dd>
           </div>
-          <div>
+          <div className="glass-card overlay__stat">
             <dt>Exits</dt>
             <dd>{formatNumber(checkpointCount)}</dd>
           </div>
         </>
       ) : null}
       {showBest ? (
-        <div>
+        <div className="glass-card overlay__stat">
           <dt>Best</dt>
           <dd>{formatNumber(bestScore)}</dd>
         </div>
@@ -190,7 +190,7 @@ export function GameOverlay() {
 
   if (status === "running") {
     return (
-      <button type="button" className="pause-button" onClick={pause}>
+      <button type="button" className="ui-button pause-button" onClick={pause}>
         Pause
       </button>
     )
@@ -199,7 +199,7 @@ export function GameOverlay() {
   if (status === "paused") {
     return (
       <div ref={dialogRef} className="overlay" role="dialog" aria-modal="true" aria-label="Paused">
-        <div className="overlay__panel">
+        <div className="glass-panel overlay__panel">
           <p className="overlay__eyebrow">A quiet exit sign hums overhead</p>
           <h1>Liminal Drift</h1>
           <p>Resume before the road forgets where it was going.</p>
@@ -215,10 +215,10 @@ export function GameOverlay() {
             topSpeed={topSpeed}
           />
           <div className="overlay__actions">
-            <button type="button" onClick={resume}>
+            <button type="button" className="ui-button" onClick={resume}>
               Resume
             </button>
-            <button type="button" className="button-secondary" onClick={restart}>
+            <button type="button" className="ui-button ui-button--secondary" onClick={restart}>
               Restart
             </button>
           </div>
@@ -236,7 +236,7 @@ export function GameOverlay() {
         aria-modal="true"
         aria-label="Race ended"
       >
-        <div className="overlay__panel">
+        <div className="glass-panel overlay__panel">
           <p className="overlay__eyebrow">
             {hasNewBest ? "New best signal recorded" : `Signal lost at ${Math.round(score)} points`}
           </p>
@@ -258,7 +258,7 @@ export function GameOverlay() {
             topSpeed={topSpeed}
           />
           <div className="overlay__actions">
-            <button type="button" onClick={restart}>
+            <button type="button" className="ui-button" onClick={restart}>
               Drive again
             </button>
           </div>
@@ -275,7 +275,7 @@ export function GameOverlay() {
       aria-modal="true"
       aria-label="Start race"
     >
-      <div className="overlay__panel">
+      <div className="glass-panel overlay__panel">
         <p className="overlay__eyebrow">Dreamcore night driving</p>
         <h1>Liminal Drift</h1>
         <p>
@@ -283,24 +283,24 @@ export function GameOverlay() {
           feel half remembered.
         </p>
         <div className="overlay__actions">
-          <button type="button" onClick={start}>
+          <button type="button" className="ui-button" onClick={start}>
             Start driving
           </button>
         </div>
         <dl className="controls">
-          <div>
+          <div className="glass-card controls__item">
             <dt>Drive</dt>
             <dd>W / S / Up / Down</dd>
           </div>
-          <div>
+          <div className="glass-card controls__item">
             <dt>Steer</dt>
             <dd>A / D / Left / Right</dd>
           </div>
-          <div>
+          <div className="glass-card controls__item">
             <dt>Drift</dt>
             <dd>Space / Shift</dd>
           </div>
-          <div>
+          <div className="glass-card controls__item">
             <dt>Pause</dt>
             <dd>Esc</dd>
           </div>

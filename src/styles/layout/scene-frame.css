@@ -32,43 +32,8 @@
   font-size: clamp(1.5rem, 5vw, 3rem);
 }
 
-.scene-error button {
-  min-height: 44px;
-  padding: 0 18px;
-  color: var(--color-text-strong);
-  cursor: pointer;
-  background: var(--color-accent);
-  border: var(--border-glass);
-  border-radius: var(--radius-control);
-  transition:
-    background-color var(--duration-normal) var(--ease-standard),
-    box-shadow var(--duration-normal) var(--ease-standard),
-    transform var(--duration-normal) var(--ease-standard);
-}
-
-.scene-error button:hover {
-  background: var(--color-accent-hover);
-  box-shadow: var(--shadow-control-hover);
-  transform: translateY(-1px);
-}
-
-.scene-error button:focus-visible {
-  outline: 3px solid rgba(70, 190, 184, 0.9);
-  outline-offset: 3px;
-}
-
 .scene-layer canvas {
   position: absolute;
   inset: 0;
   z-index: var(--z-scene);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .scene-error button {
-    transition: none;
-  }
-
-  .scene-error button:hover {
-    transform: none;
-  }
 }
