@@ -8,9 +8,11 @@ import type { Group } from "three"
 import { BoostGates } from "@/entities/BoostGates"
 import { CarMotionTrail } from "@/entities/CarMotionTrail"
 import { Checkpoints } from "@/entities/Checkpoints"
+import { DreadAtmosphere } from "@/entities/DreadAtmosphere"
 import { DreamObjects } from "@/entities/DreamObjects"
 import { MemoryShards } from "@/entities/MemoryShards"
 import { PlayerCar } from "@/entities/PlayerCar"
+import { SkyEyes } from "@/entities/SkyEyes"
 import { Track } from "@/entities/Track"
 import {
   resolveObstacleCollisionHalfWidth,
@@ -277,11 +279,11 @@ function RacerWorld() {
           }
         } else if (obstacleOffset < resolveObstacleNearMissHalfWidth(obstacle)) {
           addScore(trackConfig.nearMissScore + runtime.speed * 4, {
-            label: "Near miss",
+            label: "Something missed you",
             feedbackKind: "near-miss",
           })
         } else {
-          addScore(trackConfig.passScore + runtime.speed * 2, { label: "Clean pass" })
+          addScore(trackConfig.passScore + runtime.speed * 2, { label: "No contact recorded" })
         }
 
         runtime.handledObstacles.add(obstacle.id)
@@ -308,7 +310,7 @@ function RacerWorld() {
         if (caughtBoost) {
           runtime.speed = Math.min(runtime.speed + trackConfig.boostSpeed, difficulty.maxSpeed)
           addScore(trackConfig.boostScore + runtime.speed * 3, {
-            label: "Signal boost",
+            label: "Signal returned wrong",
             feedbackKind: "boost",
           })
         }
@@ -335,7 +337,7 @@ function RacerWorld() {
 
         if (Math.abs(runtime.x - shardX) < 1.05) {
           addScore(trackConfig.memoryShardScore + runtime.speed * 2.5, {
-            label: "Memory shard",
+            label: "A memory came loose",
             feedbackKind: "shard",
           })
           setCollectedMemoryShardIds((ids) => {
@@ -371,7 +373,7 @@ function RacerWorld() {
       ) {
         runtime.handledCheckpoints.add(checkpointId)
         addScore(trackConfig.checkpointScore + runtime.speed * 6, {
-          label: "Checkpoint slipped through",
+          label: "The exit moved again",
           feedbackKind: "checkpoint",
         })
         repair(trackConfig.checkpointRepair)
@@ -445,6 +447,8 @@ function RacerWorld() {
         fade
         speed={0.28}
       />
+      <SkyEyes distanceRef={distanceRef} />
+      <DreadAtmosphere distanceRef={distanceRef} speedRef={speedRef} />
       <group key={runId}>
         <Track distanceRef={distanceRef} />
         <BoostGates distanceRef={distanceRef} boostGates={visibleBoostGates} />
