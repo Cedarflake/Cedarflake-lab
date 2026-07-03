@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
 
-import { resolveGamepadInput } from "@/game/gamepadInput"
+import { resolveActiveGamepad, resolveGamepadInput } from "@/game/gamepadInput"
 import { useGameStore } from "@/game/useGameStore"
 import { useInputStore } from "@/game/useInputStore"
 import type { PlayerInput } from "@/shared/types"
@@ -51,6 +51,7 @@ function resolveKeyboardInput(keys: Set<string>): PlayerInput {
 }
 
 export function useKeyboardInput() {
+  const gamepadIndexRef = useRef<number | null>(null)
   const keysRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
@@ -101,6 +102,7 @@ export function useKeyboardInput() {
 
     function resetInput() {
       keysRef.current.clear()
+      gamepadIndexRef.current = null
       resetGamepadInput()
       resetKeyboardInput()
       resetTouchInput()
@@ -113,20 +115,38 @@ export function useKeyboardInput() {
     }
 
     function syncGamepadInput() {
+      const gamepads = typeof navigator.getGamepads === "function" ? navigator.getGamepads() : []
+      const activeGamepad = resolveActiveGamepad(gamepads, gamepadIndexRef.current)
+      gamepadIndexRef.current = activeGamepad?.index ?? null
+
       if (useGameStore.getState().status === "running") {
         wasRunning = true
-        const gamepads = typeof navigator.getGamepads === "function" ? navigator.getGamepads() : []
-
-        setGamepadInput(resolveGamepadInput(gamepads))
+        setGamepadInput(resolveGamepadInput(gamepads, gamepadIndexRef.current))
       } else if (wasRunning) {
         wasRunning = false
-        resetInput()
+        keysRef.current.clear()
+        resetGamepadInput()
+        resetKeyboardInput()
+        resetTouchInput()
       }
 
       animationFrame = window.requestAnimationFrame(syncGamepadInput)
     }
 
+    function handleGamepadConnected(event: GamepadEvent) {
+      gamepadIndexRef.current = event.gamepad.index
+    }
+
+    function handleGamepadDisconnected(event: GamepadEvent) {
+      if (gamepadIndexRef.current === event.gamepad.index) {
+        gamepadIndexRef.current = null
+        resetGamepadInput()
+      }
+    }
+
     document.addEventListener("visibilitychange", resetWhenHidden)
+    window.addEventListener("gamepadconnected", handleGamepadConnected)
+    window.addEventListener("gamepaddisconnected", handleGamepadDisconnected)
     window.addEventListener("keydown", handleKeyDown, keyboardListenerOptions)
     window.addEventListener("keyup", handleKeyUp, keyboardListenerOptions)
     window.addEventListener("blur", resetInput)
@@ -134,6 +154,8 @@ export function useKeyboardInput() {
 
     return () => {
       document.removeEventListener("visibilitychange", resetWhenHidden)
+      window.removeEventListener("gamepadconnected", handleGamepadConnected)
+      window.removeEventListener("gamepaddisconnected", handleGamepadDisconnected)
       window.removeEventListener("keydown", handleKeyDown, keyboardListenerOptions)
       window.removeEventListener("keyup", handleKeyUp, keyboardListenerOptions)
       window.removeEventListener("blur", resetInput)

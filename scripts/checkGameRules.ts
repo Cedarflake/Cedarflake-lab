@@ -8,6 +8,7 @@ import {
 } from "../src/game/collision"
 import { resolveRunDifficulty } from "../src/game/difficulty"
 import {
+  resolveActiveGamepad,
   resolveGamepadInput,
   resolveGamepadOverlayInput,
   type GamepadLike,
@@ -25,7 +26,15 @@ function assert(condition: boolean, message: string) {
   }
 }
 
-function createGamepad(buttonValues: Record<number, number>, axes: readonly number[] = []) {
+function createGamepad(
+  buttonValues: Record<number, number>,
+  axes: readonly number[] = [],
+  options: {
+    id?: string
+    index?: number
+    mapping?: string
+  } = {},
+) {
   const buttons = Array.from({ length: 16 }, (_, index) => {
     const value = buttonValues[index] ?? 0
 
@@ -39,6 +48,7 @@ function createGamepad(buttonValues: Record<number, number>, axes: readonly numb
     axes,
     buttons,
     connected: true,
+    ...options,
   } satisfies GamepadLike
 }
 
@@ -162,5 +172,23 @@ assert(!xboxOverlayInput.pause, "Expected Xbox A button to avoid pausing by itse
 const xboxMenuInput = resolveGamepadOverlayInput([createGamepad({ 9: 1 })])
 assert(xboxMenuInput.confirm, "Expected Xbox Menu button to confirm overlays")
 assert(xboxMenuInput.pause, "Expected Xbox Menu button to pause and resume")
+
+const inactiveVirtualGamepad = createGamepad({}, [], {
+  id: "Virtual controller",
+  index: 0,
+})
+const activeXboxGamepad = createGamepad({ 0: 1 }, [], {
+  id: "Xbox Wireless Controller",
+  index: 1,
+  mapping: "standard",
+})
+assert(
+  resolveActiveGamepad([inactiveVirtualGamepad, activeXboxGamepad])?.index === 1,
+  "Expected active Xbox controller to win over inactive virtual devices",
+)
+
+const axisTriggerInput = resolveGamepadInput([createGamepad({}, [0, 0, 0.72, 0, 0, 0.84])])
+assert(axisTriggerInput.throttle === 0.84, "Expected non-standard trigger axis to drive")
+assert(axisTriggerInput.brake === 0.72, "Expected non-standard trigger axis to brake")
 
 console.log("game rules ok")

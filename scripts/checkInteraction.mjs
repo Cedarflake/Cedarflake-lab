@@ -202,6 +202,7 @@ try {
     await installMockGamepad(page)
     await page.goto(url, { waitUntil: "domcontentloaded" })
     await page.getByRole("dialog", { name: "Start race" }).waitFor()
+    await page.getByText(/Gamepad detected: Mock Xbox Controller/).waitFor()
     await setMockGamepad(page, { buttons: { 0: 1 } })
     await page.waitForTimeout(160)
     await setMockGamepad(page, { buttons: {} })

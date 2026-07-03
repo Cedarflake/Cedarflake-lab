@@ -1,8 +1,13 @@
-import { useCallback, useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 import { playBackgroundMusic } from "@/app/backgroundMusic"
 import { formatNumber } from "@/game/format"
-import { resolveGamepadOverlayInput } from "@/game/gamepadInput"
+import {
+  resolveActiveGamepad,
+  resolveGamepadOverlayInput,
+  resolveGamepadStatus,
+  type GamepadStatus,
+} from "@/game/gamepadInput"
 import { useGameStore } from "@/game/useGameStore"
 import type { GameStatus } from "@/shared/types"
 
@@ -148,13 +153,20 @@ function useDialogFocusTrap(status: GameStatus) {
   return dialogRef
 }
 
-function readGamepadOverlayInput() {
-  const gamepads =
-    typeof navigator !== "undefined" && typeof navigator.getGamepads === "function"
-      ? navigator.getGamepads()
-      : []
+function readGamepads() {
+  return typeof navigator !== "undefined" && typeof navigator.getGamepads === "function"
+    ? navigator.getGamepads()
+    : []
+}
 
-  return resolveGamepadOverlayInput(gamepads)
+function areGamepadStatusesEqual(a: GamepadStatus, b: GamepadStatus) {
+  return (
+    a.id === b.id &&
+    a.index === b.index &&
+    a.isConnected === b.isConnected &&
+    a.isSupported === b.isSupported &&
+    a.mapping === b.mapping
+  )
 }
 
 function useGamepadOverlayControls({
@@ -170,15 +182,29 @@ function useGamepadOverlayControls({
   onStart: () => void
   status: GameStatus
 }) {
-  const previousInputRef = useRef(readGamepadOverlayInput())
+  const activeGamepadIndexRef = useRef<number | null>(null)
+  const previousInputRef = useRef(
+    resolveGamepadOverlayInput(readGamepads(), activeGamepadIndexRef.current),
+  )
+  const [gamepadStatus, setGamepadStatus] = useState(() =>
+    resolveGamepadStatus(readGamepads(), activeGamepadIndexRef.current),
+  )
 
   useEffect(() => {
     let animationFrame = 0
 
     function syncGamepadOverlayInput() {
-      const input = readGamepadOverlayInput()
+      const gamepads = readGamepads()
+      const activeGamepad = resolveActiveGamepad(gamepads, activeGamepadIndexRef.current)
+      activeGamepadIndexRef.current = activeGamepad?.index ?? null
+      const nextStatus = resolveGamepadStatus(gamepads, activeGamepadIndexRef.current)
+      const input = resolveGamepadOverlayInput(gamepads, activeGamepadIndexRef.current)
       const confirmPressed = input.confirm && !previousInputRef.current.confirm
       const pausePressed = input.pause && !previousInputRef.current.pause
+
+      setGamepadStatus((currentStatus) =>
+        areGamepadStatusesEqual(currentStatus, nextStatus) ? currentStatus : nextStatus,
+      )
 
       if (status === "running" && pausePressed) {
         onPause()
@@ -196,10 +222,44 @@ function useGamepadOverlayControls({
 
     animationFrame = window.requestAnimationFrame(syncGamepadOverlayInput)
 
+    function handleGamepadConnected(event: GamepadEvent) {
+      activeGamepadIndexRef.current = event.gamepad.index
+      setGamepadStatus(resolveGamepadStatus(readGamepads(), event.gamepad.index))
+    }
+
+    function handleGamepadDisconnected(event: GamepadEvent) {
+      if (activeGamepadIndexRef.current === event.gamepad.index) {
+        activeGamepadIndexRef.current = null
+      }
+
+      setGamepadStatus(resolveGamepadStatus(readGamepads(), activeGamepadIndexRef.current))
+    }
+
+    window.addEventListener("gamepadconnected", handleGamepadConnected)
+    window.addEventListener("gamepaddisconnected", handleGamepadDisconnected)
+
     return () => {
+      window.removeEventListener("gamepadconnected", handleGamepadConnected)
+      window.removeEventListener("gamepaddisconnected", handleGamepadDisconnected)
       window.cancelAnimationFrame(animationFrame)
     }
   }, [onPause, onRestart, onResume, onStart, status])
+
+  return gamepadStatus
+}
+
+function resolveGamepadStatusText(status: GamepadStatus) {
+  if (!status.isSupported) {
+    return "Gamepad API is unavailable in this browser"
+  }
+
+  if (!status.isConnected) {
+    return "Press any Xbox controller button to connect"
+  }
+
+  const mapping = status.mapping === "standard" ? "standard" : "custom"
+
+  return `Gamepad detected: ${status.id || "Controller"} (${mapping})`
 }
 
 export function GameOverlay() {
@@ -238,7 +298,7 @@ export function GameOverlay() {
     restart()
   }, [playMusicFromGesture, restart])
 
-  useGamepadOverlayControls({
+  const gamepadStatus = useGamepadOverlayControls({
     onPause: pause,
     onRestart: handleRestart,
     onResume: handleResume,
@@ -416,6 +476,9 @@ export function GameOverlay() {
             </dd>
           </div>
         </dl>
+        <p className="overlay__gamepad-status" aria-live="polite">
+          {resolveGamepadStatusText(gamepadStatus)}
+        </p>
       </div>
     </div>
   )
