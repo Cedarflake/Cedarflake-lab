@@ -1,11 +1,11 @@
 import { create } from "zustand"
 
 import { willEndRunAfterDamage } from "@/game/runState"
+import { resolveScoreFeedback } from "@/game/scoring"
+import type { FeedbackKind, ScoreEvent } from "@/game/scoring"
 import type { GameStatus } from "@/shared/types"
 
 import { readBestScore, saveBestScore } from "./bestScoreStorage"
-
-type FeedbackKind = "boost" | "checkpoint" | "drift" | "near-miss" | "shard"
 
 interface GameState {
   status: GameStatus
@@ -31,7 +31,7 @@ interface GameState {
   resume: () => void
   restart: () => void
   setTelemetry: (telemetry: GameTelemetry) => void
-  addScore: (score: number, event: string) => void
+  addScore: (score: number, event: ScoreEvent) => void
   addDriftCharge: (score: number) => void
   cashOutDrift: () => void
   damage: (amount: number) => void
@@ -71,16 +71,6 @@ function resolveBestScore(currentBest: number, nextScore: number) {
   return bestScore
 }
 
-function resolveFeedbackKind(event: string): FeedbackKind | null {
-  if (event === "Signal boost") return "boost"
-  if (event === "Near miss") return "near-miss"
-  if (event === "Memory shard") return "shard"
-  if (event.startsWith("Checkpoint")) return "checkpoint"
-  if (event.startsWith("Drift cashed")) return "drift"
-
-  return null
-}
-
 export const useGameStore = create<GameState>((set) => ({
   status: "ready",
   bestScore: readBestScore(),
@@ -100,7 +90,7 @@ export const useGameStore = create<GameState>((set) => ({
     set((state) => {
       const nextScore = state.score + Math.round(score * state.combo)
       const nextCombo = Math.min(state.combo + 0.08, 5)
-      const feedbackKind = resolveFeedbackKind(event)
+      const feedbackKind = resolveScoreFeedback(event)
       const feedbackPoints = nextScore - state.score
       const hasNewBest = state.hasNewBest || nextScore > state.bestScore
 
@@ -111,7 +101,7 @@ export const useGameStore = create<GameState>((set) => ({
         combo: nextCombo,
         checkpointCount:
           feedbackKind === "checkpoint" ? state.checkpointCount + 1 : state.checkpointCount,
-        lastEvent: event,
+        lastEvent: event.label,
         feedbackId: feedbackKind ? state.feedbackId + 1 : state.feedbackId,
         feedbackKind: feedbackKind ?? state.feedbackKind,
         feedbackPoints: feedbackKind ? feedbackPoints : state.feedbackPoints,

@@ -3,6 +3,7 @@ import { resolveRunDifficulty } from "../src/game/difficulty"
 import { trackConfig } from "../src/game/gameConfig"
 import { clamp, lerp, wrapDistance } from "../src/game/number"
 import { isCollisionRecovering, willEndRunAfterDamage } from "../src/game/runState"
+import { resolveScoreFeedback } from "../src/game/scoring"
 
 function assert(condition: boolean, message: string) {
   if (!condition) {
@@ -31,5 +32,19 @@ assert(wrapDistance(-2, 10) === 8, "Expected wrapDistance to wrap negative dista
 assert(resolveRunDifficulty(0).maxSpeed === 58, "Expected base max speed at the run start")
 assert(resolveRunDifficulty(800).maxSpeed === 64, "Expected midpoint speed ramp")
 assert(resolveRunDifficulty(3200).maxSpeed === 70, "Expected capped max speed ramp")
+
+assert(
+  resolveScoreFeedback({ label: "Boost copy can change", feedbackKind: "boost" }) === "boost",
+  "Expected score feedback to ignore display copy",
+)
+assert(
+  resolveScoreFeedback({ label: "Checkpoint copy can change", feedbackKind: "checkpoint" }) ===
+    "checkpoint",
+  "Expected checkpoint feedback to ignore display copy",
+)
+assert(
+  resolveScoreFeedback({ label: "Clean pass" }) === null,
+  "Expected plain score events to skip feedback",
+)
 
 console.log("game rules ok")

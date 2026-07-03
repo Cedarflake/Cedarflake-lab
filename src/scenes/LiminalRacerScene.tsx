@@ -240,9 +240,12 @@ function RacerWorld() {
             return
           }
         } else if (Math.abs(runtime.x - obstacleX) < obstacle.width + 1.75) {
-          addScore(trackConfig.nearMissScore + runtime.speed * 4, "Near miss")
+          addScore(trackConfig.nearMissScore + runtime.speed * 4, {
+            label: "Near miss",
+            feedbackKind: "near-miss",
+          })
         } else {
-          addScore(trackConfig.passScore + runtime.speed * 2, "Clean pass")
+          addScore(trackConfig.passScore + runtime.speed * 2, { label: "Clean pass" })
         }
 
         runtime.handledObstacles.add(obstacle.id)
@@ -268,7 +271,10 @@ function RacerWorld() {
 
         if (caughtBoost) {
           runtime.speed = Math.min(runtime.speed + trackConfig.boostSpeed, difficulty.maxSpeed)
-          addScore(trackConfig.boostScore + runtime.speed * 3, "Signal boost")
+          addScore(trackConfig.boostScore + runtime.speed * 3, {
+            label: "Signal boost",
+            feedbackKind: "boost",
+          })
         }
 
         runtime.handledBoostGates.add(boostGate.id)
@@ -292,7 +298,10 @@ function RacerWorld() {
           memoryShard.lane * trackConfig.laneWidth
 
         if (Math.abs(runtime.x - shardX) < 1.05) {
-          addScore(trackConfig.memoryShardScore + runtime.speed * 2.5, "Memory shard")
+          addScore(trackConfig.memoryShardScore + runtime.speed * 2.5, {
+            label: "Memory shard",
+            feedbackKind: "shard",
+          })
         }
 
         runtime.handledMemoryShards.add(memoryShard.id)
@@ -316,7 +325,10 @@ function RacerWorld() {
         !runtime.handledCheckpoints.has(checkpointId)
       ) {
         runtime.handledCheckpoints.add(checkpointId)
-        addScore(trackConfig.checkpointScore + runtime.speed * 6, "Checkpoint slipped through")
+        addScore(trackConfig.checkpointScore + runtime.speed * 6, {
+          label: "Checkpoint slipped through",
+          feedbackKind: "checkpoint",
+        })
         repair(trackConfig.checkpointRepair)
       }
     }
