@@ -78,6 +78,7 @@ function RacerWorld() {
   const carRef = useRef<Group | null>(null)
   const runtimeRef = useRef<RuntimeState>(createRuntimeState())
   const distanceRef = useRef(0)
+  const isDriftingRef = useRef(false)
   const wasDriftingRef = useRef(false)
   const lastTelemetryAtRef = useRef(0)
   const runId = useGameStore((state) => state.runId)
@@ -94,6 +95,7 @@ function RacerWorld() {
   useEffect(() => {
     runtimeRef.current = createRuntimeState()
     distanceRef.current = 0
+    isDriftingRef.current = false
     wasDriftingRef.current = false
     lastTelemetryAtRef.current = 0
     setTelemetry({ speed: 0, distance: 0 })
@@ -105,6 +107,7 @@ function RacerWorld() {
     distanceRef.current = runtime.distance
 
     if (status !== "running") {
+      isDriftingRef.current = false
       runtime.speed = lerp(runtime.speed, 0, Math.min(frameDelta * 2.2, 1))
       distanceRef.current = runtime.distance
       const elapsedTime = state.clock.getElapsedTime()
@@ -122,6 +125,7 @@ function RacerWorld() {
       brake: Math.max(keyboardInput.brake, gamepadInput.brake, touchInput.brake),
       isDrifting: keyboardInput.isDrifting || gamepadInput.isDrifting || touchInput.isDrifting,
     }
+    isDriftingRef.current = input.isDrifting
     const grip = input.isDrifting ? trackConfig.driftGrip : trackConfig.normalGrip
     const acceleration =
       input.throttle * trackConfig.baseAcceleration - input.brake * trackConfig.braking
@@ -339,7 +343,7 @@ function RacerWorld() {
         <MemoryShards distanceRef={distanceRef} memoryShards={visibleMemoryShards} />
         <DreamObjects distanceRef={distanceRef} obstacles={visibleObstacles} />
         <Checkpoints distanceRef={distanceRef} checkpoints={visibleCheckpoints} />
-        <PlayerCar carRef={carRef} distanceRef={distanceRef} />
+        <PlayerCar carRef={carRef} distanceRef={distanceRef} isDriftingRef={isDriftingRef} />
       </group>
     </>
   )
