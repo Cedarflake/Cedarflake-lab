@@ -11,6 +11,13 @@ const samples = [0, 250, 1200, 4800, 12000]
 const lookBehind = 24
 const lookAhead = 270
 const expectedObstacleKinds = new Set<Obstacle["kind"]>(["pillar", "hole", "wall"])
+const modelSeparationDistance = 18
+
+interface Placement {
+  distance: number
+  id: string
+  lane: number
+}
 
 function assert(condition: boolean, message: string) {
   if (!condition) {
@@ -56,6 +63,25 @@ function assertVisibleWindow(items: Array<{ distance: number }>, distance: numbe
     nearestAhead ? nearestAhead.distance <= distance + lookAhead + 180 : false,
     `Expected ${label} ahead window near distance ${distance}`,
   )
+}
+
+function assertSeparatedPlacements(items: Placement[]) {
+  for (let firstIndex = 0; firstIndex < items.length; firstIndex += 1) {
+    for (let secondIndex = firstIndex + 1; secondIndex < items.length; secondIndex += 1) {
+      const first = items[firstIndex]
+      const second = items[secondIndex]
+
+      if (!first || !second) {
+        throw new Error(`Missing placement pair at ${firstIndex}/${secondIndex}`)
+      }
+
+      const isCrowded =
+        Math.abs(first.distance - second.distance) < modelSeparationDistance &&
+        Math.abs(first.lane - second.lane) <= 1
+
+      assert(!isCrowded, `Expected ${first.id} and ${second.id} to avoid crowding`)
+    }
+  }
 }
 
 function assertObstacle(obstacle: Obstacle) {
@@ -116,6 +142,23 @@ for (const distance of samples) {
   assertVisibleWindow(boostGates, distance, "boost gate")
   assertVisibleWindow(checkpoints, distance, "checkpoint")
   assertVisibleWindow(memoryShards, distance, "memory shard")
+  assertSeparatedPlacements([
+    ...obstacles.map((obstacle) => ({
+      id: obstacle.id,
+      lane: obstacle.lane,
+      distance: obstacle.distance,
+    })),
+    ...boostGates.map((boostGate) => ({
+      id: boostGate.id,
+      lane: boostGate.lane,
+      distance: boostGate.distance,
+    })),
+    ...memoryShards.map((memoryShard) => ({
+      id: memoryShard.id,
+      lane: memoryShard.lane,
+      distance: memoryShard.distance,
+    })),
+  ])
 
   console.log("generation ok", {
     distance,

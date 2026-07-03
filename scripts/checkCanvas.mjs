@@ -147,10 +147,9 @@ async function assertAmbientGameHidden(page, hidden) {
   const expectedValue = String(hidden)
   const actualValues = {
     hud: await page.locator(".hud").getAttribute("aria-hidden"),
-    sceneLayer: await page.locator(".scene-layer").getAttribute("aria-hidden"),
   }
 
-  if (actualValues.sceneLayer !== expectedValue || actualValues.hud !== expectedValue) {
+  if (actualValues.hud !== expectedValue) {
     throw new Error(
       `Expected ambient game aria-hidden=${expectedValue}, got ${JSON.stringify(actualValues)}`,
     )
@@ -174,15 +173,13 @@ async function pressEscapeWithRepeat(page) {
  */
 async function assertReducedMotionStyles(page) {
   const styles = await page.evaluate(() => {
-    const speedVeil = document.querySelector(".speed-veil")
     const startButton = document.querySelector(".overlay button")
 
-    if (!(speedVeil instanceof HTMLElement) || !(startButton instanceof HTMLElement)) {
+    if (!(startButton instanceof HTMLElement)) {
       return null
     }
 
     return {
-      speedVeilDisplay: getComputedStyle(speedVeil).display,
       startButtonTransition: getComputedStyle(startButton).transitionDuration,
     }
   })
@@ -191,7 +188,7 @@ async function assertReducedMotionStyles(page) {
     throw new Error("Expected reduced-motion style targets to exist")
   }
 
-  if (styles.speedVeilDisplay !== "none" || styles.startButtonTransition !== "0s") {
+  if (styles.startButtonTransition !== "0s") {
     throw new Error(`Reduced-motion styles were not applied: ${JSON.stringify(styles)}`)
   }
 }

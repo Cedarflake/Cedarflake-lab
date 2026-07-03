@@ -16,12 +16,19 @@ interface TrackSegmentRef {
   }
 }
 
+interface RoadSurfaceRef {
+  visible: boolean
+}
+
 interface TrackProps {
   distanceRef: RefObject<number>
 }
 
+const alternateRoadColor = "#ece7e8"
+
 export function Track({ distanceRef }: TrackProps) {
   const segmentRefs = useRef<Array<TrackSegmentRef | null>>([])
+  const roadSurfaceRefs = useRef<Array<RoadSurfaceRef | null>>([])
   const segmentIndexes = useMemo(
     () => Array.from({ length: trackConfig.visibleSegments }, (_, index) => index),
     [],
@@ -36,12 +43,23 @@ export function Track({ distanceRef }: TrackProps) {
       if (!segment) return
 
       const segmentDistance = firstSegmentDistance + index * trackConfig.segmentLength
+      const segmentParity = Math.floor(segmentDistance / trackConfig.segmentLength) % 2
       const z = -(segmentDistance - distance) + 8
       const bend = resolveRelativeTrackCenter(segmentDistance, distance)
       const heading = resolveTrackHeading(segmentDistance)
+      const baseRoad = roadSurfaceRefs.current[index * 2]
+      const alternateRoad = roadSurfaceRefs.current[index * 2 + 1]
 
       segment.position.set(bend, -0.12, z)
       segment.rotation.set(0, heading, 0)
+
+      if (baseRoad) {
+        baseRoad.visible = segmentParity === 0
+      }
+
+      if (alternateRoad) {
+        alternateRoad.visible = segmentParity === 1
+      }
     })
   })
 
@@ -54,11 +72,27 @@ export function Track({ distanceRef }: TrackProps) {
             segmentRefs.current[index] = segment
           }}
         >
-          <mesh receiveShadow>
+          <mesh
+            receiveShadow
+            ref={(road) => {
+              roadSurfaceRefs.current[index * 2] = road
+            }}
+          >
             <boxGeometry
               args={[trackConfig.roadHalfWidth * 2, 0.18, trackConfig.segmentLength + 0.36]}
             />
             <meshStandardMaterial color={dreamPalette.road} roughness={0.72} />
+          </mesh>
+          <mesh
+            receiveShadow
+            ref={(road) => {
+              roadSurfaceRefs.current[index * 2 + 1] = road
+            }}
+          >
+            <boxGeometry
+              args={[trackConfig.roadHalfWidth * 2, 0.18, trackConfig.segmentLength + 0.36]}
+            />
+            <meshStandardMaterial color={alternateRoadColor} roughness={0.72} />
           </mesh>
 
           <mesh position={[-trackConfig.roadHalfWidth - 0.12, 0.03, 0]}>

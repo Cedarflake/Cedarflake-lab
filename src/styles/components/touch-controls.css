@@ -75,5 +75,23 @@
 @media (max-width: 760px) {
   .touch-controls {
     display: grid;
+    gap: 10px;
+  }
+
+  .touch-controls__steer,
+  .touch-controls__drive {
+    gap: 8px;
+  }
+
+  .touch-controls button {
+    min-width: 56px;
+    min-height: 52px;
+    padding-inline: 10px;
+    font-size: 0.96rem;
+  }
+
+  .touch-controls__go {
+    min-width: 68px;
+    min-height: 64px;
   }
 }

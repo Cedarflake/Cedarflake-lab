@@ -52,7 +52,6 @@ function MemoryShardNode({ distanceRef, memoryShard }: MemoryShardNodeProps) {
           <torusGeometry args={[0.72, 0.018, 8, 56]} />
           <meshBasicMaterial color={dreamPalette.carGlow} transparent opacity={0.46} />
         </mesh>
-        <pointLight color={dreamPalette.lemon} intensity={4.6} distance={4.4} />
       </group>
     </Float>
   )

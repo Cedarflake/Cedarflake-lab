@@ -51,7 +51,6 @@ function BoostGateNode({ boostGate, distanceRef }: BoostGateNodeProps) {
         <boxGeometry args={[0.16, 0.08, 2.9]} />
         <meshBasicMaterial color="#fff7c6" transparent opacity={0.72} />
       </mesh>
-      <pointLight color={dreamPalette.boost} intensity={6} distance={5} />
     </group>
   )
 }

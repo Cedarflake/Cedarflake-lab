@@ -1,7 +1,7 @@
 import { useMemo, useRef } from "react"
 import type { RefObject } from "react"
 
-import { RoundedBox, Trail } from "@react-three/drei"
+import { RoundedBox } from "@react-three/drei"
 import { useFrame } from "@react-three/fiber"
 import type { Group } from "three"
 
@@ -56,18 +56,6 @@ export function PlayerCar({ carRef, distanceRef, isDriftingRef }: PlayerCarProps
 
   return (
     <group ref={carRef}>
-      <Trail
-        width={1.1}
-        length={7}
-        color={dreamPalette.carGlow}
-        attenuation={(width) => width * width}
-      >
-        <mesh position={[0, 0.15, 1.35]}>
-          <sphereGeometry args={[0.18, 18, 18]} />
-          <meshBasicMaterial color={dreamPalette.carGlow} transparent opacity={0.85} />
-        </mesh>
-      </Trail>
-
       <RoundedBox args={[1.9, 0.54, 3.05]} radius={0.18} smoothness={8} position={[0, 0.18, 0]}>
         <meshStandardMaterial color={dreamPalette.car} roughness={0.28} metalness={0.16} />
       </RoundedBox>

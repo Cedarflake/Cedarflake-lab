@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import { PerspectiveCamera as DreiPerspectiveCamera, Stars } from "@react-three/drei"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
@@ -6,6 +6,7 @@ import { PerspectiveCamera as ThreePerspectiveCamera } from "three"
 import type { Group } from "three"
 
 import { BoostGates } from "@/entities/BoostGates"
+import { CarMotionTrail } from "@/entities/CarMotionTrail"
 import { Checkpoints } from "@/entities/Checkpoints"
 import { DreamObjects } from "@/entities/DreamObjects"
 import { MemoryShards } from "@/entities/MemoryShards"
@@ -58,6 +59,7 @@ const initialRuntime: RuntimeState = {
 const maxFrameDelta = 0.1
 const baseCameraFov = 50
 const maxCameraFov = 58
+const worldWindowUpdateDistance = 24
 
 function createRuntimeState(): RuntimeState {
   return {
@@ -82,14 +84,17 @@ function pruneHandledEvents(handledEvents: Set<string>, currentIndex: number) {
 function RacerWorld() {
   const carRef = useRef<Group | null>(null)
   const runtimeRef = useRef<RuntimeState>(createRuntimeState())
+  const carXRef = useRef(0)
   const distanceRef = useRef(0)
   const isDriftingRef = useRef(false)
+  const speedRef = useRef(0)
   const wasDriftingRef = useRef(false)
+  const worldDistanceRef = useRef(0)
   const lastCollisionAtRef = useRef(Number.NEGATIVE_INFINITY)
   const lastTelemetryAtRef = useRef(0)
+  const [worldDistance, setWorldDistance] = useState(0)
   const runId = useGameStore((state) => state.runId)
   const status = useGameStore((state) => state.status)
-  const visualDistance = useGameStore((state) => state.distance)
   const setTelemetry = useGameStore((state) => state.setTelemetry)
   const addScore = useGameStore((state) => state.addScore)
   const damage = useGameStore((state) => state.damage)
@@ -100,9 +105,13 @@ function RacerWorld() {
 
   useEffect(() => {
     runtimeRef.current = createRuntimeState()
+    carXRef.current = 0
     distanceRef.current = 0
     isDriftingRef.current = false
+    speedRef.current = 0
     wasDriftingRef.current = false
+    worldDistanceRef.current = 0
+    setWorldDistance(0)
     lastCollisionAtRef.current = Number.NEGATIVE_INFINITY
     lastTelemetryAtRef.current = 0
     setTelemetry({ speed: 0, distance: 0 })
@@ -116,6 +125,7 @@ function RacerWorld() {
 
     if (status !== "running") {
       isDriftingRef.current = false
+      speedRef.current = runtime.speed
       runtime.speed = lerp(runtime.speed, 0, Math.min(frameDelta * 2.2, 1))
       distanceRef.current = runtime.distance
       if (elapsedTime - lastTelemetryAtRef.current > 1 / 20) {
@@ -155,6 +165,12 @@ function RacerWorld() {
     runtime.distance += runtime.speed * frameDelta
     distanceRef.current = runtime.distance
     runtime.steering = lerp(runtime.steering, input.steer, Math.min(frameDelta * 7, 1))
+    speedRef.current = runtime.speed
+
+    if (runtime.distance - worldDistanceRef.current >= worldWindowUpdateDistance) {
+      worldDistanceRef.current = runtime.distance
+      setWorldDistance(runtime.distance)
+    }
 
     const isScoringDrift =
       input.isDrifting &&
@@ -172,6 +188,7 @@ function RacerWorld() {
     const car = carRef.current
     if (car) {
       car.position.x = lerp(car.position.x, runtime.x, Math.min(frameDelta * 11, 1))
+      carXRef.current = car.position.x
       car.position.y = 0.62 + Math.sin(runtime.distance * 0.12) * 0.035
       car.rotation.y = -runtime.velocityX * 0.018
       car.rotation.x = lerp(car.rotation.x, input.brake > 0 ? -0.035 : 0.018, frameDelta * 6)
@@ -344,10 +361,19 @@ function RacerWorld() {
     }
   })
 
-  const visibleObstacles = createVisibleObstacles(visualDistance)
-  const visibleBoostGates = createVisibleBoostGates(visualDistance)
-  const visibleCheckpoints = createVisibleCheckpoints(visualDistance)
-  const visibleMemoryShards = createVisibleMemoryShards(visualDistance)
+  const visibleObstacles = useMemo(() => createVisibleObstacles(worldDistance), [worldDistance])
+  const visibleBoostGates = useMemo(
+    () => createVisibleBoostGates(worldDistance),
+    [worldDistance],
+  )
+  const visibleCheckpoints = useMemo(
+    () => createVisibleCheckpoints(worldDistance),
+    [worldDistance],
+  )
+  const visibleMemoryShards = useMemo(
+    () => createVisibleMemoryShards(worldDistance),
+    [worldDistance],
+  )
 
   return (
     <>
@@ -360,7 +386,7 @@ function RacerWorld() {
       <color attach="background" args={[dreamPalette.skyTop]} />
       <fog attach="fog" args={[dreamPalette.fog, 42, 210]} />
       <ambientLight intensity={0.82} />
-      <directionalLight position={[8, 11, 7]} intensity={2.4} castShadow={!isPortrait} />
+      <directionalLight position={[8, 11, 7]} intensity={2.4} />
       <pointLight position={[0, 5, 2]} color={dreamPalette.carGlow} intensity={10} distance={14} />
       <Stars
         radius={120}
@@ -377,6 +403,7 @@ function RacerWorld() {
         <MemoryShards distanceRef={distanceRef} memoryShards={visibleMemoryShards} />
         <DreamObjects distanceRef={distanceRef} obstacles={visibleObstacles} />
         <Checkpoints distanceRef={distanceRef} checkpoints={visibleCheckpoints} />
+        <CarMotionTrail carXRef={carXRef} distanceRef={distanceRef} speedRef={speedRef} />
         <PlayerCar carRef={carRef} distanceRef={distanceRef} isDriftingRef={isDriftingRef} />
       </group>
     </>
@@ -387,7 +414,6 @@ export function LiminalRacerScene() {
   return (
     <Canvas
       aria-label="Liminal Drift 3D racing scene"
-      shadows
       dpr={1}
       gl={{ antialias: true, alpha: false }}
     >

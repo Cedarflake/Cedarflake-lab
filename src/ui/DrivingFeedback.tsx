@@ -4,7 +4,6 @@ import { pulseHaptics } from "@/game/haptics"
 import { useGameStore } from "@/game/useGameStore"
 
 export function DrivingFeedback() {
-  const speed = useGameStore((state) => state.speed)
   const status = useGameStore((state) => state.status)
   const integrity = useGameStore((state) => state.integrity)
   const impactId = useGameStore((state) => state.impactId)
@@ -12,7 +11,6 @@ export function DrivingFeedback() {
   const feedbackKind = useGameStore((state) => state.feedbackKind)
   const feedbackPoints = useGameStore((state) => state.feedbackPoints)
   const lastEvent = useGameStore((state) => state.lastEvent)
-  const opacity = status === "running" ? Math.min(speed / 90, 0.42) : 0
   const integrityAlertOpacity =
     status === "running" && integrity < 36 ? Math.min((36 - integrity) / 36, 0.72) : 0
   const lastFeedbackIdRef = useRef(0)
@@ -38,7 +36,6 @@ export function DrivingFeedback() {
 
   return (
     <>
-      <div className="speed-veil" style={{ opacity }} aria-hidden="true" />
       <div
         className="integrity-veil"
         style={{ opacity: integrityAlertOpacity }}

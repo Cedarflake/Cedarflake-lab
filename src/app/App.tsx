@@ -53,6 +53,23 @@ class SceneErrorBoundary extends Component<SceneErrorBoundaryProps, SceneErrorBo
   }
 }
 
+function SceneLoading() {
+  return (
+    <div className="scene-loading" role="status" aria-label="Loading 3D racing scene">
+      <div className="scene-loading__track" aria-hidden="true">
+        <span className="scene-loading__car" />
+      </div>
+      <div className="scene-loading__copy">
+        <strong>Liminal Drift</strong>
+        <span>Warming the road</span>
+      </div>
+      <div className="scene-loading__meter" aria-hidden="true">
+        <span />
+      </div>
+    </div>
+  )
+}
+
 export function App() {
   const status = useGameStore((state) => state.status)
 
@@ -60,13 +77,9 @@ export function App() {
 
   return (
     <main className="game-shell" data-status={status} tabIndex={-1}>
-      <div className="scene-layer" aria-hidden={status !== "running"}>
+      <div className="scene-layer">
         <SceneErrorBoundary>
-          <Suspense
-            fallback={
-              <div className="scene-loading" role="status" aria-label="Loading 3D racing scene" />
-            }
-          >
+          <Suspense fallback={<SceneLoading />}>
             <LiminalRacerScene />
           </Suspense>
         </SceneErrorBoundary>

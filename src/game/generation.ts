@@ -3,10 +3,71 @@ import type { BoostGate, Checkpoint, MemoryShard, Obstacle } from "@/shared/type
 import { trackConfig } from "./gameConfig"
 
 const obstacleKinds: Array<Obstacle["kind"]> = ["pillar", "hole", "wall"]
+const boostLanes = [-1, 0, 1] as const
+const roadLanes = [-2, -1, 0, 1, 2] as const
+const modelSeparationDistance = 18
+const placementDistanceOffsets = [0, 18, -18, 30, -30] as const
+
+interface TrackPlacement {
+  lane: number
+  distance: number
+}
 
 function hash(seed: number) {
   const value = Math.sin(seed * 12.9898) * 43758.5453
   return value - Math.floor(value)
+}
+
+function arePlacementsCrowded(a: TrackPlacement, b: TrackPlacement) {
+  return (
+    Math.abs(a.distance - b.distance) < modelSeparationDistance && Math.abs(a.lane - b.lane) <= 1
+  )
+}
+
+function resolveSeparatedPlacement(
+  basePlacement: TrackPlacement,
+  lanes: readonly number[],
+  blockers: TrackPlacement[],
+  seed: number,
+) {
+  const sortedLanes = [...lanes].sort((a, b) => {
+    const aDistance = Math.abs(a - basePlacement.lane)
+    const bDistance = Math.abs(b - basePlacement.lane)
+
+    if (aDistance !== bDistance) {
+      return aDistance - bDistance
+    }
+
+    return hash(seed + a * 17) - hash(seed + b * 17)
+  })
+
+  for (const distanceOffset of placementDistanceOffsets) {
+    for (const lane of sortedLanes) {
+      const placement = {
+        lane,
+        distance: basePlacement.distance + distanceOffset,
+      }
+
+      if (!blockers.some((blocker) => arePlacementsCrowded(placement, blocker))) {
+        return placement
+      }
+    }
+  }
+
+  return basePlacement
+}
+
+function createNearbyObstacleBlockers(distance: number) {
+  const obstacleIndex = Math.max(0, Math.floor((distance - 90) / 46) - 1)
+
+  return Array.from({ length: 4 }, (_, offset) => {
+    const obstacle = createObstacleAt(obstacleIndex + offset)
+
+    return {
+      lane: obstacle.lane,
+      distance: obstacle.distance,
+    }
+  })
 }
 
 export function createObstacleAt(index: number): Obstacle {
@@ -31,19 +92,50 @@ export function createCheckpointAt(index: number): Checkpoint {
 }
 
 export function createBoostGateAt(index: number): BoostGate {
-  return {
-    id: `boost-${index}`,
+  const basePlacement = {
     lane: Math.floor(hash(index + 43) * 3) - 1,
     distance: 125 + index * 138 + hash(index + 53) * 28,
+  }
+  const placement = resolveSeparatedPlacement(
+    basePlacement,
+    boostLanes,
+    createNearbyObstacleBlockers(basePlacement.distance),
+    index + 101,
+  )
+
+  return {
+    id: `boost-${index}`,
+    lane: placement.lane,
+    distance: placement.distance,
     width: 1.8,
   }
 }
 
 export function createMemoryShardAt(index: number): MemoryShard {
-  return {
-    id: `memory-shard-${index}`,
+  const basePlacement = {
     lane: Math.floor(hash(index + 71) * 5) - 2,
     distance: 70 + index * 92 + hash(index + 83) * 18,
+  }
+  const boostIndex = Math.max(0, Math.floor((basePlacement.distance - 125) / 138) - 1)
+  const boostBlockers = Array.from({ length: 3 }, (_, offset) => {
+    const boostGate = createBoostGateAt(boostIndex + offset)
+
+    return {
+      lane: boostGate.lane,
+      distance: boostGate.distance,
+    }
+  })
+  const placement = resolveSeparatedPlacement(
+    basePlacement,
+    roadLanes,
+    [...createNearbyObstacleBlockers(basePlacement.distance), ...boostBlockers],
+    index + 211,
+  )
+
+  return {
+    id: `memory-shard-${index}`,
+    lane: placement.lane,
+    distance: placement.distance,
   }
 }
 

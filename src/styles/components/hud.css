@@ -159,11 +159,11 @@
       calc(var(--space-safe-mobile) + env(safe-area-inset-right)) auto
       calc(var(--space-safe-mobile) + env(safe-area-inset-left));
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 7px;
+    gap: 6px;
   }
 
   .hud__cluster {
-    padding: 8px 10px;
+    padding: 7px 9px;
   }
 
   .hud__label {
@@ -172,12 +172,12 @@
   }
 
   .hud strong {
-    font-size: 1.02rem;
+    font-size: 0.96rem;
   }
 
   .hud small {
     margin-block-start: 3px;
-    font-size: 0.66rem;
+    font-size: 0.62rem;
   }
 
   .hud__meters {

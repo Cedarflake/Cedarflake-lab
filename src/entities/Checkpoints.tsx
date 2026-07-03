@@ -39,7 +39,6 @@ function CheckpointNode({ checkpoint, distanceRef }: CheckpointNodeProps) {
       <Torus args={[checkpoint.width / 2, 0.06, 10, 96]}>
         <meshBasicMaterial color={dreamPalette.lemon} transparent opacity={0.88} />
       </Torus>
-      <pointLight color={dreamPalette.lemon} intensity={12} distance={9} />
     </group>
   )
 }

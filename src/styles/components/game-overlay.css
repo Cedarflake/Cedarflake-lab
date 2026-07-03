@@ -141,6 +141,9 @@
 
   .pause-button {
     right: calc(14px + env(safe-area-inset-right));
-    bottom: calc(110px + env(safe-area-inset-bottom));
+    bottom: calc(92px + env(safe-area-inset-bottom));
+    min-height: 40px;
+    padding-inline: 14px;
+    font-size: 0.9rem;
   }
 }
