@@ -2,6 +2,7 @@ import { useMemo, useRef } from "react"
 import type { RefObject } from "react"
 
 import { useFrame } from "@react-three/fiber"
+import { AdditiveBlending } from "three"
 import type { Group } from "three"
 
 import { wallObstacleWidth } from "@/game/collision"
@@ -36,6 +37,16 @@ interface DreamRelicNodeProps {
   nodeRef: (node: Group | null) => void
 }
 
+interface TombstoneNodeProps {
+  index: number
+  nodeRef: (node: Group | null) => void
+}
+
+interface GhostNodeProps {
+  index: number
+  nodeRef: (node: Group | null) => void
+}
+
 interface ObstacleNodeProps {
   nodeRef: (node: Group | null) => void
   obstacle: Obstacle
@@ -45,14 +56,40 @@ const desertSetPieceCycleDistance = 420
 const desertFieldCycleDistance = 520
 const dreamRelicCycleDistance = 620
 const signCycleDistance = 360
+const tombstoneCycleDistance = 460
+const ghostCycleDistance = 680
 
 function resolveSceneryZ(originDistance: number, distance: number, speed: number, cycle: number) {
   return 10 - wrapDistance(originDistance - distance * speed, cycle)
 }
 
+function DuneCross({
+  color,
+  rotation,
+  scale,
+}: {
+  color: string
+  rotation: [number, number, number]
+  scale: number
+}) {
+  return (
+    <group rotation={rotation} scale={scale}>
+      <mesh castShadow receiveShadow position={[0, 0.38, 0]}>
+        <boxGeometry args={[0.12, 0.96, 0.1]} />
+        <meshStandardMaterial color={color} roughness={0.88} />
+      </mesh>
+      <mesh castShadow receiveShadow position={[0, 0.62, 0]}>
+        <boxGeometry args={[0.54, 0.1, 0.1]} />
+        <meshStandardMaterial color={color} roughness={0.9} />
+      </mesh>
+    </group>
+  )
+}
+
 function DuneCluster({ index }: { index: number }) {
   const firstDuneScale = 1 + (index % 4) * 0.16
   const secondDuneScale = 0.72 + (index % 3) * 0.12
+  const crossColor = index % 2 === 0 ? dreamPalette.ruinDark : dreamPalette.ruin
 
   return (
     <group>
@@ -92,6 +129,27 @@ function DuneCluster({ index }: { index: number }) {
         <boxGeometry args={[1.18 * secondDuneScale, 0.035, 0.07]} />
         <meshBasicMaterial color="#d7bd9f" transparent opacity={0.3} />
       </mesh>
+      <group position={[-2.38, 0.62, 0.42]}>
+        <DuneCross
+          color={crossColor}
+          rotation={[0.04, -0.34 + (index % 3) * 0.08, -0.18 + (index % 4) * 0.05]}
+          scale={0.68 + (index % 3) * 0.1}
+        />
+      </group>
+      {index % 3 !== 1 && (
+        <group position={[2.12, 0.42, -0.72]}>
+          <DuneCross
+            color={dreamPalette.ruinDark}
+            rotation={[-0.03, 0.34 - (index % 4) * 0.07, 0.12 - (index % 3) * 0.07]}
+            scale={0.48 + (index % 4) * 0.06}
+          />
+        </group>
+      )}
+      {index % 5 === 0 && (
+        <group position={[0.1, 0.72, 1.02]}>
+          <DuneCross color={dreamPalette.ruin} rotation={[0.02, 0.54, -0.24]} scale={0.42} />
+        </group>
+      )}
     </group>
   )
 }
@@ -293,6 +351,90 @@ function DreamRelicNode({ index, nodeRef }: DreamRelicNodeProps) {
   )
 }
 
+function TombstoneNode({ index, nodeRef }: TombstoneNodeProps) {
+  const isTall = index % 3 === 0
+  const tint = index % 2 === 0 ? dreamPalette.ruin : dreamPalette.ruinDark
+
+  return (
+    <group ref={nodeRef} scale={0.78 + (index % 5) * 0.08}>
+      <mesh castShadow receiveShadow position={[0, 0.52, 0]}>
+        <boxGeometry args={[0.84, isTall ? 1.18 : 0.94, 0.18]} />
+        <meshStandardMaterial color={tint} roughness={0.9} />
+      </mesh>
+      <mesh castShadow receiveShadow position={[0, isTall ? 1.12 : 0.98, 0]}>
+        <sphereGeometry args={[0.42, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        <meshStandardMaterial color={tint} roughness={0.88} />
+      </mesh>
+      <mesh position={[0, 0.72, 0.1]}>
+        <boxGeometry args={[0.44, 0.06, 0.035]} />
+        <meshBasicMaterial color="#3f3942" transparent opacity={0.52} />
+      </mesh>
+      <mesh position={[0, 0.56, 0.1]}>
+        <boxGeometry args={[0.28, 0.05, 0.035]} />
+        <meshBasicMaterial color="#3f3942" transparent opacity={0.38} />
+      </mesh>
+      {index % 4 === 0 && (
+        <group position={[0.36, 0.98, 0.12]} rotation={[0, 0, 0.12]}>
+          <DuneCross color={dreamPalette.ruinDark} rotation={[0, 0, 0]} scale={0.32} />
+        </group>
+      )}
+    </group>
+  )
+}
+
+function GhostNode({ index, nodeRef }: GhostNodeProps) {
+  const bodyTint = index % 2 === 0 ? "#c7dde3" : "#d2c8de"
+
+  return (
+    <group ref={nodeRef} scale={0.72 + (index % 3) * 0.12}>
+      <mesh position={[0, 0.72, 0]} scale={[1.02, 1.14, 0.72]}>
+        <sphereGeometry args={[0.34, 14, 10]} />
+        <meshBasicMaterial
+          blending={AdditiveBlending}
+          color={bodyTint}
+          depthWrite={false}
+          transparent
+          opacity={0.32}
+        />
+      </mesh>
+      <mesh position={[0, 0, 0]} scale={[0.86, 1.62, 0.52]}>
+        <sphereGeometry args={[0.5, 16, 8, 0, Math.PI * 2, 0, Math.PI]} />
+        <meshBasicMaterial
+          blending={AdditiveBlending}
+          color={bodyTint}
+          depthWrite={false}
+          transparent
+          opacity={0.24}
+        />
+      </mesh>
+      <mesh position={[-0.17, 0.72, 0.24]} scale={[0.78, 1.78, 0.62]} rotation={[0, 0, -0.16]}>
+        <sphereGeometry args={[0.038, 8, 6]} />
+        <meshBasicMaterial color="#2f3542" depthWrite={false} transparent opacity={0.62} />
+      </mesh>
+      <mesh position={[0.17, 0.72, 0.24]} scale={[0.78, 1.78, 0.62]} rotation={[0, 0, 0.16]}>
+        <sphereGeometry args={[0.038, 8, 6]} />
+        <meshBasicMaterial color="#2f3542" depthWrite={false} transparent opacity={0.62} />
+      </mesh>
+      {[-0.34, -0.12, 0.12, 0.34].map((x, waveIndex) => (
+        <mesh
+          key={waveIndex}
+          position={[x, -0.64 + (waveIndex % 2) * 0.1, 0]}
+          scale={[0.72, 1.28 + waveIndex * 0.08, 0.52]}
+        >
+          <sphereGeometry args={[0.18, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2]} />
+          <meshBasicMaterial
+            blending={AdditiveBlending}
+            color={bodyTint}
+            depthWrite={false}
+            transparent
+            opacity={0.16}
+          />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
 function ObstacleNode({ nodeRef, obstacle }: ObstacleNodeProps) {
   if (obstacle.kind === "hole") {
     return (
@@ -376,6 +518,8 @@ export function DreamObjects({ distanceRef, obstacles }: DreamObjectsProps) {
   const desertFieldRefs = useRef<Array<Group | null>>([])
   const dreamRelicRefs = useRef<Array<Group | null>>([])
   const signRefs = useRef<Array<Group | null>>([])
+  const tombstoneRefs = useRef<Array<Group | null>>([])
+  const ghostRefs = useRef<Array<Group | null>>([])
   const desertSetPieces = useMemo(
     () => Array.from({ length: 18 }, (_, index) => ({ index, side: index % 2 === 0 ? -1 : 1 })),
     [],
@@ -389,15 +533,23 @@ export function DreamObjects({ distanceRef, obstacles }: DreamObjectsProps) {
     [],
   )
   const dreamRelics = useMemo(
-    () => Array.from({ length: 16 }, (_, index) => ({ index, side: index % 2 === 0 ? -1 : 1 })),
+    () => Array.from({ length: 28 }, (_, index) => ({ index, side: index % 2 === 0 ? -1 : 1 })),
     [],
   )
   const signs = useMemo(
     () => Array.from({ length: 10 }, (_, index) => ({ index, side: index % 2 === 0 ? -1 : 1 })),
     [],
   )
+  const tombstones = useMemo(
+    () => Array.from({ length: 22 }, (_, index) => ({ index, side: index % 2 === 0 ? -1 : 1 })),
+    [],
+  )
+  const ghosts = useMemo(
+    () => Array.from({ length: 7 }, (_, index) => ({ index, side: index % 2 === 0 ? -1 : 1 })),
+    [],
+  )
 
-  useFrame(() => {
+  useFrame(({ camera }) => {
     const distance = distanceRef.current
 
     desertSetPieces.forEach(({ index, side }) => {
@@ -439,18 +591,49 @@ export function DreamObjects({ distanceRef, obstacles }: DreamObjectsProps) {
       const relic = dreamRelicRefs.current[index]
       if (!relic) return
 
-      const sideBand = index % 4
-      const z = resolveSceneryZ(48 + index * 38, distance, 0.64, dreamRelicCycleDistance)
-      const x = side * (trackConfig.roadHalfWidth + 13.5 + sideBand * 5.4)
+      const sideBand = index % 5
+      const z = resolveSceneryZ(48 + index * 24, distance, 0.64, dreamRelicCycleDistance)
+      const x = side * (trackConfig.roadHalfWidth + 13.5 + sideBand * 4.6)
       const groundY = resolveDesertGroundHeight(x, z)
       const dreamPhase = distance * 0.012 + index * 0.78
 
-      relic.position.set(x, groundY + 2.8 + (index % 3) * 0.58 + Math.sin(dreamPhase) * 0.24, z)
+      relic.position.set(x, groundY + 2.8 + (index % 4) * 0.5 + Math.sin(dreamPhase) * 0.24, z)
       relic.rotation.set(
         Math.sin(dreamPhase * 0.68) * 0.08,
         side * (0.42 + sideBand * 0.08) + Math.sin(dreamPhase * 0.42) * 0.12,
         Math.cos(dreamPhase * 0.74) * 0.06,
       )
+    })
+
+    tombstones.forEach(({ index, side }) => {
+      const tombstone = tombstoneRefs.current[index]
+      if (!tombstone) return
+
+      const sideBand = index % 4
+      const z = resolveSceneryZ(32 + index * 25, distance, 0.94, tombstoneCycleDistance)
+      const x = side * (trackConfig.roadHalfWidth + 7.2 + sideBand * 3.4 + (index % 3) * 0.72)
+      const groundY = resolveDesertGroundHeight(x, z)
+      const lean = Math.sin(index * 1.7) * 0.16
+
+      tombstone.position.set(x, groundY + 0.18, z)
+      tombstone.rotation.set(0, side * (0.18 + sideBand * 0.08), lean)
+    })
+
+    ghosts.forEach(({ index, side }) => {
+      const ghost = ghostRefs.current[index]
+      if (!ghost) return
+
+      const z = resolveSceneryZ(126 + index * 91, distance, 0.48, ghostCycleDistance)
+      const phase = distance * 0.018 + index * 1.37
+      const sideBand = index % 3
+      const x =
+        side * (trackConfig.roadHalfWidth + 4.6 + sideBand * 1.8 + Math.sin(phase * 0.7) * 0.72)
+      const groundY = resolveDesertGroundHeight(x, z)
+      const blink = Math.sin(distance * 0.045 + index * 2.2) > 0.72
+
+      ghost.position.set(x, groundY + 2.35 + Math.sin(phase) * 0.38, z)
+      ghost.lookAt(camera.position.x, ghost.position.y, camera.position.z)
+      ghost.visible = blink && z < 10 && z > -150
     })
 
     signs.forEach(({ index, side }) => {
@@ -507,6 +690,26 @@ export function DreamObjects({ distanceRef, obstacles }: DreamObjectsProps) {
           index={index}
           nodeRef={(node) => {
             dreamRelicRefs.current[index] = node
+          }}
+        />
+      ))}
+
+      {tombstones.map(({ index }) => (
+        <TombstoneNode
+          key={index}
+          index={index}
+          nodeRef={(node) => {
+            tombstoneRefs.current[index] = node
+          }}
+        />
+      ))}
+
+      {ghosts.map(({ index }) => (
+        <GhostNode
+          key={index}
+          index={index}
+          nodeRef={(node) => {
+            ghostRefs.current[index] = node
           }}
         />
       ))}
