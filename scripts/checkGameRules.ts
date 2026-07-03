@@ -7,6 +7,11 @@ import {
   wallObstacleWidth,
 } from "../src/game/collision"
 import { resolveRunDifficulty } from "../src/game/difficulty"
+import {
+  resolveGamepadInput,
+  resolveGamepadOverlayInput,
+  type GamepadLike,
+} from "../src/game/gamepadInput"
 import { trackConfig } from "../src/game/gameConfig"
 import { clamp, lerp, wrapDistance } from "../src/game/number"
 import { isCollisionRecovering, willEndRunAfterDamage } from "../src/game/runState"
@@ -18,6 +23,23 @@ function assert(condition: boolean, message: string) {
   if (!condition) {
     throw new Error(message)
   }
+}
+
+function createGamepad(buttonValues: Record<number, number>, axes: readonly number[] = []) {
+  const buttons = Array.from({ length: 16 }, (_, index) => {
+    const value = buttonValues[index] ?? 0
+
+    return {
+      pressed: value > 0,
+      value,
+    }
+  })
+
+  return {
+    axes,
+    buttons,
+    connected: true,
+  } satisfies GamepadLike
 }
 
 assert(!willEndRunAfterDamage(23, 22), "Expected non-fatal damage above the threshold")
@@ -116,5 +138,29 @@ assert(resolveTouchInput(activeTouchControls).isDrifting, "Expected touch drift 
 
 activeTouchControls.delete("right")
 assert(resolveTouchInput(activeTouchControls).steer === -1, "Expected held left touch to survive")
+
+const xboxDrivingInput = resolveGamepadInput([
+  createGamepad(
+    {
+      4: 1,
+      7: 1,
+    },
+    [0.42],
+  ),
+])
+assert(xboxDrivingInput.steer === 0.42, "Expected Xbox left stick to steer")
+assert(xboxDrivingInput.throttle === 1, "Expected Xbox RT to drive")
+assert(xboxDrivingInput.isDrifting, "Expected Xbox shoulder button to drift")
+
+const xboxBrakeInput = resolveGamepadInput([createGamepad({ 6: 1 })])
+assert(xboxBrakeInput.brake === 1, "Expected Xbox LT to brake")
+
+const xboxOverlayInput = resolveGamepadOverlayInput([createGamepad({ 0: 1 })])
+assert(xboxOverlayInput.confirm, "Expected Xbox A button to confirm overlays")
+assert(!xboxOverlayInput.pause, "Expected Xbox A button to avoid pausing by itself")
+
+const xboxMenuInput = resolveGamepadOverlayInput([createGamepad({ 9: 1 })])
+assert(xboxMenuInput.confirm, "Expected Xbox Menu button to confirm overlays")
+assert(xboxMenuInput.pause, "Expected Xbox Menu button to pause and resume")
 
 console.log("game rules ok")

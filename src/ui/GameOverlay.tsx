@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react"
 
 import { playBackgroundMusic } from "@/app/backgroundMusic"
 import { formatNumber } from "@/game/format"
+import { resolveGamepadOverlayInput } from "@/game/gamepadInput"
 import { useGameStore } from "@/game/useGameStore"
 import type { GameStatus } from "@/shared/types"
 
@@ -147,6 +148,60 @@ function useDialogFocusTrap(status: GameStatus) {
   return dialogRef
 }
 
+function readGamepadOverlayInput() {
+  const gamepads =
+    typeof navigator !== "undefined" && typeof navigator.getGamepads === "function"
+      ? navigator.getGamepads()
+      : []
+
+  return resolveGamepadOverlayInput(gamepads)
+}
+
+function useGamepadOverlayControls({
+  onPause,
+  onRestart,
+  onResume,
+  onStart,
+  status,
+}: {
+  onPause: () => void
+  onRestart: () => void
+  onResume: () => void
+  onStart: () => void
+  status: GameStatus
+}) {
+  const previousInputRef = useRef(readGamepadOverlayInput())
+
+  useEffect(() => {
+    let animationFrame = 0
+
+    function syncGamepadOverlayInput() {
+      const input = readGamepadOverlayInput()
+      const confirmPressed = input.confirm && !previousInputRef.current.confirm
+      const pausePressed = input.pause && !previousInputRef.current.pause
+
+      if (status === "running" && pausePressed) {
+        onPause()
+      } else if (status === "paused" && (confirmPressed || pausePressed)) {
+        onResume()
+      } else if (status === "ready" && confirmPressed) {
+        onStart()
+      } else if (status === "ended" && confirmPressed) {
+        onRestart()
+      }
+
+      previousInputRef.current = input
+      animationFrame = window.requestAnimationFrame(syncGamepadOverlayInput)
+    }
+
+    animationFrame = window.requestAnimationFrame(syncGamepadOverlayInput)
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame)
+    }
+  }, [onPause, onRestart, onResume, onStart, status])
+}
+
 export function GameOverlay() {
   const status = useGameStore((state) => state.status)
   const score = useGameStore((state) => state.score)
@@ -164,24 +219,32 @@ export function GameOverlay() {
   const restart = useGameStore((state) => state.restart)
   const dialogRef = useDialogFocusTrap(status)
 
-  function playMusicFromGesture() {
+  const playMusicFromGesture = useCallback(() => {
     void playBackgroundMusic().catch(() => undefined)
-  }
+  }, [])
 
-  function handleStart() {
+  const handleStart = useCallback(() => {
     playMusicFromGesture()
     start()
-  }
+  }, [playMusicFromGesture, start])
 
-  function handleResume() {
+  const handleResume = useCallback(() => {
     playMusicFromGesture()
     resume()
-  }
+  }, [playMusicFromGesture, resume])
 
-  function handleRestart() {
+  const handleRestart = useCallback(() => {
     playMusicFromGesture()
     restart()
-  }
+  }, [playMusicFromGesture, restart])
+
+  useGamepadOverlayControls({
+    onPause: pause,
+    onRestart: handleRestart,
+    onResume: handleResume,
+    onStart: handleStart,
+    status,
+  })
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -209,7 +272,7 @@ export function GameOverlay() {
       window.removeEventListener("keydown", handleKeyDown)
       window.removeEventListener("blur", handleBlur)
     }
-  }, [pause, resume, status])
+  }, [pause, playMusicFromGesture, resume, status])
 
   if (status === "running") {
     return (
@@ -343,6 +406,13 @@ export function GameOverlay() {
             <dd>
               <span className="controls__desktop">Esc</span>
               <span className="controls__touch">Pause</span>
+            </dd>
+          </div>
+          <div className="glass-card controls__item">
+            <dt>Gamepad</dt>
+            <dd>
+              <span className="controls__desktop">A / RT / LT / Menu</span>
+              <span className="controls__touch">Desktop only</span>
             </dd>
           </div>
         </dl>
