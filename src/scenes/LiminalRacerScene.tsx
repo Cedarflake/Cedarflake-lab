@@ -151,7 +151,9 @@ function RacerWorld() {
     runtime.steering = lerp(runtime.steering, input.steer, Math.min(frameDelta * 7, 1))
 
     const isScoringDrift =
-      input.isDrifting && Math.abs(runtime.velocityX) > 4.2 && runtime.speed > 22
+      input.isDrifting &&
+      Math.abs(runtime.velocityX) > trackConfig.driftMinimumVelocity &&
+      runtime.speed > trackConfig.driftMinimumSpeed
     if (isScoringDrift) {
       addDriftCharge((Math.abs(runtime.velocityX) + runtime.speed * 0.18) * frameDelta * 18)
     }

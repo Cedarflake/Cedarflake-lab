@@ -12,6 +12,8 @@ export const trackConfig = {
   drag: 14,
   steering: 13,
   driftGrip: 0.58,
+  driftMinimumSpeed: 16,
+  driftMinimumVelocity: 3.6,
   normalGrip: 0.86,
   collisionDamage: 22,
   checkpointScore: 900,

@@ -11,6 +11,22 @@ function readMetric(text, label) {
   return match ? Number(match[1]) : 0
 }
 
+/**
+ * @param {import("playwright").Page} page
+ * @param {string} label
+ */
+async function readProgressValue(page, label) {
+  const value = Number(
+    await page.getByRole("progressbar", { name: label }).getAttribute("aria-valuenow"),
+  )
+
+  if (!Number.isFinite(value)) {
+    throw new Error(`Invalid progress value for ${label}`)
+  }
+
+  return value
+}
+
 const browser = await chromium.launch()
 let speed = 0
 let distance = 0
@@ -78,13 +94,23 @@ try {
     await page.getByRole("button", { name: "Start driving" }).click()
     await page.locator("canvas").waitFor()
     await page.keyboard.down("w")
-    await page.waitForTimeout(1400)
+    await page.waitForTimeout(700)
+    await page.keyboard.down("d")
+    await page.keyboard.down("Space")
+    await page.waitForTimeout(2200)
 
     const text = await page.locator("body").innerText()
     const keyboardSpeed = readMetric(text, "SPEED")
+    const driftCharge = await readProgressValue(page, "Drift charge")
+
+    if (driftCharge <= 0) {
+      throw new Error(`Expected keyboard drifting to build charge, got ${driftCharge}`)
+    }
 
     await page.keyboard.down("Escape")
     await page.getByRole("dialog", { name: "Paused" }).waitFor()
+    await page.keyboard.up("Space")
+    await page.keyboard.up("d")
     await page.keyboard.up("w")
     await page.getByRole("button", { name: "Resume" }).click()
     await page.waitForTimeout(1000)

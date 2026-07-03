@@ -17,6 +17,23 @@ const drivingKeys = new Set([
   "shift",
   "w",
 ])
+const keyboardCodeMap = new Map([
+  ["ArrowDown", "arrowdown"],
+  ["ArrowLeft", "arrowleft"],
+  ["ArrowRight", "arrowright"],
+  ["ArrowUp", "arrowup"],
+  ["KeyA", "a"],
+  ["KeyD", "d"],
+  ["KeyS", "s"],
+  ["KeyW", "w"],
+  ["ShiftLeft", "shift"],
+  ["ShiftRight", "shift"],
+  ["Space", " "],
+])
+
+function resolveKeyboardKey(event: KeyboardEvent) {
+  return keyboardCodeMap.get(event.code) ?? event.key.toLowerCase()
+}
 
 function resolveAxis(value: number | undefined, deadzone = 0.16) {
   if (!value || Math.abs(value) < deadzone) return 0
@@ -89,7 +106,7 @@ export function useKeyboardInput() {
     }
 
     function handleKeyDown(event: KeyboardEvent) {
-      const key = event.key.toLowerCase()
+      const key = resolveKeyboardKey(event)
 
       if (!drivingKeys.has(key)) {
         return
@@ -105,7 +122,7 @@ export function useKeyboardInput() {
     }
 
     function handleKeyUp(event: KeyboardEvent) {
-      const key = event.key.toLowerCase()
+      const key = resolveKeyboardKey(event)
 
       if (!drivingKeys.has(key)) {
         return
