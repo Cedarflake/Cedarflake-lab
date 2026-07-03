@@ -86,6 +86,12 @@
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.2), #f0a58f, #fff0b8);
 }
 
+.hud__drift--ready {
+  box-shadow:
+    0 0 16px rgba(255, 240, 184, 0.38),
+    inset 0 0 8px rgba(255, 255, 255, 0.28);
+}
+
 .hud__checkpoint span {
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.22), #9edee5, #fff0b8);
 }

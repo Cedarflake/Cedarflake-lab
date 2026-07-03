@@ -15,6 +15,7 @@ export function Hud() {
   const driftCharge = useGameStore((state) => state.driftCharge)
   const lastEvent = useGameStore((state) => state.lastEvent)
   const driftPercent = Math.min((driftCharge / 1600) * 100, 100)
+  const isDriftReady = driftCharge >= 120
   const checkpointPercent =
     ((distance % trackConfig.checkpointSpacing) / trackConfig.checkpointSpacing) * 100
   const nextCheckpointDistance =
@@ -58,7 +59,7 @@ export function Hud() {
           <span style={{ inlineSize: `${integrity}%` }} />
         </div>
         <div
-          className="hud__drift"
+          className={isDriftReady ? "hud__drift hud__drift--ready" : "hud__drift"}
           role="progressbar"
           aria-label="Drift charge"
           aria-valuemin={0}
