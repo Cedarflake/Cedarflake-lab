@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import type { PointerEvent } from "react"
 
 import { pulseHaptics } from "@/game/haptics"
@@ -19,9 +19,14 @@ interface ControlButtonProps {
 
 function ControlButton({ label, press, release, className }: ControlButtonProps) {
   const setTouchInput = useInputStore((state) => state.setTouchInput)
+  const [isPressed, setIsPressed] = useState(false)
+  const buttonClassName = [className, isPressed ? "touch-controls__button--pressed" : ""]
+    .filter(Boolean)
+    .join(" ")
 
   function handlePress(event: PointerEvent<HTMLButtonElement>) {
     event.currentTarget.setPointerCapture(event.pointerId)
+    setIsPressed(true)
     pulseHaptics(10)
     setTouchInput(press)
   }
@@ -31,13 +36,14 @@ function ControlButton({ label, press, release, className }: ControlButtonProps)
       event.currentTarget.releasePointerCapture(event.pointerId)
     }
 
+    setIsPressed(false)
     setTouchInput(release)
   }
 
   return (
     <button
       type="button"
-      className={className}
+      className={buttonClassName || undefined}
       aria-label={label}
       onPointerDown={handlePress}
       onPointerUp={handleRelease}
