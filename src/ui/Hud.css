@@ -60,7 +60,8 @@
 }
 
 .hud__integrity,
-.hud__drift {
+.hud__drift,
+.hud__checkpoint {
   height: 7px;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.34);
@@ -69,7 +70,8 @@
 }
 
 .hud__integrity span,
-.hud__drift span {
+.hud__drift span,
+.hud__checkpoint span {
   display: block;
   height: 100%;
   border-radius: inherit;
@@ -84,9 +86,14 @@
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.2), #f0a58f, #fff0b8);
 }
 
+.hud__checkpoint span {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.22), #9edee5, #fff0b8);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hud__integrity span,
-  .hud__drift span {
+  .hud__drift span,
+  .hud__checkpoint span {
     transition: none;
   }
 }
@@ -118,7 +125,8 @@
   }
 
   .hud__integrity,
-  .hud__drift {
+  .hud__drift,
+  .hud__checkpoint {
     height: 5px;
   }
 }

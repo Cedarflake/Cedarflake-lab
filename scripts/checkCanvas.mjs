@@ -385,6 +385,7 @@ try {
       distance: readMetric(telemetryLines, "Distance"),
     }
     const progressValues = {
+      checkpoint: await readProgressValue(page, "Checkpoint progress"),
       driftCharge: await readProgressValue(page, "Drift charge"),
       integrity: await readProgressValue(page, "Vehicle integrity"),
     }
@@ -394,6 +395,8 @@ try {
     }
 
     if (
+      progressValues.checkpoint < 0 ||
+      progressValues.checkpoint > 100 ||
       progressValues.integrity < 0 ||
       progressValues.integrity > 100 ||
       progressValues.driftCharge < 0 ||
