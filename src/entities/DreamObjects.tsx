@@ -136,6 +136,10 @@ function ObstacleNode({ distanceRef, obstacle }: ObstacleNodeProps) {
             opacity={0.84}
           />
         </mesh>
+        <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[obstacle.width * 1.08, 0.035, 8, 64]} />
+          <meshBasicMaterial color="#fff7c6" transparent opacity={0.68} />
+        </mesh>
       </group>
     )
   }
@@ -143,6 +147,10 @@ function ObstacleNode({ distanceRef, obstacle }: ObstacleNodeProps) {
   if (obstacle.kind === "arch") {
     return (
       <group ref={obstacleRef}>
+        <mesh position={[0, -1.18, 0]}>
+          <boxGeometry args={[3.4, 0.04, 1.42]} />
+          <meshBasicMaterial color="#fff7c6" transparent opacity={0.36} />
+        </mesh>
         <mesh position={[-1.25, 0, 0]}>
           <boxGeometry args={[0.34, 2.4, 0.34]} />
           <meshStandardMaterial color={dreamPalette.peach} />
@@ -178,8 +186,8 @@ function ObstacleNode({ distanceRef, obstacle }: ObstacleNodeProps) {
         />
       </mesh>
       <mesh position={[0, -0.74, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[obstacle.width * 0.62, 28]} />
-        <meshBasicMaterial color="#ffffff" transparent opacity={0.28} />
+        <circleGeometry args={[obstacle.width * 0.72, 32]} />
+        <meshBasicMaterial color="#fff7c6" transparent opacity={0.36} />
       </mesh>
     </group>
   )
