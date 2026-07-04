@@ -76,7 +76,7 @@ export const useGameStore = create<GameState>((set) => ({
   bestScore: readBestScore(),
   runId: 0,
   ...initialRunState,
-  start: () => set((state) => ({ status: "running", runId: state.runId + 1, ...initialRunState })),
+  start: () => set({ status: "running", ...initialRunState }),
   pause: () => set((state) => (state.status === "running" ? { status: "paused" } : state)),
   resume: () => set((state) => (state.status === "paused" ? { status: "running" } : state)),
   restart: () =>

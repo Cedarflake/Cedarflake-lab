@@ -10,8 +10,8 @@ const maxFrameDelta = 0.1
 const cakeScale = 2.95
 const cakeHoverAmplitude = 0.035
 const cakeHoverSpeed = 1.55
-const cakeAngleDelayMin = 0.16
-const cakeAngleDelayMax = 0.52
+const cakeInitialAngleDelaySeconds = 0.72
+const cakeAngleIntervalSeconds = 0.9
 const cakeBasePitch = 0.42
 const cakeBaseRoll = 0.03
 const cakeBaseYaw = -0.22
@@ -43,7 +43,7 @@ function CakeModel() {
   const shouldReduceMotionRef = useRef(false)
   const motionRef = useRef<LoadingCakeMotion>({
     elapsed: 0,
-    nextAngleAt: 0,
+    nextAngleAt: cakeInitialAngleDelaySeconds,
     pitchOffset: 0,
     rollOffset: 0,
     yawOffset: 0,
@@ -126,7 +126,11 @@ function CakeModel() {
       motion.pitchOffset = resolveNextAngle(motion.pitchOffset, -0.1, 0.12, 0.06)
       motion.rollOffset = resolveNextAngle(motion.rollOffset, -0.1, 0.1, 0.05)
       motion.yawOffset = resolveNextAngle(motion.yawOffset, -0.34, 0.34, 0.14)
-      motion.nextAngleAt = motion.elapsed + randomBetween(cakeAngleDelayMin, cakeAngleDelayMax)
+      motion.nextAngleAt += cakeAngleIntervalSeconds
+
+      while (motion.nextAngleAt <= motion.elapsed) {
+        motion.nextAngleAt += cakeAngleIntervalSeconds
+      }
     }
 
     group.position.y = Math.sin(motion.elapsed * cakeHoverSpeed) * cakeHoverAmplitude

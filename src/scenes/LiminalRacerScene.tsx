@@ -78,6 +78,8 @@ const baseCameraFov = 50
 const maxCameraFov = 58
 const telemetryIntervalSeconds = 1 / 10
 const worldWindowUpdateDistance = 24
+const settledCarHeight = 0.62
+const carRoadBobAmplitude = 0.035
 
 function createRuntimeState(): RuntimeState {
   return {
@@ -180,6 +182,29 @@ function RacerWorld() {
     const elapsedTime = elapsedTimeRef.current
     distanceRef.current = runtime.distance
 
+    if (status === "ready") {
+      const car = carRef.current
+      if (car) {
+        car.position.x = runtime.x
+        carXRef.current = car.position.x
+        car.position.y = settledCarHeight + Math.sin(runtime.distance * 0.12) * carRoadBobAmplitude
+        car.rotation.set(0.018, 0, 0)
+      }
+
+      const cameraY = isPortrait ? 5.6 : 5.2
+      const cameraZ = isPortrait ? 10.2 : 11.2
+      const lookAtY = isPortrait ? 1.35 : 1.55
+      const lookAtZ = isPortrait ? -8.8 : -13.5
+
+      state.camera.position.set(0, cameraY, cameraZ)
+      state.camera.lookAt(0, lookAtY, lookAtZ)
+
+      if (state.camera instanceof ThreePerspectiveCamera) {
+        state.camera.fov = baseCameraFov
+        state.camera.updateProjectionMatrix()
+      }
+    }
+
     if (status !== "running") {
       isDriftingRef.current = false
       speedRef.current = runtime.speed
@@ -249,7 +274,7 @@ function RacerWorld() {
     if (car) {
       car.position.x = lerp(car.position.x, runtime.x, Math.min(frameDelta * 11, 1))
       carXRef.current = car.position.x
-      car.position.y = 0.62 + Math.sin(runtime.distance * 0.12) * 0.035
+      car.position.y = settledCarHeight + Math.sin(runtime.distance * 0.12) * carRoadBobAmplitude
       car.rotation.y = -runtime.velocityX * 0.018
       car.rotation.x = lerp(car.rotation.x, input.brake > 0 ? -0.035 : 0.018, frameDelta * 6)
       car.rotation.z = lerp(
