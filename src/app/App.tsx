@@ -6,6 +6,7 @@ import {
   pauseBackgroundMusic,
   resetBackgroundMusic,
 } from "@/app/backgroundMusic"
+import { preloadLoadingCakeAssets } from "@/app/loadingCakeAssets"
 import { useGameStore } from "@/game/useGameStore"
 import { useKeyboardInput } from "@/game/useInput"
 import { DrivingFeedback } from "@/ui/DrivingFeedback"
@@ -19,11 +20,17 @@ const LiminalRacerScene = lazy(() =>
     default: module.LiminalRacerScene,
   })),
 )
-const LoadingCake = lazy(() =>
-  import("@/app/LoadingCake").then((module) => ({
+
+function loadLoadingCake() {
+  return import("@/app/LoadingCake").then((module) => ({
     default: module.LoadingCake,
-  })),
-)
+  }))
+}
+
+preloadLoadingCakeAssets()
+void loadLoadingCake()
+
+const LoadingCake = lazy(loadLoadingCake)
 
 const minimumSceneLoadingMs = 3000
 const sceneLoadingFadeMs = 600

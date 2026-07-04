@@ -5,7 +5,8 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import { Box3, Mesh, Vector3 } from "three"
 import type { Group } from "three"
 
-const cakeModelPath = "/model/cake_is_a_lie/scene.gltf"
+import { loadingCakeModelPath } from "@/app/loadingCakeAssets"
+
 const maxFrameDelta = 0.1
 const cakeScale = 2.95
 const cakeHoverAmplitude = 0.035
@@ -48,7 +49,7 @@ function CakeModel() {
     rollOffset: 0,
     yawOffset: 0,
   })
-  const { scene } = useGLTF(cakeModelPath)
+  const { scene } = useGLTF(loadingCakeModelPath)
   const cakeModel = useMemo(() => {
     const clonedScene = scene.clone(true)
     const bounds = new Box3()
@@ -177,4 +178,4 @@ export function LoadingCake() {
   )
 }
 
-useGLTF.preload(cakeModelPath)
+useGLTF.preload(loadingCakeModelPath)
