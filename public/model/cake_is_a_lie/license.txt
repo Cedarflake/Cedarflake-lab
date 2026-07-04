@@ -1,0 +1,11 @@
+Model Information:
+* title:	Cake is a lie
+* source:	https://sketchfab.com/3d-models/cake-is-a-lie-91b350deed5f4c559cce41789a6aa7c9
+* author:	Gotche (https://sketchfab.com/Gotche)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Cake is a lie" (https://sketchfab.com/3d-models/cake-is-a-lie-91b350deed5f4c559cce41789a6aa7c9) by Gotche (https://sketchfab.com/Gotche) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

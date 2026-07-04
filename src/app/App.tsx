@@ -19,13 +19,29 @@ const LiminalRacerScene = lazy(() =>
     default: module.LiminalRacerScene,
   })),
 )
+const LoadingCake = lazy(() =>
+  import("@/app/LoadingCake").then((module) => ({
+    default: module.LoadingCake,
+  })),
+)
+
+const minimumSceneLoadingMs = 3000
+const sceneLoadingFadeMs = 600
 
 interface SceneErrorBoundaryProps {
   children: ReactNode
   onError: () => void
 }
 
+interface LoadingVisualBoundaryProps {
+  children: ReactNode
+}
+
 interface SceneErrorBoundaryState {
+  hasError: boolean
+}
+
+interface LoadingVisualBoundaryState {
   hasError: boolean
 }
 
@@ -62,18 +78,49 @@ class SceneErrorBoundary extends Component<SceneErrorBoundaryProps, SceneErrorBo
   }
 }
 
-function SceneLoading() {
+class LoadingVisualBoundary extends Component<
+  LoadingVisualBoundaryProps,
+  LoadingVisualBoundaryState
+> {
+  override state: LoadingVisualBoundaryState = {
+    hasError: false,
+  }
+
+  static getDerivedStateFromError(): LoadingVisualBoundaryState {
+    return { hasError: true }
+  }
+
+  override render() {
+    if (this.state.hasError) {
+      return <div className="scene-loading__cake-fallback" />
+    }
+
+    return this.props.children
+  }
+}
+
+interface SceneLoadingProps {
+  isExiting: boolean
+}
+
+function SceneLoading({ isExiting }: SceneLoadingProps) {
   return (
-    <div className="scene-loading" role="status" aria-label="Loading 3D racing scene">
-      <div className="scene-loading__track" aria-hidden="true">
-        <span className="scene-loading__car" />
+    <div
+      className="scene-loading"
+      data-exiting={isExiting ? "true" : "false"}
+      role="status"
+      aria-label="Loading 3D racing scene"
+    >
+      <div className="scene-loading__cake" aria-hidden="true">
+        <LoadingVisualBoundary>
+          <Suspense fallback={<div className="scene-loading__cake-fallback" />}>
+            <LoadingCake />
+          </Suspense>
+        </LoadingVisualBoundary>
       </div>
       <div className="scene-loading__copy">
         <strong>Liminal Drift</strong>
-        <span>Warming the road</span>
-      </div>
-      <div className="scene-loading__meter" aria-hidden="true">
-        <span />
+        <span>The cake remembers the road</span>
       </div>
     </div>
   )
@@ -133,10 +180,41 @@ function useBackgroundMusic(status: string) {
 export function App() {
   const status = useGameStore((state) => state.status)
   const requiresDesktop = useRequiresDesktop()
-  const [isSceneReady, setIsSceneReady] = useState(false)
+  const [hasSceneFrame, setHasSceneFrame] = useState(false)
+  const [hasMinimumLoadingElapsed, setHasMinimumLoadingElapsed] = useState(false)
+  const [isLoadingVisible, setIsLoadingVisible] = useState(true)
+  const [isLoadingExiting, setIsLoadingExiting] = useState(false)
+  const canExitLoading = hasSceneFrame && hasMinimumLoadingElapsed
+  const isSceneReady = !isLoadingVisible
 
   useKeyboardInput()
   useBackgroundMusic(status)
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setHasMinimumLoadingElapsed(true)
+    }, minimumSceneLoadingMs)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!canExitLoading) {
+      return
+    }
+
+    setIsLoadingExiting(true)
+
+    const timeoutId = window.setTimeout(() => {
+      setIsLoadingVisible(false)
+    }, sceneLoadingFadeMs)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [canExitLoading])
 
   if (requiresDesktop) {
     return (
@@ -154,13 +232,13 @@ export function App() {
       tabIndex={-1}
     >
       <div className="scene-layer">
-        <SceneErrorBoundary onError={() => setIsSceneReady(true)}>
+        <SceneErrorBoundary onError={() => setHasSceneFrame(true)}>
           <Suspense fallback={null}>
-            <LiminalRacerScene onReady={() => setIsSceneReady(true)} />
+            <LiminalRacerScene onReady={() => setHasSceneFrame(true)} />
           </Suspense>
         </SceneErrorBoundary>
       </div>
-      {!isSceneReady ? <SceneLoading /> : null}
+      {isLoadingVisible ? <SceneLoading isExiting={isLoadingExiting} /> : null}
       <DrivingFeedback />
       <Hud />
       {isSceneReady ? <GameOverlay /> : null}

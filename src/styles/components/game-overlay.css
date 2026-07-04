@@ -1,20 +1,71 @@
 .overlay {
+  --overlay-edge-gap: clamp(14px, 3dvh, 24px);
+
   position: absolute;
   inset: 0;
   z-index: var(--z-overlay);
   display: grid;
   place-items: center;
-  padding: calc(24px + env(safe-area-inset-top)) calc(24px + env(safe-area-inset-right))
-    calc(24px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-left));
+  padding: calc(var(--overlay-edge-gap) + env(safe-area-inset-top))
+    calc(24px + env(safe-area-inset-right))
+    calc(var(--overlay-edge-gap) + env(safe-area-inset-bottom))
+    calc(24px + env(safe-area-inset-left));
+  overflow: hidden;
   background:
     radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.12), transparent 34%),
     rgba(57, 44, 63, 0.18);
   backdrop-filter: none;
+  animation: overlay-fade-in 180ms var(--ease-out) both;
 }
 
 .overlay__panel {
+  --overlay-scrollbar-track: rgba(255, 250, 236, 0.16);
+  --overlay-scrollbar-thumb: rgba(109, 151, 149, 0.62);
+  --overlay-scrollbar-thumb-strong: rgba(190, 174, 124, 0.72);
+
+  box-sizing: border-box;
   width: min(560px, 100%);
-  padding: clamp(24px, 5vw, 42px);
+  max-block-size: calc(
+    100dvh - var(--overlay-edge-gap) - var(--overlay-edge-gap) - env(safe-area-inset-top) -
+      env(safe-area-inset-bottom)
+  );
+  padding: clamp(22px, 4dvh, 34px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-color: var(--overlay-scrollbar-thumb) var(--overlay-scrollbar-track);
+  scrollbar-width: thin;
+  animation: overlay-panel-enter 220ms var(--ease-out) both;
+}
+
+.overlay__panel::-webkit-scrollbar {
+  width: 12px;
+}
+
+.overlay__panel::-webkit-scrollbar-track {
+  margin-block: 8px;
+  background: linear-gradient(180deg, transparent, var(--overlay-scrollbar-track), transparent);
+  border-radius: var(--radius-control);
+}
+
+.overlay__panel::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+      180deg,
+      var(--overlay-scrollbar-thumb-strong),
+      var(--overlay-scrollbar-thumb)
+    )
+    content-box;
+  border: 3px solid transparent;
+  border-radius: var(--radius-control);
+}
+
+.overlay__panel::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(215, 202, 153, 0.78), rgba(112, 164, 162, 0.72))
+    content-box;
+}
+
+.overlay__panel::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 .overlay__eyebrow {
@@ -28,9 +79,9 @@
 .overlay h1 {
   margin: 0;
   color: var(--color-text-strong);
-  font-size: clamp(2.6rem, 9vw, 5.5rem);
+  font-size: 3.8rem;
   font-weight: 760;
-  line-height: 0.92;
+  line-height: 0.96;
 }
 
 .overlay p {
@@ -129,7 +180,48 @@
   line-height: 1.5;
 }
 
+@keyframes overlay-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes overlay-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.995);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .overlay__panel {
+    animation: none;
+  }
+}
+
 @media (max-width: 760px) {
+  .overlay {
+    --overlay-edge-gap: 12px;
+  }
+
+  .overlay__panel {
+    padding: 20px;
+  }
+
+  .overlay h1 {
+    font-size: 2.45rem;
+  }
+
   .controls {
     grid-template-columns: 1fr;
   }
@@ -152,5 +244,26 @@
     min-height: 40px;
     padding-inline: 14px;
     font-size: 0.9rem;
+  }
+}
+
+@media (max-height: 720px) {
+  .overlay__panel {
+    padding: 20px 24px;
+  }
+
+  .overlay h1 {
+    font-size: 3rem;
+  }
+
+  .overlay p {
+    margin-block-start: 12px;
+    line-height: 1.55;
+  }
+
+  .controls,
+  .overlay__actions,
+  .overlay__stats {
+    margin-block-start: 16px;
   }
 }

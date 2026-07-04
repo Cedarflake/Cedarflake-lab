@@ -18,7 +18,50 @@ interface DreamRelicNodeProps {
   nodeRef: (node: Group | null) => void
 }
 
+interface DreamRelicMotion {
+  baseYaw: number
+  hoverPhase: number
+  hoverSpeed: number
+  hoverWaveMix: number
+  pitchPhase: number
+  pitchSpeed: number
+  rollPhase: number
+  rollSpeed: number
+  spinDirection: -1 | 1
+  spinPhase: number
+  spinSpeed: number
+}
+
 const dreamRelicCycleDistance = 620
+
+function createStableNoise(seed: number) {
+  return Math.abs(Math.sin(seed * 12.9898 + 78.233) * 43758.5453) % 1
+}
+
+function createDreamRelicMotions(length: number): DreamRelicMotion[] {
+  return Array.from({ length }, (_, index) => {
+    const first = createStableNoise(index + 1.17)
+    const second = createStableNoise(index + 9.43)
+    const third = createStableNoise(index + 17.91)
+    const fourth = createStableNoise(index + 29.35)
+    const fifth = createStableNoise(index + 43.78)
+    const spinDirection = createStableNoise(index + 61.12) > 0.5 ? 1 : -1
+
+    return {
+      baseYaw: -0.44 + first * 0.88,
+      hoverPhase: second * Math.PI * 2,
+      hoverSpeed: 0.54 + third * 0.46,
+      hoverWaveMix: 0.42 + fourth * 0.3,
+      pitchPhase: fifth * Math.PI * 2,
+      pitchSpeed: 0.38 + first * 0.34,
+      rollPhase: third * Math.PI * 2,
+      rollSpeed: 0.44 + second * 0.32,
+      spinDirection,
+      spinPhase: fourth * Math.PI * 2,
+      spinSpeed: 0.08 + fifth * 0.24,
+    }
+  })
+}
 
 function FloatingDoorNode({ index }: { index: number }) {
   const isBlue = index % 2 === 0
@@ -129,6 +172,7 @@ export function DreamRelics({ distanceRef }: DreamRelicsProps) {
   const floatTimeRef = useRef(0)
   const dreamRelicRefs = useRef<Array<Group | null>>([])
   const dreamRelics = useMemo(() => createSideSceneryItems(28), [])
+  const dreamRelicMotions = useMemo(() => createDreamRelicMotions(28), [])
 
   useFrame((_, delta) => {
     const distance = distanceRef.current
@@ -139,19 +183,24 @@ export function DreamRelics({ distanceRef }: DreamRelicsProps) {
       const relic = dreamRelicRefs.current[index]
       if (!relic) return
 
+      const motion = dreamRelicMotions[index]
+      if (!motion) return
+
       const sideBand = index % 5
       const z = resolveSceneryZ(48 + index * 24, distance, 0.64, dreamRelicCycleDistance)
       const x = side * (trackConfig.roadHalfWidth + 13.5 + sideBand * 4.6)
       const groundY = resolveDesertGroundHeight(x, z)
-      const floatPhase = floatTime * (0.74 + (index % 4) * 0.06) + index * 0.78
-      const spin = floatTime * side * (0.18 + (index % 5) * 0.018)
-      const hoverY = Math.sin(floatPhase) * 0.44 + Math.sin(floatPhase * 0.52) * 0.16
+      const hoverPhase = floatTime * motion.hoverSpeed + motion.hoverPhase
+      const spin = floatTime * motion.spinSpeed * motion.spinDirection + motion.spinPhase
+      const pitchPhase = floatTime * motion.pitchSpeed + motion.pitchPhase
+      const rollPhase = floatTime * motion.rollSpeed + motion.rollPhase
+      const hoverY = Math.sin(hoverPhase) * 0.38 + Math.sin(hoverPhase * motion.hoverWaveMix) * 0.2
 
       relic.position.set(x, groundY + 2.85 + (index % 4) * 0.5 + hoverY, z)
       relic.rotation.set(
-        Math.sin(floatPhase * 0.68) * 0.09,
-        side * (0.42 + sideBand * 0.08) + spin,
-        Math.cos(floatPhase * 0.74) * 0.07,
+        Math.sin(pitchPhase) * 0.11,
+        side * (0.42 + sideBand * 0.08) + motion.baseYaw + spin,
+        Math.cos(rollPhase) * 0.09,
       )
     })
   })
