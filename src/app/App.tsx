@@ -22,6 +22,7 @@ const LiminalRacerScene = lazy(() =>
 
 interface SceneErrorBoundaryProps {
   children: ReactNode
+  onError: () => void
 }
 
 interface SceneErrorBoundaryState {
@@ -35,6 +36,10 @@ class SceneErrorBoundary extends Component<SceneErrorBoundaryProps, SceneErrorBo
 
   static getDerivedStateFromError(): SceneErrorBoundaryState {
     return { hasError: true }
+  }
+
+  override componentDidCatch() {
+    this.props.onError()
   }
 
   private reload = () => {
@@ -128,6 +133,7 @@ function useBackgroundMusic(status: string) {
 export function App() {
   const status = useGameStore((state) => state.status)
   const requiresDesktop = useRequiresDesktop()
+  const [isSceneReady, setIsSceneReady] = useState(false)
 
   useKeyboardInput()
   useBackgroundMusic(status)
@@ -141,17 +147,23 @@ export function App() {
   }
 
   return (
-    <main className="game-shell" data-status={status} tabIndex={-1}>
+    <main
+      className="game-shell"
+      data-scene-ready={isSceneReady ? "true" : "false"}
+      data-status={status}
+      tabIndex={-1}
+    >
       <div className="scene-layer">
-        <SceneErrorBoundary>
-          <Suspense fallback={<SceneLoading />}>
-            <LiminalRacerScene />
+        <SceneErrorBoundary onError={() => setIsSceneReady(true)}>
+          <Suspense fallback={null}>
+            <LiminalRacerScene onReady={() => setIsSceneReady(true)} />
           </Suspense>
         </SceneErrorBoundary>
       </div>
+      {!isSceneReady ? <SceneLoading /> : null}
       <DrivingFeedback />
       <Hud />
-      <GameOverlay />
+      {isSceneReady ? <GameOverlay /> : null}
     </main>
   )
 }

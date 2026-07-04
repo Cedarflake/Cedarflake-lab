@@ -2,8 +2,9 @@ import { useRef } from "react"
 import type { RefObject } from "react"
 
 import { useFrame } from "@react-three/fiber"
-import { AdditiveBlending } from "three"
+import { AdditiveBlending, Color } from "three"
 import type { Group } from "three"
+import type { MeshBasicMaterial } from "three"
 
 import { dreamPalette, trackConfig } from "@/game/gameConfig"
 import { resolveRelativeTrackPose, resolveTrackLaneOffset } from "@/game/trackPath"
@@ -18,6 +19,8 @@ interface MemoryShardsProps {
 }
 
 interface MemoryShardNodeProps {
+  burstCoreMaterialRef: (node: MeshBasicMaterial | null) => void
+  burstRingMaterialRef: (node: MeshBasicMaterial | null) => void
   burstRef: (node: Group | null) => void
   coreRef: (node: Group | null) => void
   glowRef: (node: Group | null) => void
@@ -25,8 +28,19 @@ interface MemoryShardNodeProps {
 }
 
 const collectionEffectSeconds = 0.32
+const collectionColorStart = new Color("#78ddff")
+const collectionColorMid = new Color("#fff2b5")
+const collectionColorEnd = new Color("#cf94ff")
+const collectionColor = new Color()
 
-function MemoryShardNode({ burstRef, coreRef, glowRef, nodeRef }: MemoryShardNodeProps) {
+function MemoryShardNode({
+  burstCoreMaterialRef,
+  burstRef,
+  burstRingMaterialRef,
+  coreRef,
+  glowRef,
+  nodeRef,
+}: MemoryShardNodeProps) {
   return (
     <group ref={nodeRef}>
       <group ref={coreRef}>
@@ -84,6 +98,7 @@ function MemoryShardNode({ burstRef, coreRef, glowRef, nodeRef }: MemoryShardNod
         <mesh rotation={[Math.PI / 2, 0, 0]}>
           <torusGeometry args={[0.62, 0.034, 8, 44]} />
           <meshBasicMaterial
+            ref={burstRingMaterialRef}
             blending={AdditiveBlending}
             color="#c8f7ff"
             depthWrite={false}
@@ -94,6 +109,7 @@ function MemoryShardNode({ burstRef, coreRef, glowRef, nodeRef }: MemoryShardNod
         <mesh scale={[0.8, 0.8, 0.8]}>
           <octahedronGeometry args={[0.34, 0]} />
           <meshBasicMaterial
+            ref={burstCoreMaterialRef}
             blending={AdditiveBlending}
             color="#8fdcff"
             depthWrite={false}
@@ -113,6 +129,8 @@ export function MemoryShards({
   elapsedTimeRef,
   memoryShards,
 }: MemoryShardsProps) {
+  const burstCoreMaterialRefs = useRef<Array<MeshBasicMaterial | null>>([])
+  const burstRingMaterialRefs = useRef<Array<MeshBasicMaterial | null>>([])
   const burstRefs = useRef<Array<Group | null>>([])
   const coreRefs = useRef<Array<Group | null>>([])
   const glowRefs = useRef<Array<Group | null>>([])
@@ -161,6 +179,34 @@ export function MemoryShards({
 
         if (burst && effectAge < collectionEffectSeconds && shard.visible) {
           const effectProgress = effectAge / collectionEffectSeconds
+          const fade = 1 - effectProgress
+          const burstRingMaterial = burstRingMaterialRefs.current[index]
+          const burstCoreMaterial = burstCoreMaterialRefs.current[index]
+
+          if (effectProgress < 0.52) {
+            collectionColor.lerpColors(
+              collectionColorStart,
+              collectionColorMid,
+              effectProgress / 0.52,
+            )
+          } else {
+            collectionColor.lerpColors(
+              collectionColorMid,
+              collectionColorEnd,
+              (effectProgress - 0.52) / 0.48,
+            )
+          }
+
+          if (burstRingMaterial) {
+            burstRingMaterial.color.copy(collectionColor)
+            burstRingMaterial.opacity = 0.72 * fade
+          }
+
+          if (burstCoreMaterial) {
+            burstCoreMaterial.color.copy(collectionColor)
+            burstCoreMaterial.opacity = 0.42 * fade
+          }
+
           burst.visible = true
           burst.scale.setScalar(0.75 + effectProgress * 1.8)
           burst.rotation.set(0, phase * 1.4, 0)
@@ -192,8 +238,14 @@ export function MemoryShards({
       {memoryShards.map((memoryShard, index) => (
         <MemoryShardNode
           key={memoryShard.id}
+          burstCoreMaterialRef={(node) => {
+            burstCoreMaterialRefs.current[index] = node
+          }}
           burstRef={(node) => {
             burstRefs.current[index] = node
+          }}
+          burstRingMaterialRef={(node) => {
+            burstRingMaterialRefs.current[index] = node
           }}
           coreRef={(node) => {
             coreRefs.current[index] = node

@@ -54,6 +54,14 @@ interface RuntimeState {
   handledMemoryShards: Set<string>
 }
 
+interface LiminalRacerSceneProps {
+  onReady?: () => void
+}
+
+interface SceneReadyNotifierProps {
+  onReady: () => void
+}
+
 const initialRuntime: RuntimeState = {
   x: 0,
   velocityX: 0,
@@ -104,6 +112,21 @@ function pruneCollectedMemoryShardVisuals(
       collectedMemoryShardEffects.delete(id)
     }
   }
+}
+
+function SceneReadyNotifier({ onReady }: SceneReadyNotifierProps) {
+  const hasNotifiedRef = useRef(false)
+
+  useFrame(() => {
+    if (hasNotifiedRef.current) {
+      return
+    }
+
+    hasNotifiedRef.current = true
+    onReady()
+  })
+
+  return null
 }
 
 function RacerWorld() {
@@ -496,7 +519,7 @@ function RacerWorld() {
   )
 }
 
-export function LiminalRacerScene() {
+export function LiminalRacerScene({ onReady }: LiminalRacerSceneProps) {
   return (
     <Canvas
       aria-label="Liminal Drift 3D racing scene"
@@ -505,6 +528,7 @@ export function LiminalRacerScene() {
       shadows="percentage"
     >
       <RacerWorld />
+      {onReady ? <SceneReadyNotifier onReady={onReady} /> : null}
     </Canvas>
   )
 }

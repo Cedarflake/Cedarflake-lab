@@ -7,7 +7,7 @@
 .scene-loading {
   position: absolute;
   inset: 0;
-  z-index: var(--z-scene);
+  z-index: var(--z-overlay);
   display: grid;
   place-content: center;
   gap: 18px;

@@ -84,6 +84,36 @@ async function assertModalDialog(page, label) {
 
 /**
  * @param {import("playwright").Page} page
+ * @param {number} delayMs
+ */
+async function delaySceneChunk(page, delayMs = 350) {
+  await page.route("**/assets/LiminalRacerScene-*.js", async (route) => {
+    await new Promise((resolve) => {
+      setTimeout(resolve, delayMs)
+    })
+    await route.continue()
+  })
+}
+
+/**
+ * @param {import("playwright").Page} page
+ */
+async function assertStartupLoadingSequence(page) {
+  await page.locator(".scene-loading").waitFor({ state: "visible" })
+
+  if (await page.getByRole("dialog", { name: "Start race" }).isVisible()) {
+    throw new Error("Expected start dialog to stay hidden while scene loading is visible")
+  }
+
+  await page.getByRole("dialog", { name: "Start race" }).waitFor()
+
+  if (await page.locator(".scene-loading").isVisible()) {
+    throw new Error("Expected scene loading to be removed before showing the start dialog")
+  }
+}
+
+/**
+ * @param {import("playwright").Page} page
  * @param {string} label
  */
 async function assertActiveButton(page, label) {
@@ -177,6 +207,8 @@ async function pressEscapeWithRepeat(page) {
  * @param {import("playwright").Page} page
  */
 async function assertReducedMotionStyles(page) {
+  await page.getByRole("button", { name: "Start driving" }).waitFor()
+
   const styles = await page.evaluate(() => {
     const startButton = document.querySelector(".overlay button")
 
@@ -241,6 +273,7 @@ try {
     const context = await browser.newContext()
     const page = await context.newPage()
 
+    await delaySceneChunk(page)
     await page.addInitScript(() => {
       Object.defineProperty(window, "localStorage", {
         configurable: true,
@@ -252,6 +285,7 @@ try {
     await page.goto(url, { waitUntil: "domcontentloaded" })
     await assertFontPreload(page)
     await assertDocumentMetadata(page)
+    await assertStartupLoadingSequence(page)
     await assertModalDialog(page, "Start race")
     await assertActiveButton(page, "Start driving")
     await assertDialogTabWrap(page, "Start driving", "Start driving")
