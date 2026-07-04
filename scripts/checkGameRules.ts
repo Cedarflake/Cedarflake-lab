@@ -1,6 +1,11 @@
 import { readBestScore } from "../src/game/bestScoreStorage"
 import {
+  memoryShardModelHalfDepth,
+  memoryShardModelHalfWidth,
+  playerModelHalfDepth,
+  playerModelHalfWidth,
   playerCollisionHalfWidth,
+  resolveMemoryShardCollection,
   resolveObstacleCollisionHalfWidth,
   resolveObstacleHalfWidth,
   resolveObstacleNearMissHalfWidth,
@@ -119,6 +124,33 @@ assert(
       kind: "hole",
     }),
   "Expected near-miss boundary to sit outside the collision boundary",
+)
+assert(
+  resolveMemoryShardCollection({
+    playerX: 0,
+    playerZ: 0,
+    shardX: playerModelHalfWidth + memoryShardModelHalfWidth - 0.01,
+    shardZ: 0,
+  }),
+  "Expected visual edge contact with a memory shard to collect it",
+)
+assert(
+  resolveMemoryShardCollection({
+    playerX: 0,
+    playerZ: 0,
+    shardX: 0,
+    shardZ: playerModelHalfDepth + memoryShardModelHalfDepth - 0.01,
+  }),
+  "Expected front/back visual contact with a memory shard to collect it",
+)
+assert(
+  !resolveMemoryShardCollection({
+    playerX: 0,
+    playerZ: 0,
+    shardX: playerModelHalfWidth + memoryShardModelHalfWidth + 0.01,
+    shardZ: 0,
+  }),
+  "Expected memory shard collection to stay outside the rendered model footprint",
 )
 
 assert(

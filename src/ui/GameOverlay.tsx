@@ -321,16 +321,18 @@ export function GameOverlay() {
       }
     }
 
-    function handleBlur() {
-      if (status === "running") pause()
+    function handleVisibilityChange() {
+      if (document.visibilityState === "hidden" && status === "running") {
+        pause()
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)
-    window.addEventListener("blur", handleBlur)
+    document.addEventListener("visibilitychange", handleVisibilityChange)
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown)
-      window.removeEventListener("blur", handleBlur)
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
     }
   }, [pause, playMusicFromGesture, resume, status])
 

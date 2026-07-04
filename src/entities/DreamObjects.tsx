@@ -1,8 +1,8 @@
-import { useMemo, useRef } from "react"
+import { Suspense, useEffect, useMemo, useRef } from "react"
 import type { RefObject } from "react"
 
-import { useFrame } from "@react-three/fiber"
-import { AdditiveBlending } from "three"
+import { useFrame, useLoader } from "@react-three/fiber"
+import { DoubleSide, MeshBasicMaterial, SRGBColorSpace, TextureLoader } from "three"
 import type { Group } from "three"
 
 import { wallObstacleWidth } from "@/game/collision"
@@ -42,7 +42,7 @@ interface TombstoneNodeProps {
   nodeRef: (node: Group | null) => void
 }
 
-interface GhostNodeProps {
+interface PictureFrameNodeProps {
   index: number
   nodeRef: (node: Group | null) => void
 }
@@ -57,7 +57,13 @@ const desertFieldCycleDistance = 520
 const dreamRelicCycleDistance = 620
 const signCycleDistance = 360
 const tombstoneCycleDistance = 460
-const ghostCycleDistance = 680
+const pictureFrameCycleDistance = 680
+const pictureFrameTextureAspect = 235 / 286
+const pictureFrameVisualHeight = 2.92
+const pictureFrameVisualWidth = pictureFrameVisualHeight * pictureFrameTextureAspect
+const pictureFrameOuterWidth = pictureFrameVisualWidth + 0.44
+const pictureFrameOuterHeight = pictureFrameVisualHeight + 0.44
+const pictureFrameRailThickness = 0.16
 
 function resolveSceneryZ(originDistance: number, distance: number, speed: number, cycle: number) {
   return 10 - wrapDistance(originDistance - distance * speed, cycle)
@@ -382,55 +388,91 @@ function TombstoneNode({ index, nodeRef }: TombstoneNodeProps) {
   )
 }
 
-function GhostNode({ index, nodeRef }: GhostNodeProps) {
-  const bodyTint = index % 2 === 0 ? "#c7dde3" : "#d2c8de"
+function PictureFrameImage() {
+  const texture = useLoader(TextureLoader, "/image/image.png")
+  const material = useMemo(() => {
+    texture.colorSpace = SRGBColorSpace
+    texture.needsUpdate = true
+
+    return new MeshBasicMaterial({
+      depthWrite: true,
+      map: texture,
+      opacity: 1,
+      side: DoubleSide,
+      toneMapped: false,
+    })
+  }, [texture])
+
+  useEffect(() => {
+    return () => {
+      material.dispose()
+    }
+  }, [material])
 
   return (
-    <group ref={nodeRef} scale={0.72 + (index % 3) * 0.12}>
-      <mesh position={[0, 0.72, 0]} scale={[1.02, 1.14, 0.72]}>
-        <sphereGeometry args={[0.34, 14, 10]} />
-        <meshBasicMaterial
-          blending={AdditiveBlending}
-          color={bodyTint}
-          depthWrite={false}
-          transparent
-          opacity={0.32}
-        />
+    <mesh position={[0, 0, 0.08]} scale={[pictureFrameVisualWidth, pictureFrameVisualHeight, 1]}>
+      <planeGeometry args={[1, 1]} />
+      <primitive attach="material" object={material} />
+    </mesh>
+  )
+}
+
+function PictureFramePlaceholder() {
+  return (
+    <mesh position={[0, 0, 0.06]} scale={[pictureFrameVisualWidth, pictureFrameVisualHeight, 1]}>
+      <planeGeometry args={[1, 1]} />
+      <meshBasicMaterial color="#e6dccb" depthWrite={false} transparent opacity={0.82} />
+    </mesh>
+  )
+}
+
+function PictureFrameChrome({ index }: { index: number }) {
+  const frameTint = index % 2 === 0 ? dreamPalette.ruin : dreamPalette.ruinDark
+
+  return (
+    <>
+      <mesh position={[0, pictureFrameOuterHeight / 2, 0]}>
+        <boxGeometry args={[pictureFrameOuterWidth, pictureFrameRailThickness, 0.1]} />
+        <meshStandardMaterial color={frameTint} roughness={0.78} />
       </mesh>
-      <mesh position={[0, 0, 0]} scale={[0.86, 1.62, 0.52]}>
-        <sphereGeometry args={[0.5, 16, 8, 0, Math.PI * 2, 0, Math.PI]} />
-        <meshBasicMaterial
-          blending={AdditiveBlending}
-          color={bodyTint}
-          depthWrite={false}
-          transparent
-          opacity={0.24}
-        />
+      <mesh position={[0, -pictureFrameOuterHeight / 2, 0]}>
+        <boxGeometry args={[pictureFrameOuterWidth, pictureFrameRailThickness, 0.1]} />
+        <meshStandardMaterial color={frameTint} roughness={0.8} />
       </mesh>
-      <mesh position={[-0.17, 0.72, 0.24]} scale={[0.78, 1.78, 0.62]} rotation={[0, 0, -0.16]}>
-        <sphereGeometry args={[0.038, 8, 6]} />
-        <meshBasicMaterial color="#2f3542" depthWrite={false} transparent opacity={0.62} />
+      <mesh position={[-pictureFrameOuterWidth / 2, 0, 0]}>
+        <boxGeometry args={[pictureFrameRailThickness, pictureFrameOuterHeight, 0.1]} />
+        <meshStandardMaterial color={frameTint} roughness={0.82} />
       </mesh>
-      <mesh position={[0.17, 0.72, 0.24]} scale={[0.78, 1.78, 0.62]} rotation={[0, 0, 0.16]}>
-        <sphereGeometry args={[0.038, 8, 6]} />
-        <meshBasicMaterial color="#2f3542" depthWrite={false} transparent opacity={0.62} />
+      <mesh position={[pictureFrameOuterWidth / 2, 0, 0]}>
+        <boxGeometry args={[pictureFrameRailThickness, pictureFrameOuterHeight, 0.1]} />
+        <meshStandardMaterial color={frameTint} roughness={0.82} />
       </mesh>
-      {[-0.34, -0.12, 0.12, 0.34].map((x, waveIndex) => (
-        <mesh
-          key={waveIndex}
-          position={[x, -0.64 + (waveIndex % 2) * 0.1, 0]}
-          scale={[0.72, 1.28 + waveIndex * 0.08, 0.52]}
-        >
-          <sphereGeometry args={[0.18, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2]} />
-          <meshBasicMaterial
-            blending={AdditiveBlending}
-            color={bodyTint}
-            depthWrite={false}
-            transparent
-            opacity={0.16}
-          />
-        </mesh>
-      ))}
+      <mesh
+        position={[0, 0, -0.045]}
+        scale={[pictureFrameVisualWidth + 0.12, pictureFrameVisualHeight + 0.12, 1]}
+      >
+        <planeGeometry args={[1, 1]} />
+        <meshBasicMaterial color="#efe6d5" depthWrite={false} transparent opacity={0.56} />
+      </mesh>
+      <mesh position={[-0.46, 0.42, 0.1]}>
+        <boxGeometry args={[0.5, 0.06, 0.035]} />
+        <meshBasicMaterial color={dreamPalette.lemon} transparent opacity={0.44} />
+      </mesh>
+      <mesh position={[0.34, -0.52, 0.1]} rotation={[0, 0, -0.12]}>
+        <boxGeometry args={[0.68, 0.06, 0.035]} />
+        <meshBasicMaterial color={dreamPalette.mint} transparent opacity={0.38} />
+      </mesh>
+    </>
+  )
+}
+
+function PictureFrameNode({ index, nodeRef }: PictureFrameNodeProps) {
+  return (
+    <group ref={nodeRef} scale={0.82 + (index % 3) * 0.13}>
+      <PictureFrameChrome index={index} />
+      <Suspense fallback={<PictureFramePlaceholder />}>
+        <PictureFrameImage />
+      </Suspense>
     </group>
   )
 }
@@ -519,7 +561,7 @@ export function DreamObjects({ distanceRef, obstacles }: DreamObjectsProps) {
   const dreamRelicRefs = useRef<Array<Group | null>>([])
   const signRefs = useRef<Array<Group | null>>([])
   const tombstoneRefs = useRef<Array<Group | null>>([])
-  const ghostRefs = useRef<Array<Group | null>>([])
+  const pictureFrameRefs = useRef<Array<Group | null>>([])
   const desertSetPieces = useMemo(
     () => Array.from({ length: 18 }, (_, index) => ({ index, side: index % 2 === 0 ? -1 : 1 })),
     [],
@@ -544,7 +586,7 @@ export function DreamObjects({ distanceRef, obstacles }: DreamObjectsProps) {
     () => Array.from({ length: 22 }, (_, index) => ({ index, side: index % 2 === 0 ? -1 : 1 })),
     [],
   )
-  const ghosts = useMemo(
+  const pictureFrames = useMemo(
     () => Array.from({ length: 7 }, (_, index) => ({ index, side: index % 2 === 0 ? -1 : 1 })),
     [],
   )
@@ -619,21 +661,21 @@ export function DreamObjects({ distanceRef, obstacles }: DreamObjectsProps) {
       tombstone.rotation.set(0, side * (0.18 + sideBand * 0.08), lean)
     })
 
-    ghosts.forEach(({ index, side }) => {
-      const ghost = ghostRefs.current[index]
-      if (!ghost) return
+    pictureFrames.forEach(({ index, side }) => {
+      const pictureFrame = pictureFrameRefs.current[index]
+      if (!pictureFrame) return
 
-      const z = resolveSceneryZ(126 + index * 91, distance, 0.48, ghostCycleDistance)
+      const z = resolveSceneryZ(126 + index * 91, distance, 0.48, pictureFrameCycleDistance)
       const phase = distance * 0.018 + index * 1.37
       const sideBand = index % 3
       const x =
         side * (trackConfig.roadHalfWidth + 4.6 + sideBand * 1.8 + Math.sin(phase * 0.7) * 0.72)
       const groundY = resolveDesertGroundHeight(x, z)
-      const blink = Math.sin(distance * 0.045 + index * 2.2) > 0.72
+      const flicker = Math.sin(distance * 0.045 + index * 2.2) > 0.72
 
-      ghost.position.set(x, groundY + 2.35 + Math.sin(phase) * 0.38, z)
-      ghost.lookAt(camera.position.x, ghost.position.y, camera.position.z)
-      ghost.visible = blink && z < 10 && z > -150
+      pictureFrame.position.set(x, groundY + 2.35 + Math.sin(phase) * 0.38, z)
+      pictureFrame.lookAt(camera.position.x, pictureFrame.position.y, camera.position.z)
+      pictureFrame.visible = flicker && z < 10 && z > -150
     })
 
     signs.forEach(({ index, side }) => {
@@ -704,12 +746,12 @@ export function DreamObjects({ distanceRef, obstacles }: DreamObjectsProps) {
         />
       ))}
 
-      {ghosts.map(({ index }) => (
-        <GhostNode
+      {pictureFrames.map(({ index }) => (
+        <PictureFrameNode
           key={index}
           index={index}
           nodeRef={(node) => {
-            ghostRefs.current[index] = node
+            pictureFrameRefs.current[index] = node
           }}
         />
       ))}

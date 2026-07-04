@@ -15,8 +15,10 @@ import { PlayerCar } from "@/entities/PlayerCar"
 import { SkyEyes } from "@/entities/SkyEyes"
 import { Track } from "@/entities/Track"
 import {
+  hasMemoryShardPassedPlayer,
   resolveObstacleCollisionHalfWidth,
   resolveObstacleNearMissHalfWidth,
+  resolveMemoryShardCollection,
 } from "@/game/collision"
 import { resolveRunDifficulty } from "@/game/difficulty"
 import {
@@ -31,7 +33,11 @@ import {
 import { dreamPalette, trackConfig } from "@/game/gameConfig"
 import { clamp, lerp } from "@/game/number"
 import { isCollisionRecovering, willEndRunAfterDamage } from "@/game/runState"
-import { resolveRelativeTrackCenter } from "@/game/trackPath"
+import {
+  resolveRelativeTrackCenter,
+  resolveRelativeTrackPose,
+  resolveTrackLaneOffset,
+} from "@/game/trackPath"
 import { resolveSteeringVelocity } from "@/game/steering"
 import { useGameStore } from "@/game/useGameStore"
 import { useInputStore } from "@/game/useInputStore"
@@ -85,8 +91,25 @@ function pruneHandledEvents(handledEvents: Set<string>, currentIndex: number) {
   }
 }
 
+function pruneCollectedMemoryShardVisuals(
+  collectedMemoryShardEffects: Map<string, number>,
+  collectedMemoryShardIds: Set<string>,
+  currentIndex: number,
+) {
+  for (const id of collectedMemoryShardIds) {
+    const index = Number(id.split("-").at(-1))
+
+    if (Number.isFinite(index) && index < currentIndex - 8) {
+      collectedMemoryShardIds.delete(id)
+      collectedMemoryShardEffects.delete(id)
+    }
+  }
+}
+
 function RacerWorld() {
   const carRef = useRef<Group | null>(null)
+  const collectedMemoryShardEffectsRef = useRef<Map<string, number>>(new Map())
+  const collectedMemoryShardIdsRef = useRef<Set<string>>(new Set())
   const runtimeRef = useRef<RuntimeState>(createRuntimeState())
   const carXRef = useRef(0)
   const distanceRef = useRef(0)
@@ -99,9 +122,6 @@ function RacerWorld() {
   const lastTelemetryAtRef = useRef(0)
   const elapsedTimeRef = useRef(0)
   const [worldDistance, setWorldDistance] = useState(0)
-  const [collectedMemoryShardIds, setCollectedMemoryShardIds] = useState<Set<string>>(
-    () => new Set(),
-  )
   const runId = useGameStore((state) => state.runId)
   const status = useGameStore((state) => state.status)
   const setTelemetry = useGameStore((state) => state.setTelemetry)
@@ -122,7 +142,8 @@ function RacerWorld() {
     wasDriftingRef.current = false
     worldDistanceRef.current = 0
     setWorldDistance(0)
-    setCollectedMemoryShardIds(new Set())
+    collectedMemoryShardEffectsRef.current = new Map()
+    collectedMemoryShardIdsRef.current = new Set()
     lastCollisionAtRef.current = Number.NEGATIVE_INFINITY
     lastTelemetryAtRef.current = 0
     elapsedTimeRef.current = 0
@@ -321,37 +342,42 @@ function RacerWorld() {
 
     const memoryShardIndex = Math.max(0, Math.floor((runtime.distance - 70) / 92))
     pruneHandledEvents(runtime.handledMemoryShards, memoryShardIndex)
+    pruneCollectedMemoryShardVisuals(
+      collectedMemoryShardEffectsRef.current,
+      collectedMemoryShardIdsRef.current,
+      memoryShardIndex,
+    )
 
     for (let index = memoryShardIndex; index <= memoryShardIndex + 3; index += 1) {
       const memoryShard = createMemoryShardAt(index)
-      const distanceToShard = memoryShard.distance - runtime.distance
+      const pose = resolveRelativeTrackPose(memoryShard.distance, runtime.distance, 2)
+      const laneOffset = resolveTrackLaneOffset(
+        memoryShard.lane,
+        pose.heading,
+        trackConfig.laneWidth,
+      )
+      const shardX = pose.x + laneOffset.x
+      const shardZ = pose.z + laneOffset.z
 
-      if (
-        distanceToShard < 1.5 &&
-        distanceToShard > -3.4 &&
-        !runtime.handledMemoryShards.has(memoryShard.id)
-      ) {
-        const shardX =
-          resolveRelativeTrackCenter(memoryShard.distance, runtime.distance) +
-          memoryShard.lane * trackConfig.laneWidth
-
-        if (Math.abs(runtime.x - shardX) < 1.05) {
+      if (!runtime.handledMemoryShards.has(memoryShard.id)) {
+        if (
+          resolveMemoryShardCollection({
+            playerX: runtime.x,
+            playerZ: 0,
+            shardX,
+            shardZ,
+          })
+        ) {
           addScore(trackConfig.memoryShardScore + runtime.speed * 2.5, {
             label: "A memory came loose",
             feedbackKind: "shard",
           })
-          setCollectedMemoryShardIds((ids) => {
-            if (ids.has(memoryShard.id)) {
-              return ids
-            }
-
-            const nextIds = new Set(ids)
-            nextIds.add(memoryShard.id)
-            return nextIds
-          })
+          collectedMemoryShardIdsRef.current.add(memoryShard.id)
+          collectedMemoryShardEffectsRef.current.set(memoryShard.id, elapsedTime)
+          runtime.handledMemoryShards.add(memoryShard.id)
+        } else if (hasMemoryShardPassedPlayer(shardZ)) {
+          runtime.handledMemoryShards.add(memoryShard.id)
         }
-
-        runtime.handledMemoryShards.add(memoryShard.id)
       }
     }
 
@@ -390,11 +416,8 @@ function RacerWorld() {
   const visibleBoostGates = useMemo(() => createVisibleBoostGates(worldDistance), [worldDistance])
   const visibleCheckpoints = useMemo(() => createVisibleCheckpoints(worldDistance), [worldDistance])
   const visibleMemoryShards = useMemo(
-    () =>
-      createVisibleMemoryShards(worldDistance).filter(
-        (memoryShard) => !collectedMemoryShardIds.has(memoryShard.id),
-      ),
-    [collectedMemoryShardIds, worldDistance],
+    () => createVisibleMemoryShards(worldDistance),
+    [worldDistance],
   )
 
   return (
@@ -452,7 +475,13 @@ function RacerWorld() {
       <group key={runId}>
         <Track distanceRef={distanceRef} />
         <BoostGates distanceRef={distanceRef} boostGates={visibleBoostGates} />
-        <MemoryShards distanceRef={distanceRef} memoryShards={visibleMemoryShards} />
+        <MemoryShards
+          collectedMemoryShardEffectsRef={collectedMemoryShardEffectsRef}
+          collectedMemoryShardIdsRef={collectedMemoryShardIdsRef}
+          distanceRef={distanceRef}
+          elapsedTimeRef={elapsedTimeRef}
+          memoryShards={visibleMemoryShards}
+        />
         <DreamObjects distanceRef={distanceRef} obstacles={visibleObstacles} />
         <Checkpoints distanceRef={distanceRef} checkpoints={visibleCheckpoints} />
         <CarMotionTrail carXRef={carXRef} distanceRef={distanceRef} speedRef={speedRef} />

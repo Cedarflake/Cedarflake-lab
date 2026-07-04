@@ -153,6 +153,15 @@ try {
     await page.getByRole("button", { name: "Start driving" }).click()
     await page.locator("canvas").waitFor()
     await page.waitForTimeout(500)
+    await page.evaluate(() => {
+      window.dispatchEvent(new Event("blur"))
+    })
+    await page.waitForTimeout(300)
+
+    if (await page.getByRole("dialog", { name: "Paused" }).isVisible()) {
+      throw new Error("Expected startup blur to avoid opening the pause dialog")
+    }
+
     const beforeKeyboardMotion = await screenshotCanvas(page)
     await page.keyboard.down("w")
     await page.waitForTimeout(700)
