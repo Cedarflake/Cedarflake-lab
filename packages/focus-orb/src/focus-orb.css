@@ -1,0 +1,52 @@
+.focus-orb {
+  --focus-orb-height: 256px;
+  --focus-orb-width: 256px;
+  position: relative;
+  display: flex;
+  width: var(--focus-orb-width);
+  height: var(--focus-orb-height);
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.focus-orb--button {
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+  transform-origin: center;
+  transition: transform 300ms ease-out;
+}
+
+.focus-orb--button:hover,
+.focus-orb--button:focus-visible {
+  transform: scale(1.02);
+}
+
+.focus-orb--button:active {
+  transform: scale(0.99);
+}
+
+.focus-orb--button:disabled {
+  cursor: default;
+}
+
+.focus-orb--background {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.focus-orb--background[data-interactive="true"] {
+  pointer-events: auto;
+}
+
+.focus-orb__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

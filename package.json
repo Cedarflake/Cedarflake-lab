@@ -1,0 +1,18 @@
+{
+  "name": "focus-orb-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@11.7.0",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r build",
+    "check": "pnpm -r check",
+    "dev": "pnpm --filter @igcrystal/focus-orb-demo dev",
+    "preview": "pnpm --filter @igcrystal/focus-orb-demo preview"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7"
+  }
+}
