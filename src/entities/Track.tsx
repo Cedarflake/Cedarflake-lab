@@ -26,7 +26,7 @@ interface TrackProps {
   distanceRef: RefObject<number>
 }
 
-const alternateRoadColor = "#ece7e8"
+const alternateRoadColor = "#d0cacb"
 
 function createDesertTerrainGeometry(side: -1 | 1) {
   const width = desertTerrain.sideHalfWidth

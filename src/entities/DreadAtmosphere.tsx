@@ -35,6 +35,11 @@ interface DreadLightRef {
 
 const peripheralCycleDistance = 560
 const skyTearCycleDistance = 720
+const rememberedBodyColor = "#322a34"
+const rememberedHeadColor = "#4a3946"
+const rememberedLimbColor = "#6f2d3f"
+const skyTearBrightColor = "#d6a2ad"
+const skyTearDarkColor = "#352a36"
 
 function resolveAtmosphereZ(
   originDistance: number,
@@ -58,18 +63,33 @@ function RememberedShapeNode({
     <group ref={nodeRef}>
       <mesh position={[0, isTall ? 1.1 : 0.78, 0]} scale={[1, isTall ? 1 : 0.72, 1]}>
         <boxGeometry args={[0.32, 2.7, 0.08]} />
-        <meshBasicMaterial color="#3e3544" depthWrite={false} transparent opacity={0.34} />
+        <meshBasicMaterial
+          color={rememberedBodyColor}
+          depthWrite={false}
+          transparent
+          opacity={0.48}
+        />
       </mesh>
       <mesh position={[0, isTall ? 2.38 : 1.7, 0]}>
         <boxGeometry args={[0.7, 0.42, 0.07]} />
-        <meshBasicMaterial color="#514656" depthWrite={false} transparent opacity={0.25} />
+        <meshBasicMaterial
+          color={rememberedHeadColor}
+          depthWrite={false}
+          transparent
+          opacity={0.36}
+        />
       </mesh>
       <mesh
         position={[index % 2 === 0 ? -0.24 : 0.24, 0.46, 0.02]}
         rotation={[0, 0, index % 2 === 0 ? 0.36 : -0.36]}
       >
         <boxGeometry args={[0.18, 1.24, 0.06]} />
-        <meshBasicMaterial color="#5e4d5c" depthWrite={false} transparent opacity={0.22} />
+        <meshBasicMaterial
+          color={rememberedLimbColor}
+          depthWrite={false}
+          transparent
+          opacity={0.3}
+        />
       </mesh>
     </group>
   )
@@ -82,8 +102,8 @@ function SkyTearNode({
   index: number
   nodeRef: (node: DreadGroupRef | null) => void
 }) {
-  const width = 2.2 + (index % 4) * 0.48
-  const height = 11 + (index % 3) * 2.2
+  const width = 2.5 + (index % 4) * 0.54
+  const height = 13 + (index % 3) * 2.8
 
   return (
     <group ref={nodeRef}>
@@ -95,29 +115,29 @@ function SkyTearNode({
           depthWrite={false}
           fog={false}
           transparent
-          opacity={0.2}
+          opacity={0.3}
         />
       </mesh>
       <mesh position={[0, -height * 0.12, 0.01]} rotation={[0, 0, -0.08]}>
         <planeGeometry args={[width * 1.6, 0.12]} />
         <meshBasicMaterial
-          color="#fff7dc"
+          color={skyTearBrightColor}
           depthTest={false}
           depthWrite={false}
           fog={false}
           transparent
-          opacity={0.28}
+          opacity={0.42}
         />
       </mesh>
       <mesh position={[0, height * 0.14, 0.02]} rotation={[0, 0, 0.06]}>
         <planeGeometry args={[width * 0.72, height * 0.06]} />
         <meshBasicMaterial
-          color="#4d4552"
+          color={skyTearDarkColor}
           depthTest={false}
           depthWrite={false}
           fog={false}
           transparent
-          opacity={0.16}
+          opacity={0.3}
         />
       </mesh>
     </group>
@@ -130,7 +150,7 @@ export function DreadAtmosphere({ distanceRef, speedRef }: DreadAtmosphereProps)
   const lightRef = useRef<DreadLightRef | null>(null)
   const peripheralNodes = useMemo<DreadNode[]>(
     () =>
-      Array.from({ length: 18 }, (_, index) => ({
+      Array.from({ length: 24 }, (_, index) => ({
         index,
         side: index % 2 === 0 ? -1 : 1,
       })),
@@ -138,7 +158,7 @@ export function DreadAtmosphere({ distanceRef, speedRef }: DreadAtmosphereProps)
   )
   const skyTearNodes = useMemo<DreadNode[]>(
     () =>
-      Array.from({ length: 9 }, (_, index) => ({
+      Array.from({ length: 12 }, (_, index) => ({
         index,
         side: index % 2 === 0 ? -1 : 1,
       })),
@@ -157,8 +177,8 @@ export function DreadAtmosphere({ distanceRef, speedRef }: DreadAtmosphereProps)
       const z = resolveAtmosphereZ(36 + index * 41, distance, 0.92, peripheralCycleDistance)
       const phase = distance * 0.018 + index * 1.31
       const shoulder = trackConfig.roadHalfWidth + 3.4 + (index % 4) * 2.15
-      const blink = Math.sin(distance * 0.09 + index * 2.7) > 0.9
-      const heightPulse = 1 + Math.sin(phase * 0.6) * 0.1 + (blink ? 0.48 : 0)
+      const blink = Math.sin(distance * 0.09 + index * 2.7) > 0.86
+      const heightPulse = 1 + Math.sin(phase * 0.6) * 0.1 + (blink ? 0.58 : 0)
 
       node.position.set(
         side * (shoulder + Math.sin(phase * 0.7) * 0.56),
@@ -176,14 +196,14 @@ export function DreadAtmosphere({ distanceRef, speedRef }: DreadAtmosphereProps)
 
       const z = resolveAtmosphereZ(96 + index * 78, distance, 0.38, skyTearCycleDistance)
       const phase = distance * 0.011 + index * 0.93
-      const blink = Math.sin(distance * 0.041 + index * 3.2) > 0.985
+      const blink = Math.sin(distance * 0.041 + index * 3.2) > 0.96
 
       node.position.set(
         side * (11.5 + (index % 3) * 6.2 + Math.sin(phase) * 1.6),
         8.8 + (index % 3) * 2 + Math.cos(phase * 0.8) * 0.6,
         z,
       )
-      node.scale.setScalar(1.18 + speedTension * 0.14 + (blink ? 0.28 : 0))
+      node.scale.setScalar(1.28 + speedTension * 0.16 + (blink ? 0.4 : 0))
       node.rotation.set(0, 0, side * 0.055 + Math.sin(phase * 0.55) * 0.055)
       node.visible = z < 6 && z > -230
     })
@@ -191,7 +211,7 @@ export function DreadAtmosphere({ distanceRef, speedRef }: DreadAtmosphereProps)
     const light = lightRef.current
     if (light) {
       light.intensity +=
-        ((Math.sin(distance * 0.025) > 0.82 ? 2.2 : 0.34 + speedTension * 0.56) - light.intensity) *
+        ((Math.sin(distance * 0.025) > 0.82 ? 3.4 : 0.55 + speedTension * 0.74) - light.intensity) *
         Math.min(delta * 2.2, 1)
     }
   })
@@ -202,9 +222,9 @@ export function DreadAtmosphere({ distanceRef, speedRef }: DreadAtmosphereProps)
         ref={(node) => {
           lightRef.current = node
         }}
-        color="#d7bfef"
+        color="#b82038"
         distance={118}
-        intensity={0.34}
+        intensity={0.55}
         position={[0, 9, -58]}
       />
 

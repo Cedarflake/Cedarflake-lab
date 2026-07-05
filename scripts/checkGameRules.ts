@@ -11,6 +11,7 @@ import {
   resolveObstacleNearMissHalfWidth,
   wallObstacleWidth,
 } from "../src/game/collision"
+import { resolveDebugModeFromSearch } from "../src/game/debugMode"
 import { resolveRunDifficulty } from "../src/game/difficulty"
 import {
   resolveActiveGamepad,
@@ -133,6 +134,23 @@ assert(wrapDistance(-2, 10) === 8, "Expected wrapDistance to wrap negative dista
 assert(
   resolveRunDifficulty().maxSpeed === 70,
   "Expected ordinary max speed to be available without a startup distance ramp",
+)
+assert(!resolveDebugModeFromSearch("").isEnabled, "Expected debug mode to stay disabled by default")
+assert(
+  !resolveDebugModeFromSearch("?debug=off").isEnabled,
+  "Expected explicit debug off to stay disabled",
+)
+assert(
+  resolveDebugModeFromSearch("?debug=no-obstacles").noObstacles,
+  "Expected no-obstacles debug mode to disable obstacles",
+)
+assert(
+  resolveDebugModeFromSearch("?debug=1").noObstacles,
+  "Expected shorthand debug mode to disable obstacles",
+)
+assert(
+  resolveDebugModeFromSearch("?noObstacles=1").noObstacles,
+  "Expected noObstacles query flag to disable obstacles",
 )
 assert(
   resolveSteeringVelocity(1, 0, trackConfig.maxSpeed) === 0,

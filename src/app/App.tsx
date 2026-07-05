@@ -1,4 +1,4 @@
-import { Component, lazy, Suspense, useEffect, useState } from "react"
+import { Component, lazy, Suspense, useEffect, useMemo, useState } from "react"
 import type { ReactNode } from "react"
 
 import {
@@ -7,6 +7,7 @@ import {
   resetBackgroundMusic,
 } from "@/app/backgroundMusic"
 import { preloadLoadingCakeAssets } from "@/app/loadingCakeAssets"
+import { resolveDebugMode } from "@/game/debugMode"
 import { useGameStore } from "@/game/useGameStore"
 import { useKeyboardInput } from "@/game/useInput"
 import { DrivingFeedback } from "@/ui/DrivingFeedback"
@@ -187,12 +188,15 @@ function useBackgroundMusic(status: string) {
 export function App() {
   const status = useGameStore((state) => state.status)
   const requiresDesktop = useRequiresDesktop()
+  const [hasSceneError, setHasSceneError] = useState(false)
   const [hasSceneFrame, setHasSceneFrame] = useState(false)
   const [hasMinimumLoadingElapsed, setHasMinimumLoadingElapsed] = useState(false)
   const [isLoadingVisible, setIsLoadingVisible] = useState(true)
   const [isLoadingExiting, setIsLoadingExiting] = useState(false)
   const canExitLoading = hasSceneFrame && hasMinimumLoadingElapsed
   const isSceneReady = !isLoadingVisible
+  const canShowGameUi = isSceneReady && !hasSceneError
+  const debugMode = useMemo(() => resolveDebugMode(), [])
 
   useKeyboardInput()
   useBackgroundMusic(status)
@@ -233,22 +237,32 @@ export function App() {
 
   return (
     <main
+      data-debug-mode={debugMode.isEnabled ? debugMode.label : undefined}
       className="game-shell"
       data-scene-ready={isSceneReady ? "true" : "false"}
       data-status={status}
       tabIndex={-1}
     >
       <div className="scene-layer">
-        <SceneErrorBoundary onError={() => setHasSceneFrame(true)}>
+        <SceneErrorBoundary
+          onError={() => {
+            setHasSceneError(true)
+            setHasSceneFrame(true)
+          }}
+        >
           <Suspense fallback={null}>
-            <LiminalRacerScene onReady={() => setHasSceneFrame(true)} />
+            <LiminalRacerScene debugMode={debugMode} onReady={() => setHasSceneFrame(true)} />
           </Suspense>
         </SceneErrorBoundary>
       </div>
       {isLoadingVisible ? <SceneLoading isExiting={isLoadingExiting} /> : null}
-      <DrivingFeedback />
-      <Hud />
-      {isSceneReady ? <GameOverlay /> : null}
+      {canShowGameUi ? (
+        <>
+          <DrivingFeedback />
+          <Hud debugMode={debugMode} />
+          <GameOverlay />
+        </>
+      ) : null}
     </main>
   )
 }

@@ -1,17 +1,18 @@
 type LoadingCakePreloadKind = "fetch" | "image"
 
-interface LoadingCakePreloadAsset {
+export interface LoadingCakePreloadAsset {
   as: LoadingCakePreloadKind
   href: string
   type: string
 }
 
 const loadingCakeBasePath = "/model/cake_is_a_lie"
-const preloadAttribute = "data-loading-cake-preload"
+
+export const loadingCakePreloadAttribute = "data-loading-cake-preload"
 
 export const loadingCakeModelPath = `${loadingCakeBasePath}/scene.gltf`
 
-const loadingCakeAssetPreloads: LoadingCakePreloadAsset[] = [
+export const loadingCakeAssetPreloads: LoadingCakePreloadAsset[] = [
   {
     as: "fetch",
     href: loadingCakeModelPath,
@@ -32,7 +33,7 @@ const loadingCakeAssetPreloads: LoadingCakePreloadAsset[] = [
 let hasPreloadedLoadingCakeAssets = false
 
 function appendPreloadLink(asset: LoadingCakePreloadAsset) {
-  const selector = `link[${preloadAttribute}="${asset.href}"]`
+  const selector = `link[${loadingCakePreloadAttribute}="${asset.href}"]`
 
   if (document.head.querySelector(selector)) {
     return
@@ -43,7 +44,7 @@ function appendPreloadLink(asset: LoadingCakePreloadAsset) {
   link.as = asset.as
   link.href = asset.href
   link.type = asset.type
-  link.setAttribute(preloadAttribute, asset.href)
+  link.setAttribute(loadingCakePreloadAttribute, asset.href)
 
   if (asset.as === "fetch") {
     link.crossOrigin = "anonymous"

@@ -41,8 +41,10 @@ interface BillboardRef {
 const imageEyeTextureSrc = "/image/eyes-edit.png"
 const skyEyes: FloatingBillboard[] = [
   { x: -18, y: 14.6, z: -44, scale: [7.4, 3.5, 1], opacity: 0.92 },
+  { x: 5, y: 11.8, z: -58, scale: [4.8, 2.22, 1], opacity: 0.44 },
   { x: 25, y: 13.4, z: -76, scale: [6.2, 2.9, 1], opacity: 0.68 },
   { x: -35, y: 17.1, z: -118, scale: [8.2, 3.9, 1], opacity: 0.5 },
+  { x: 38, y: 18.2, z: -142, scale: [7.1, 3.3, 1], opacity: 0.36 },
 ]
 const eyeClouds: FloatingBillboard[] = [
   { x: 30, y: 12.8, z: -38, scale: [13.6, 5.2, 1], opacity: 0.62 },
@@ -88,18 +90,18 @@ function drawEyeCloudTexture(canvas: HTMLCanvasElement) {
   context.clearRect(0, 0, width, height)
 
   const glow = context.createRadialGradient(centerX, centerY, 24, centerX, centerY, 230)
-  glow.addColorStop(0, "rgba(255, 250, 226, 0.58)")
-  glow.addColorStop(0.48, "rgba(245, 196, 219, 0.36)")
-  glow.addColorStop(0.86, "rgba(190, 217, 238, 0.18)")
-  glow.addColorStop(1, "rgba(243, 184, 212, 0)")
+  glow.addColorStop(0, "rgba(238, 215, 210, 0.52)")
+  glow.addColorStop(0.48, "rgba(176, 121, 142, 0.36)")
+  glow.addColorStop(0.86, "rgba(116, 135, 154, 0.2)")
+  glow.addColorStop(1, "rgba(123, 83, 104, 0)")
   context.fillStyle = glow
   context.fillRect(0, 0, width, height)
 
   const cloudGradient = context.createLinearGradient(56, 72, 456, 194)
-  cloudGradient.addColorStop(0, "rgba(255, 252, 232, 0.36)")
-  cloudGradient.addColorStop(0.42, "rgba(255, 246, 211, 0.86)")
-  cloudGradient.addColorStop(0.72, "rgba(229, 213, 235, 0.62)")
-  cloudGradient.addColorStop(1, "rgba(185, 216, 238, 0.3)")
+  cloudGradient.addColorStop(0, "rgba(212, 192, 181, 0.34)")
+  cloudGradient.addColorStop(0.42, "rgba(213, 182, 170, 0.82)")
+  cloudGradient.addColorStop(0.72, "rgba(168, 138, 166, 0.6)")
+  cloudGradient.addColorStop(1, "rgba(117, 139, 159, 0.3)")
 
   const lobes = [
     [118, 146, 76, 36, -0.08],
@@ -118,20 +120,20 @@ function drawEyeCloudTexture(canvas: HTMLCanvasElement) {
 
   context.beginPath()
   context.ellipse(centerX, 158, 186, 50, 0, 0, Math.PI * 2)
-  context.fillStyle = "rgba(156, 137, 163, 0.14)"
+  context.fillStyle = "rgba(72, 54, 70, 0.22)"
   context.fill()
 
   context.beginPath()
   context.moveTo(84, 150)
   context.bezierCurveTo(152, 210, 348, 214, 432, 148)
-  context.strokeStyle = "rgba(255, 255, 244, 0.42)"
+  context.strokeStyle = "rgba(229, 202, 198, 0.36)"
   context.lineWidth = 9
   context.stroke()
 
   context.beginPath()
   context.moveTo(126, 104)
   context.bezierCurveTo(202, 60, 326, 62, 392, 106)
-  context.strokeStyle = "rgba(214, 187, 236, 0.42)"
+  context.strokeStyle = "rgba(126, 91, 122, 0.46)"
   context.lineWidth = 7
   context.stroke()
 }
@@ -266,7 +268,7 @@ export function SkyEyes({ distanceRef }: SkyEyesProps) {
             <planeGeometry args={[1, 0.5]} />
             <meshBasicMaterial
               alphaTest={0.005}
-              color="#ffffff"
+              color="#d7b9c2"
               depthTest={false}
               depthWrite={false}
               fog={false}
@@ -291,7 +293,7 @@ export function SkyEyes({ distanceRef }: SkyEyesProps) {
             <planeGeometry args={[1, 0.58]} />
             <meshBasicMaterial
               alphaTest={0.08}
-              color="#ffffff"
+              color="#ffd7dc"
               depthWrite={false}
               opacity={eye.opacity}
               transparent

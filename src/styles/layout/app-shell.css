@@ -1,5 +1,6 @@
 .game-shell {
   position: relative;
+  isolation: isolate;
   width: 100vw;
   height: 100vh;
   height: 100dvh;
@@ -17,20 +18,6 @@
 
 .game-shell:focus {
   outline: none;
-}
-
-.game-shell::before {
-  position: absolute;
-  inset: 0;
-  z-index: var(--z-shell-effect);
-  pointer-events: none;
-  content: "";
-  background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.16) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-  background-size: 44px 44px;
-  mask-image: linear-gradient(180deg, transparent, black 18%, black 70%, transparent);
-  opacity: 0.32;
 }
 
 .game-shell::after {

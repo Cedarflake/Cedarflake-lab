@@ -28,9 +28,9 @@ interface MemoryShardNodeProps {
 }
 
 const collectionEffectSeconds = 0.32
-const collectionColorStart = new Color("#78ddff")
-const collectionColorMid = new Color("#fff2b5")
-const collectionColorEnd = new Color("#cf94ff")
+const collectionColorStart = new Color("#6fabc3")
+const collectionColorMid = new Color("#d2c18e")
+const collectionColorEnd = new Color("#9b82ad")
 const collectionColor = new Color()
 
 function MemoryShardNode({
@@ -100,10 +100,10 @@ function MemoryShardNode({
           <meshBasicMaterial
             ref={burstRingMaterialRef}
             blending={AdditiveBlending}
-            color="#c8f7ff"
+            color="#9ccbd7"
             depthWrite={false}
             transparent
-            opacity={0.66}
+            opacity={0.58}
           />
         </mesh>
         <mesh scale={[0.8, 0.8, 0.8]}>
@@ -111,10 +111,10 @@ function MemoryShardNode({
           <meshBasicMaterial
             ref={burstCoreMaterialRef}
             blending={AdditiveBlending}
-            color="#8fdcff"
+            color="#6fabc3"
             depthWrite={false}
             transparent
-            opacity={0.34}
+            opacity={0.28}
           />
         </mesh>
       </group>
@@ -199,12 +199,12 @@ export function MemoryShards({
 
           if (burstRingMaterial) {
             burstRingMaterial.color.copy(collectionColor)
-            burstRingMaterial.opacity = 0.72 * fade
+            burstRingMaterial.opacity = 0.58 * fade
           }
 
           if (burstCoreMaterial) {
             burstCoreMaterial.color.copy(collectionColor)
-            burstCoreMaterial.opacity = 0.42 * fade
+            burstCoreMaterial.opacity = 0.3 * fade
           }
 
           burst.visible = true

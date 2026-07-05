@@ -5,6 +5,20 @@ import { measureSceneDifference, screenshotCanvas } from "./browserVisualChecks.
 const url = process.argv.find((value) => value.startsWith("http")) ?? "http://localhost:5173/"
 
 /**
+ * @param {string} baseUrl
+ * @param {Record<string, string>} params
+ */
+function withSearchParams(baseUrl, params) {
+  const nextUrl = new URL(baseUrl)
+
+  for (const [key, value] of Object.entries(params)) {
+    nextUrl.searchParams.set(key, value)
+  }
+
+  return nextUrl.toString()
+}
+
+/**
  * @param {string} text
  * @param {string} label
  */
@@ -163,6 +177,20 @@ try {
       throw new Error(`Expected immediate W input after start to drive, got ${startupSpeed}`)
     }
 
+    await page.evaluate(() => {
+      window.dispatchEvent(new Event("blur"))
+    })
+    await page.waitForTimeout(700)
+
+    const runningBlurText = await page.locator("body").innerText()
+    const runningBlurSpeed = readMetric(runningBlurText, "SPEED")
+
+    if (runningBlurSpeed <= startupSpeed + 3) {
+      throw new Error(
+        `Expected held W to survive visible running blur, got ${startupSpeed} -> ${runningBlurSpeed}`,
+      )
+    }
+
     await page.keyboard.up("w")
     await page.waitForTimeout(500)
     await page.evaluate(() => {
@@ -213,6 +241,37 @@ try {
     }
 
     await page.keyboard.up("Escape")
+    await context.close()
+  }
+
+  {
+    const context = await browser.newContext()
+    const page = await context.newPage()
+
+    await page.goto(withSearchParams(url, { debug: "no-obstacles" }), {
+      waitUntil: "domcontentloaded",
+    })
+    await page.getByRole("button", { name: "Start driving" }).waitFor()
+
+    const debugMode = await page.locator(".game-shell").getAttribute("data-debug-mode")
+
+    if (debugMode !== "No obstacles") {
+      throw new Error(`Expected no-obstacles debug mode marker, got ${debugMode}`)
+    }
+
+    await page.getByRole("button", { name: "Start driving" }).click()
+    await page.keyboard.down("w")
+    await page.waitForTimeout(5600)
+    await page.keyboard.up("w")
+
+    const integrity = await readProgressValue(page, "Vehicle integrity")
+
+    if (integrity !== 100) {
+      throw new Error(
+        `Expected no-obstacles debug mode to avoid collision damage, got ${integrity}`,
+      )
+    }
+
     await context.close()
   }
 

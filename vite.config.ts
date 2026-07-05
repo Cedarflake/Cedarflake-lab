@@ -3,6 +3,8 @@ import { fileURLToPath, URL } from "node:url"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 
+import { preloadLoadingCakeInHtml } from "./scripts/viteLoadingCakePreload"
+
 const reactVendorPackages = ["react", "react-dom", "scheduler", "zustand"]
 const chunkSizeWarningLimit = 750
 const reactThreeVendorPackages = [
@@ -35,7 +37,7 @@ function includesPackage(moduleId: string, packageName: string) {
 }
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [preloadLoadingCakeInHtml(), react()],
   build: {
     chunkSizeWarningLimit,
     rolldownOptions: {

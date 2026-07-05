@@ -5,6 +5,7 @@ import { gzipSync } from "node:zlib"
 
 const distAssetsPath = new URL("../dist/assets/", import.meta.url)
 const distAssetsFilePath = fileURLToPath(distAssetsPath)
+const distIndexPath = new URL("../dist/index.html", import.meta.url)
 const kib = 1024
 const budgets = {
   cssGzipBytes: 12 * kib,
@@ -12,10 +13,21 @@ const budgets = {
   totalJsGzipBytes: 360 * kib,
 }
 const expectedChunkPrefixes = [
+  "LoadingCake-",
   "LiminalRacerScene-",
   "react-three-vendor-",
   "react-vendor-",
   "three-core-",
+]
+const expectedLoadingCakePreloads = [
+  "/model/cake_is_a_lie/scene.gltf",
+  "/model/cake_is_a_lie/scene.bin",
+  "/model/cake_is_a_lie/textures/material_0_baseColor.png",
+  "/model/cake_is_a_lie/textures/material_1_baseColor.png",
+  "/model/cake_is_a_lie/textures/material_2_baseColor.png",
+  "/model/cake_is_a_lie/textures/material_3_baseColor.png",
+  "/model/cake_is_a_lie/textures/material_4_baseColor.png",
+  "/model/cake_is_a_lie/textures/material_5_baseColor.png",
 ]
 
 /**
@@ -50,6 +62,41 @@ function assertExpectedChunks(assetNames) {
 }
 
 /**
+ * @param {string[]} assetNames
+ * @param {string} prefix
+ */
+function findAssetNameByPrefix(assetNames, prefix) {
+  const assetName = assetNames.find((assetName) => assetName.startsWith(prefix))
+
+  if (!assetName) {
+    throw new Error(`Missing asset with prefix: ${prefix}`)
+  }
+
+  return assetName
+}
+
+/**
+ * @param {string} indexHtml
+ * @param {string[]} assetNames
+ */
+function assertLoadingCakePreloaded(indexHtml, assetNames) {
+  for (const href of expectedLoadingCakePreloads) {
+    if (!indexHtml.includes(`rel="preload"`) || !indexHtml.includes(`href="${href}"`)) {
+      throw new Error(`Missing loading cake asset preload: ${href}`)
+    }
+  }
+
+  for (const prefix of ["LoadingCake-", "react-three-vendor-", "three-core-"]) {
+    const assetName = findAssetNameByPrefix(assetNames, prefix)
+    const href = `/assets/${assetName}`
+
+    if (!indexHtml.includes(`rel="modulepreload"`) || !indexHtml.includes(`href="${href}"`)) {
+      throw new Error(`Missing loading cake modulepreload: ${href}`)
+    }
+  }
+}
+
+/**
  * @param {Array<{name: string}>} reports
  * @param {string} label
  */
@@ -60,6 +107,7 @@ function assertAssetReports(reports, label) {
 }
 
 const assetNames = await readdir(distAssetsPath)
+const indexHtml = await readFile(distIndexPath, "utf8")
 const assetReports = await Promise.all(
   assetNames
     .filter((assetName) => assetName.endsWith(".js") || assetName.endsWith(".css"))
@@ -88,6 +136,10 @@ const largestAsset = assetReports.reduce(
 assertAssetReports(jsReports, "JavaScript")
 assertAssetReports(cssReports, "CSS")
 assertExpectedChunks(assetReports.map((report) => report.name))
+assertLoadingCakePreloaded(
+  indexHtml,
+  assetReports.map((report) => report.name),
+)
 assertBudget(totalJsGzipBytes, budgets.totalJsGzipBytes, "Total JS gzip size")
 assertBudget(totalCssGzipBytes, budgets.cssGzipBytes, "Total CSS gzip size")
 assertBudget(largestAsset.rawBytes, budgets.largestAssetBytes, "Largest asset raw size")

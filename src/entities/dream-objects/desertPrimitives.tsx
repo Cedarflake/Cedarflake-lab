@@ -44,7 +44,7 @@ export function DuneCluster({ index }: { index: number }) {
       </mesh>
       <mesh position={[-1.04, 0.08, 0.12]} rotation={[0, -0.16, -0.04]}>
         <boxGeometry args={[2.1 * firstDuneScale, 0.04, 0.08]} />
-        <meshBasicMaterial color="#ead6ba" transparent opacity={0.34} />
+        <meshBasicMaterial color="#8f7564" transparent opacity={0.28} />
       </mesh>
       <mesh
         castShadow
@@ -62,7 +62,7 @@ export function DuneCluster({ index }: { index: number }) {
       </mesh>
       <mesh position={[1.22, 0, -0.58]} rotation={[0, 0.22, 0.03]}>
         <boxGeometry args={[1.18 * secondDuneScale, 0.035, 0.07]} />
-        <meshBasicMaterial color="#d7bd9f" transparent opacity={0.3} />
+        <meshBasicMaterial color="#725f52" transparent opacity={0.3} />
       </mesh>
       <group position={[-2.38, 0.62, 0.42]}>
         <DuneCross

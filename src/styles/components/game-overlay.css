@@ -12,16 +12,17 @@
     calc(24px + env(safe-area-inset-left));
   overflow: hidden;
   background:
-    radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.12), transparent 34%),
-    rgba(57, 44, 63, 0.18);
+    radial-gradient(circle at 50% 42%, rgba(229, 219, 190, 0.08), transparent 34%),
+    radial-gradient(circle at 50% 64%, rgba(31, 39, 38, 0.26), transparent 58%),
+    linear-gradient(180deg, rgba(35, 29, 41, 0.42), rgba(31, 43, 43, 0.48));
   backdrop-filter: none;
   animation: overlay-fade-in 180ms var(--ease-out) both;
 }
 
 .overlay__panel {
-  --overlay-scrollbar-track: rgba(255, 250, 236, 0.16);
-  --overlay-scrollbar-thumb: rgba(109, 151, 149, 0.62);
-  --overlay-scrollbar-thumb-strong: rgba(190, 174, 124, 0.72);
+  --overlay-scrollbar-track: rgba(228, 220, 202, 0.12);
+  --overlay-scrollbar-thumb: rgba(99, 129, 126, 0.58);
+  --overlay-scrollbar-thumb-strong: rgba(154, 141, 104, 0.66);
 
   box-sizing: border-box;
   width: min(560px, 100%);
@@ -35,6 +36,15 @@
   scrollbar-gutter: stable;
   scrollbar-color: var(--overlay-scrollbar-thumb) var(--overlay-scrollbar-track);
   scrollbar-width: thin;
+  background:
+    linear-gradient(180deg, rgba(226, 218, 198, 0.34), rgba(46, 39, 53, 0.42)),
+    linear-gradient(90deg, rgba(113, 137, 130, 0.14), transparent 42%, rgba(167, 151, 103, 0.12)),
+    rgba(61, 54, 64, 0.56);
+  border-color: rgba(216, 207, 184, 0.42);
+  box-shadow:
+    0 30px 90px rgba(21, 18, 26, 0.48),
+    inset 0 0 0 1px rgba(238, 230, 207, 0.14),
+    inset 0 -32px 72px rgba(28, 38, 37, 0.28);
   animation: overlay-panel-enter 220ms var(--ease-out) both;
 }
 
@@ -79,7 +89,7 @@
 
 .overlay__eyebrow {
   margin: 0 0 10px;
-  color: #78727c;
+  color: rgba(215, 202, 151, 0.82);
   font-size: 0.78rem;
   letter-spacing: 0;
   text-transform: uppercase;
@@ -87,16 +97,19 @@
 
 .overlay h1 {
   margin: 0;
-  color: var(--color-text-strong);
+  color: rgba(239, 232, 209, 0.92);
   font-size: 3.8rem;
   font-weight: 760;
   line-height: 0.96;
+  text-shadow:
+    0 1px 0 rgba(47, 39, 52, 0.66),
+    0 12px 38px rgba(21, 18, 26, 0.36);
 }
 
 .overlay p {
   max-width: 44rem;
   margin: 18px 0 0;
-  color: rgba(49, 39, 56, 0.72);
+  color: rgba(225, 218, 204, 0.78);
   font-size: clamp(1rem, 2vw, 1.12rem);
   line-height: 1.7;
 }
@@ -104,13 +117,13 @@
 .overlay__best-badge {
   display: inline-block;
   padding: 7px 12px;
-  color: rgba(47, 37, 53, 0.9);
+  color: rgba(239, 232, 209, 0.9);
   font-weight: 740;
   line-height: 1;
-  background: rgba(205, 190, 145, 0.72);
-  border: 1px solid rgba(232, 226, 211, 0.62);
+  background: rgba(64, 57, 62, 0.62);
+  border: 1px solid rgba(190, 176, 122, 0.46);
   border-radius: var(--radius-control);
-  box-shadow: 0 14px 34px rgba(48, 43, 52, 0.18);
+  box-shadow: 0 14px 34px rgba(21, 18, 26, 0.28);
 }
 
 .overlay__stats {
@@ -122,11 +135,15 @@
 
 .overlay__stat {
   padding: 10px 11px;
+  background:
+    linear-gradient(180deg, rgba(224, 216, 195, 0.16), rgba(46, 39, 53, 0.22)),
+    rgba(60, 53, 61, 0.36);
+  border-color: rgba(213, 202, 176, 0.26);
 }
 
 .overlay__stats dt {
   margin-block-end: 4px;
-  color: rgba(73, 58, 82, 0.58);
+  color: rgba(214, 200, 145, 0.72);
   font-size: 0.66rem;
   text-transform: uppercase;
 }
@@ -134,7 +151,7 @@
 .overlay__stats dd {
   margin: 0;
   overflow: hidden;
-  color: rgba(47, 37, 53, 0.86);
+  color: rgba(238, 232, 214, 0.9);
   font-size: 0.96rem;
   font-weight: 700;
   text-overflow: ellipsis;
@@ -157,16 +174,16 @@
   width: 58px;
   aspect-ratio: 1;
   place-items: center;
-  color: rgba(47, 37, 53, 0.86);
+  color: rgba(238, 232, 214, 0.92);
   cursor: pointer;
   background:
-    radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.44), transparent 45%),
-    rgba(229, 222, 209, 0.6);
-  border: 1px solid rgba(232, 226, 211, 0.72);
+    radial-gradient(circle at 50% 42%, rgba(214, 202, 144, 0.24), transparent 45%),
+    rgba(48, 42, 53, 0.72);
+  border: 1px solid rgba(199, 186, 137, 0.48);
   border-radius: 50%;
   box-shadow:
-    0 18px 38px rgba(48, 43, 52, 0.2),
-    inset 0 0 18px rgba(255, 255, 255, 0.3);
+    0 18px 38px rgba(21, 18, 26, 0.32),
+    inset 0 0 18px rgba(230, 218, 170, 0.12);
   backdrop-filter: blur(12px);
   transition:
     background-color var(--duration-normal) var(--ease-standard),
@@ -176,11 +193,11 @@
 
 .race-control-button:hover {
   background:
-    radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.52), transparent 45%),
-    rgba(226, 215, 165, 0.66);
+    radial-gradient(circle at 50% 42%, rgba(220, 209, 151, 0.3), transparent 45%),
+    rgba(67, 58, 64, 0.78);
   box-shadow:
-    0 22px 46px rgba(48, 43, 52, 0.26),
-    inset 0 0 20px rgba(255, 255, 255, 0.34);
+    0 22px 46px rgba(21, 18, 26, 0.38),
+    inset 0 0 20px rgba(230, 218, 170, 0.16);
   transform: translateY(-1px);
 }
 
@@ -226,7 +243,7 @@
 
 .controls dt {
   margin-block-end: 4px;
-  color: #7a6a7c;
+  color: rgba(214, 200, 145, 0.7);
   font-size: 0.72rem;
   text-transform: uppercase;
 }
@@ -242,7 +259,7 @@
 
 .overlay__gamepad-status {
   margin-block-start: 14px;
-  color: rgba(49, 39, 56, 0.66);
+  color: rgba(224, 216, 203, 0.66);
   font-size: 0.86rem;
   line-height: 1.5;
 }

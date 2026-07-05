@@ -1,8 +1,13 @@
 import { formatNumber, formatRacerNumber, formatScoreNumber } from "@/game/format"
 import { trackConfig } from "@/game/gameConfig"
 import { useGameStore } from "@/game/useGameStore"
+import type { DebugMode } from "@/game/debugMode"
 
-export function Hud() {
+interface HudProps {
+  debugMode: DebugMode
+}
+
+export function Hud({ debugMode }: HudProps) {
   const status = useGameStore((state) => state.status)
   const score = useGameStore((state) => state.score)
   const bestScore = useGameStore((state) => state.bestScore)
@@ -28,6 +33,13 @@ export function Hud() {
       aria-label="Race telemetry"
       aria-hidden={status !== "running"}
     >
+      {debugMode.isEnabled ? (
+        <div className="hud__debug-badge" aria-label="Debug mode">
+          <span>DEV</span>
+          <strong>{debugMode.label}</strong>
+        </div>
+      ) : null}
+
       <div className="hud__bar-parameters" aria-label="Bar parameters">
         <div className="hud__bar-row">
           <span className="hud__bar-label">Integrity</span>

@@ -60,7 +60,7 @@ function PictureFramePlaceholder() {
   return (
     <mesh position={[0, 0, 0.06]} scale={[pictureFrameVisualWidth, pictureFrameVisualHeight, 1]}>
       <planeGeometry args={[1, 1]} />
-      <meshBasicMaterial color="#e6dccb" depthWrite={false} transparent opacity={0.82} />
+      <meshBasicMaterial color="#6e5960" depthWrite={false} transparent opacity={0.82} />
     </mesh>
   )
 }
@@ -91,7 +91,7 @@ function PictureFrameChrome({ index }: { index: number }) {
         scale={[pictureFrameVisualWidth + 0.12, pictureFrameVisualHeight + 0.12, 1]}
       >
         <planeGeometry args={[1, 1]} />
-        <meshBasicMaterial color="#efe6d5" depthWrite={false} transparent opacity={0.56} />
+        <meshBasicMaterial color="#5a454b" depthWrite={false} transparent opacity={0.58} />
       </mesh>
       <mesh position={[-0.46, 0.42, 0.1]}>
         <boxGeometry args={[0.5, 0.06, 0.035]} />

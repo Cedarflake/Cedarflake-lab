@@ -3,7 +3,7 @@ import type { RefObject } from "react"
 
 import { RoundedBox } from "@react-three/drei"
 import { useFrame } from "@react-three/fiber"
-import { BufferGeometry, DoubleSide, Float32BufferAttribute } from "three"
+import { AdditiveBlending, BufferGeometry, DoubleSide, Float32BufferAttribute } from "three"
 import type { Group } from "three"
 
 import { dreamPalette } from "@/game/gameConfig"
@@ -38,6 +38,11 @@ const skidRayNearZ = rearWheelZ + 0.46
 const skidRayFarZ = skidRayNearZ + 1.26
 const skidRayNearHalfWidth = 0.095
 const skidRayFarHalfWidth = 0.018
+const cabinGlassColor = "#2f2630"
+const bodyMarkColor = "#65151d"
+const tailLightColor = "#b82831"
+const tailLightGlowColor = "#d53138"
+const wheelColor = "#3f3440"
 
 function createSkidRayGeometry() {
   const geometry = new BufferGeometry()
@@ -117,8 +122,17 @@ export function PlayerCar({ carRef, distanceRef, skidIntensityRef, steeringRef }
         smoothness={6}
         position={[0, 0.18, 0]}
       >
-        <meshStandardMaterial color={dreamPalette.car} roughness={0.28} metalness={0.16} />
+        <meshStandardMaterial color={dreamPalette.car} roughness={0.42} metalness={0.08} />
       </RoundedBox>
+
+      <mesh position={[0, 0.49, 0.76]} rotation={[0.02, 0, 0.04]}>
+        <boxGeometry args={[1.14, 0.026, 0.22]} />
+        <meshBasicMaterial color={bodyMarkColor} transparent opacity={0.44} />
+      </mesh>
+      <mesh position={[-0.42, 0.48, -0.98]} rotation={[0.01, 0, -0.12]}>
+        <boxGeometry args={[0.72, 0.022, 0.16]} />
+        <meshBasicMaterial color={bodyMarkColor} transparent opacity={0.32} />
+      </mesh>
 
       <RoundedBox
         castShadow
@@ -129,22 +143,42 @@ export function PlayerCar({ carRef, distanceRef, skidIntensityRef, steeringRef }
         position={[0, 0.62, -0.24]}
       >
         <meshPhysicalMaterial
-          color="#f3f8ff"
-          roughness={0.08}
-          transmission={0.15}
+          color={cabinGlassColor}
+          roughness={0.24}
+          transmission={0.04}
           thickness={0.35}
           transparent
-          opacity={0.68}
+          opacity={0.62}
         />
       </RoundedBox>
 
       <mesh position={[-0.48, 0.22, 1.66]}>
         <boxGeometry args={[0.4, 0.12, 0.08]} />
-        <meshBasicMaterial color="#fff1b8" />
+        <meshBasicMaterial color={tailLightColor} />
       </mesh>
       <mesh position={[0.48, 0.22, 1.66]}>
         <boxGeometry args={[0.4, 0.12, 0.08]} />
-        <meshBasicMaterial color="#fff1b8" />
+        <meshBasicMaterial color={tailLightColor} />
+      </mesh>
+      <mesh position={[-0.48, 0.22, 1.72]}>
+        <boxGeometry args={[0.52, 0.16, 0.03]} />
+        <meshBasicMaterial
+          blending={AdditiveBlending}
+          color={tailLightGlowColor}
+          depthWrite={false}
+          transparent
+          opacity={0.28}
+        />
+      </mesh>
+      <mesh position={[0.48, 0.22, 1.72]}>
+        <boxGeometry args={[0.52, 0.16, 0.03]} />
+        <meshBasicMaterial
+          blending={AdditiveBlending}
+          color={tailLightGlowColor}
+          depthWrite={false}
+          transparent
+          opacity={0.28}
+        />
       </mesh>
 
       {wheelPlacements.map(({ position: [x, y, z], canSteer }, index) => (
@@ -161,7 +195,7 @@ export function PlayerCar({ carRef, distanceRef, skidIntensityRef, steeringRef }
             >
               <mesh castShadow receiveShadow>
                 <cylinderGeometry args={[0.31, 0.31, 0.25, 18]} />
-                <meshStandardMaterial color="#6d6070" roughness={0.55} />
+                <meshStandardMaterial color={wheelColor} roughness={0.68} />
               </mesh>
               <mesh position={[0, x > 0 ? -0.14 : 0.14, 0]}>
                 <boxGeometry args={[0.18, 0.025, 0.18]} />

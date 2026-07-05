@@ -113,6 +113,16 @@ export function useKeyboardInput() {
       }
     }
 
+    function resetWhenWindowBlurred() {
+      const { status } = useGameStore.getState()
+
+      if (status === "running" && document.visibilityState === "visible") {
+        return
+      }
+
+      resetInput()
+    }
+
     function syncGamepadInput() {
       const gamepads = typeof navigator.getGamepads === "function" ? navigator.getGamepads() : []
       const activeGamepad = resolveActiveGamepad(gamepads, gamepadIndexRef.current)
@@ -148,7 +158,7 @@ export function useKeyboardInput() {
     window.addEventListener("gamepaddisconnected", handleGamepadDisconnected)
     window.addEventListener("keydown", handleKeyDown, keyboardListenerOptions)
     window.addEventListener("keyup", handleKeyUp, keyboardListenerOptions)
-    window.addEventListener("blur", resetInput)
+    window.addEventListener("blur", resetWhenWindowBlurred)
     animationFrame = window.requestAnimationFrame(syncGamepadInput)
 
     return () => {
@@ -157,7 +167,7 @@ export function useKeyboardInput() {
       window.removeEventListener("gamepaddisconnected", handleGamepadDisconnected)
       window.removeEventListener("keydown", handleKeyDown, keyboardListenerOptions)
       window.removeEventListener("keyup", handleKeyUp, keyboardListenerOptions)
-      window.removeEventListener("blur", resetInput)
+      window.removeEventListener("blur", resetWhenWindowBlurred)
       window.cancelAnimationFrame(animationFrame)
     }
   }, [])

@@ -98,8 +98,17 @@ async function delaySceneChunk(page, delayMs = 350) {
 /**
  * @param {import("playwright").Page} page
  */
+async function failSceneChunk(page) {
+  await page.route("**/assets/LiminalRacerScene-*.js", (route) => route.abort())
+}
+
+/**
+ * @param {import("playwright").Page} page
+ */
 async function assertStartupLoadingSequence(page) {
   await page.locator(".scene-loading").waitFor({ state: "visible" })
+  await assertLoadingCakePreloads(page)
+  await assertLoadingCakeCanvas(page)
 
   if (await page.getByRole("button", { name: "Start driving" }).isVisible()) {
     throw new Error("Expected start dialog to stay hidden while scene loading is visible")
@@ -110,6 +119,85 @@ async function assertStartupLoadingSequence(page) {
 
   if (await page.locator(".scene-loading").isVisible()) {
     throw new Error("Expected scene loading to be removed before showing the start dialog")
+  }
+}
+
+/**
+ * @param {import("playwright").Page} page
+ */
+async function assertLoadingCakePreloads(page) {
+  const preloads = await page.evaluate(() => ({
+    assetLinks: [...document.querySelectorAll("link[data-loading-cake-preload]")].map((link) => ({
+      as: link.getAttribute("as"),
+      crossorigin: link.getAttribute("crossorigin"),
+      href: link.getAttribute("href"),
+      rel: link.getAttribute("rel"),
+    })),
+    moduleLinks: [...document.querySelectorAll("link[data-loading-cake-module-preload]")].map(
+      (link) => link.getAttribute("href"),
+    ),
+  }))
+
+  if (preloads.assetLinks.length < 8) {
+    throw new Error(`Expected loading cake asset preloads, got ${JSON.stringify(preloads)}`)
+  }
+
+  if (preloads.moduleLinks.length < 3) {
+    throw new Error(`Expected loading cake modulepreloads, got ${JSON.stringify(preloads)}`)
+  }
+
+  for (const link of preloads.assetLinks) {
+    if (link.rel !== "preload" || !link.href?.includes("/model/cake_is_a_lie/")) {
+      throw new Error(`Invalid loading cake preload: ${JSON.stringify(link)}`)
+    }
+
+    if (link.as === "fetch" && link.crossorigin !== "anonymous") {
+      throw new Error(`Expected fetch preload CORS mode to be anonymous: ${JSON.stringify(link)}`)
+    }
+  }
+}
+
+/**
+ * @param {import("playwright").Page} page
+ */
+async function assertLoadingCakeCanvas(page) {
+  const canvas = page.locator(".scene-loading canvas").first()
+
+  await canvas.waitFor({ state: "visible", timeout: 2500 })
+
+  const box = await canvas.boundingBox()
+  const filter = await page
+    .locator(".scene-loading__cake-canvas")
+    .first()
+    .evaluate((element) => getComputedStyle(element).filter)
+
+  if (!box || box.width < 160 || box.height < 120) {
+    throw new Error(`Expected visible loading cake canvas, got ${JSON.stringify(box)}`)
+  }
+
+  if (
+    !filter.includes("sepia(") ||
+    !filter.includes("saturate(") ||
+    !filter.includes("hue-rotate(")
+  ) {
+    throw new Error(`Expected loading cake to use a blood-toned filter, got ${filter}`)
+  }
+}
+
+/**
+ * @param {import("playwright").Page} page
+ */
+async function assertSceneLoadFailure(page) {
+  await page.locator(".scene-error").waitFor()
+  await page.getByRole("button", { name: "Reload" }).waitFor()
+  await page.locator(".scene-loading").waitFor({ state: "detached" })
+
+  if (await page.getByRole("dialog", { name: "Start race" }).isVisible()) {
+    throw new Error("Expected start dialog to stay hidden when the scene fails")
+  }
+
+  if (await page.getByRole("button", { name: "Start driving" }).isVisible()) {
+    throw new Error("Expected start action to stay hidden when the scene fails")
   }
 }
 
@@ -373,6 +461,18 @@ try {
     await context.close()
 
     console.log("reduced motion ok")
+  }
+
+  {
+    const context = await browser.newContext()
+    const page = await context.newPage()
+
+    await failSceneChunk(page)
+    await page.goto(url, { waitUntil: "domcontentloaded" })
+    await assertSceneLoadFailure(page)
+    await context.close()
+
+    console.log("scene failure overlay ok")
   }
 
   for (const viewport of viewports) {

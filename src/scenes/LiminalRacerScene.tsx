@@ -20,6 +20,7 @@ import {
   resolveObstacleNearMissHalfWidth,
   resolveMemoryShardCollection,
 } from "@/game/collision"
+import type { DebugMode } from "@/game/debugMode"
 import { resolveRunDifficulty } from "@/game/difficulty"
 import {
   createBoostGateAt,
@@ -60,7 +61,12 @@ interface RuntimeState {
 }
 
 interface LiminalRacerSceneProps {
+  debugMode: DebugMode
   onReady?: () => void
+}
+
+interface RacerWorldProps {
+  debugMode: DebugMode
 }
 
 interface SceneReadyNotifierProps {
@@ -136,7 +142,7 @@ function SceneReadyNotifier({ onReady }: SceneReadyNotifierProps) {
   return null
 }
 
-function RacerWorld() {
+function RacerWorld({ debugMode }: RacerWorldProps) {
   const carRef = useRef<Group | null>(null)
   const collectedMemoryShardEffectsRef = useRef<Map<string, number>>(new Map())
   const collectedMemoryShardIdsRef = useRef<Set<string>>(new Set())
@@ -372,69 +378,71 @@ function RacerWorld() {
       state.camera.updateProjectionMatrix()
     }
 
-    const obstacleIndex = Math.max(0, Math.floor((runtime.distance - 90) / 46))
-    pruneHandledEvents(runtime.handledObstacles, obstacleIndex)
+    if (!debugMode.noObstacles) {
+      const obstacleIndex = Math.max(0, Math.floor((runtime.distance - 90) / 46))
+      pruneHandledEvents(runtime.handledObstacles, obstacleIndex)
 
-    for (let index = obstacleIndex; index <= obstacleIndex + 3; index += 1) {
-      const obstacle = createObstacleAt(index)
-      const distanceToObstacle = obstacle.distance - runtime.distance
+      for (let index = obstacleIndex; index <= obstacleIndex + 3; index += 1) {
+        const obstacle = createObstacleAt(index)
+        const distanceToObstacle = obstacle.distance - runtime.distance
 
-      if (
-        distanceToObstacle < 1.8 &&
-        distanceToObstacle > -4 &&
-        !runtime.handledObstacles.has(obstacle.id)
-      ) {
-        const obstacleX =
-          resolveRelativeTrackCenter(obstacle.distance, runtime.distance) +
-          obstacle.lane * trackConfig.laneWidth
-        const obstacleOffset = Math.abs(runtime.x - obstacleX)
-        const hit = obstacleOffset < resolveObstacleCollisionHalfWidth(obstacle)
+        if (
+          distanceToObstacle < 1.8 &&
+          distanceToObstacle > -4 &&
+          !runtime.handledObstacles.has(obstacle.id)
+        ) {
+          const obstacleX =
+            resolveRelativeTrackCenter(obstacle.distance, runtime.distance) +
+            obstacle.lane * trackConfig.laneWidth
+          const obstacleOffset = Math.abs(runtime.x - obstacleX)
+          const hit = obstacleOffset < resolveObstacleCollisionHalfWidth(obstacle)
 
-        if (hit) {
-          const isRecovering = isCollisionRecovering(
-            elapsedTime,
-            lastCollisionAtRef.current,
-            trackConfig.collisionRecoverySeconds,
-          )
+          if (hit) {
+            const isRecovering = isCollisionRecovering(
+              elapsedTime,
+              lastCollisionAtRef.current,
+              trackConfig.collisionRecoverySeconds,
+            )
 
-          if (isRecovering) {
-            runtime.handledObstacles.add(obstacle.id)
-            continue
+            if (isRecovering) {
+              runtime.handledObstacles.add(obstacle.id)
+              continue
+            }
+
+            const collisionDamage = resolveCollisionDamage({
+              baseDamage: trackConfig.collisionDamage,
+              speed: runtime.speed,
+              speedReference: trackConfig.maxSpeed,
+              minSpeedDamageMultiplier: trackConfig.collisionMinSpeedDamageMultiplier,
+              maxSpeedDamageMultiplier: trackConfig.collisionMaxSpeedDamageMultiplier,
+              isDrifting: driftIntent,
+              driftDamageMultiplier: trackConfig.driftCollisionDamageMultiplier,
+            })
+            const willEndRun = willEndRunAfterDamage(
+              useGameStore.getState().integrity,
+              collisionDamage,
+            )
+
+            lastCollisionAtRef.current = elapsedTime
+            runtime.speed *= 0.58
+            runtime.velocityX *= -0.28
+            damage(collisionDamage)
+
+            if (willEndRun) {
+              runtime.handledObstacles.add(obstacle.id)
+              return
+            }
+          } else if (obstacleOffset < resolveObstacleNearMissHalfWidth(obstacle)) {
+            addScore(trackConfig.nearMissScore + runtime.speed * 4, {
+              label: "Something missed you",
+              feedbackKind: "near-miss",
+            })
+          } else {
+            addScore(trackConfig.passScore + runtime.speed * 2, { label: "No contact recorded" })
           }
 
-          const collisionDamage = resolveCollisionDamage({
-            baseDamage: trackConfig.collisionDamage,
-            speed: runtime.speed,
-            speedReference: trackConfig.maxSpeed,
-            minSpeedDamageMultiplier: trackConfig.collisionMinSpeedDamageMultiplier,
-            maxSpeedDamageMultiplier: trackConfig.collisionMaxSpeedDamageMultiplier,
-            isDrifting: driftIntent,
-            driftDamageMultiplier: trackConfig.driftCollisionDamageMultiplier,
-          })
-          const willEndRun = willEndRunAfterDamage(
-            useGameStore.getState().integrity,
-            collisionDamage,
-          )
-
-          lastCollisionAtRef.current = elapsedTime
-          runtime.speed *= 0.58
-          runtime.velocityX *= -0.28
-          damage(collisionDamage)
-
-          if (willEndRun) {
-            runtime.handledObstacles.add(obstacle.id)
-            return
-          }
-        } else if (obstacleOffset < resolveObstacleNearMissHalfWidth(obstacle)) {
-          addScore(trackConfig.nearMissScore + runtime.speed * 4, {
-            label: "Something missed you",
-            feedbackKind: "near-miss",
-          })
-        } else {
-          addScore(trackConfig.passScore + runtime.speed * 2, { label: "No contact recorded" })
+          runtime.handledObstacles.add(obstacle.id)
         }
-
-        runtime.handledObstacles.add(obstacle.id)
       }
     }
 
@@ -539,7 +547,10 @@ function RacerWorld() {
     }
   })
 
-  const visibleObstacles = useMemo(() => createVisibleObstacles(worldDistance), [worldDistance])
+  const visibleObstacles = useMemo(
+    () => (debugMode.noObstacles ? [] : createVisibleObstacles(worldDistance)),
+    [debugMode.noObstacles, worldDistance],
+  )
   const visibleBoostGates = useMemo(() => createVisibleBoostGates(worldDistance), [worldDistance])
   const visibleCheckpoints = useMemo(() => createVisibleCheckpoints(worldDistance), [worldDistance])
   const visibleMemoryShards = useMemo(
@@ -556,17 +567,18 @@ function RacerWorld() {
         fov={baseCameraFov}
       />
       <color attach="background" args={[dreamPalette.skyTop]} />
-      <fog attach="fog" args={[dreamPalette.fog, 34, 190]} />
-      <ambientLight intensity={0.5} />
+      <fog attach="fog" args={[dreamPalette.fog, 24, 160]} />
+      <ambientLight intensity={0.34} />
       <hemisphereLight
         color={dreamPalette.dreamPink}
         groundColor={dreamPalette.dreamBlue}
-        intensity={0.42}
+        intensity={0.28}
       />
       <directionalLight
         castShadow
+        color="#d7b7bd"
         position={[-9, 14, 10]}
-        intensity={2.8}
+        intensity={2.15}
         shadow-camera-bottom={-42}
         shadow-camera-far={120}
         shadow-camera-left={-48}
@@ -575,27 +587,27 @@ function RacerWorld() {
         shadow-mapSize-height={1024}
         shadow-mapSize-width={1024}
       />
-      <pointLight position={[0, 5, 2]} color={dreamPalette.carGlow} intensity={10} distance={14} />
+      <pointLight position={[0, 4.2, 2]} color={dreamPalette.carGlow} intensity={8} distance={13} />
       <pointLight
         position={[-18, 8, -48]}
         color={dreamPalette.dreamPink}
-        intensity={7}
+        intensity={4.8}
         distance={64}
       />
       <pointLight
         position={[20, 7, -78]}
         color={dreamPalette.dreamBlue}
-        intensity={5}
+        intensity={3.6}
         distance={72}
       />
       <Stars
         radius={120}
         depth={42}
         count={isPortrait ? 360 : 720}
-        factor={2.3}
-        saturation={0.2}
+        factor={1.8}
+        saturation={0.05}
         fade
-        speed={0.28}
+        speed={0.18}
       />
       <SkyEyes distanceRef={distanceRef} />
       <DreadAtmosphere distanceRef={distanceRef} speedRef={speedRef} />
@@ -623,7 +635,7 @@ function RacerWorld() {
   )
 }
 
-export function LiminalRacerScene({ onReady }: LiminalRacerSceneProps) {
+export function LiminalRacerScene({ debugMode, onReady }: LiminalRacerSceneProps) {
   return (
     <Canvas
       aria-label="Liminal Drift 3D racing scene"
@@ -631,7 +643,7 @@ export function LiminalRacerScene({ onReady }: LiminalRacerSceneProps) {
       gl={{ antialias: false, alpha: false, powerPreference: "high-performance" }}
       shadows="percentage"
     >
-      <RacerWorld />
+      <RacerWorld debugMode={debugMode} />
       {onReady ? <SceneReadyNotifier onReady={onReady} /> : null}
     </Canvas>
   )
