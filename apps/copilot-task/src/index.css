@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@import "./styles/tokens/palette.css";
+@import "./styles/tokens/semantic-colors.css";
+
+@import "./styles/base/fonts.css";
+@import "./styles/base/global.css";
+
+@import "./styles/utilities/typography.css";
+@import "./styles/utilities/rendering.css";
+@import "./styles/utilities/layout.css";
+@import "./styles/utilities/interaction.css";
+
+@import "./styles/effects/squircle.css";
+@import "./styles/effects/shadow.css";
+
+@config "../tailwind.config.js";

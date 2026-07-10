@@ -1,0 +1,104 @@
+.shadow-tinted-lg {
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -4px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.theme-panel-bg {
+  background-color: rgb(var(--color-background-650));
+}
+
+[data-theme="dark"] .theme-panel-bg {
+  background-color: rgb(var(--color-background-150));
+}
+
+.image-theme-mask {
+  position: relative;
+  isolation: isolate;
+}
+
+.image-theme-tint img,
+.image-theme-tint picture,
+.image-theme-tint video {
+  filter:
+    sepia(0.16) saturate(1.28) hue-rotate(158deg) contrast(0.98) brightness(1.06)
+    drop-shadow(0 0 10px rgb(var(--color-accent-100) / 0.34));
+}
+
+[data-theme="dark"] .image-theme-tint img,
+[data-theme="dark"] .image-theme-tint picture,
+[data-theme="dark"] .image-theme-tint video {
+  filter:
+    sepia(0.18) saturate(1.2) hue-rotate(158deg) contrast(1.02) brightness(0.92)
+    drop-shadow(0 0 12px rgb(var(--color-accent-100) / 0.28));
+}
+
+.image-theme-mask img,
+.image-theme-mask picture,
+.image-theme-mask video {
+  filter: saturate(0.78) hue-rotate(5deg) contrast(0.98) brightness(1.02);
+}
+
+.image-theme-mask::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  content: "";
+  background: linear-gradient(
+    135deg,
+    rgb(var(--color-background-300) / 0.34),
+    rgb(var(--color-accent-100) / 0.18) 48%,
+    rgb(var(--color-background-650) / 0.28)
+  );
+  mix-blend-mode: color;
+}
+
+.image-theme-mask-subtle img,
+.image-theme-mask-subtle picture,
+.image-theme-mask-subtle video {
+  filter: saturate(0.92) hue-rotate(4deg) contrast(0.99) brightness(1.01);
+}
+
+.image-theme-mask-subtle::after {
+  background: linear-gradient(
+    135deg,
+    rgb(var(--color-background-300) / 0.12),
+    rgb(var(--color-accent-100) / 0.05) 48%,
+    rgb(var(--color-background-650) / 0.08)
+  );
+  mix-blend-mode: color;
+}
+
+[data-theme="dark"] .image-theme-mask img,
+[data-theme="dark"] .image-theme-mask picture,
+[data-theme="dark"] .image-theme-mask video {
+  filter: saturate(0.7) hue-rotate(7deg) contrast(1.02) brightness(0.88);
+}
+
+[data-theme="dark"] .image-theme-mask::after {
+  background: linear-gradient(
+    135deg,
+    rgb(var(--color-accent-100) / 0.28),
+    rgb(var(--color-background-550) / 0.28) 52%,
+    rgb(var(--color-background-250) / 0.34)
+  );
+  mix-blend-mode: color;
+}
+
+[data-theme="dark"] .image-theme-mask-subtle img,
+[data-theme="dark"] .image-theme-mask-subtle picture,
+[data-theme="dark"] .image-theme-mask-subtle video {
+  filter: saturate(0.86) hue-rotate(5deg) contrast(1.01) brightness(0.94);
+}
+
+[data-theme="dark"] .image-theme-mask-subtle::after {
+  background: linear-gradient(
+    135deg,
+    rgb(var(--color-accent-100) / 0.1),
+    rgb(var(--color-background-550) / 0.08) 52%,
+    rgb(var(--color-background-250) / 0.12)
+  );
+  mix-blend-mode: color;
+}

@@ -1,0 +1,57 @@
+/* ===================== Color Palettes (RGB triplets) ===================== */
+
+:root {
+  /* Sky palette (light mode background & foreground) */
+  --color-stone-100: 248 253 255;
+  --color-stone-150: 238 249 255;
+  --color-stone-200: 224 244 255;
+  --color-stone-250: 204 235 252;
+  --color-stone-300: 174 219 244;
+  --color-stone-350: 137 198 231;
+  --color-stone-400: 94 171 213;
+  --color-stone-450: 49 133 180;
+  --color-stone-550: 35 112 158;
+  --color-stone-600: 30 98 141;
+  --color-stone-650: 25 81 119;
+  --color-stone-700: 22 67 98;
+  --color-stone-750: 18 54 79;
+  --color-stone-800: 15 43 63;
+  --color-stone-850: 12 32 48;
+  --color-stone-900: 8 23 35;
+
+  /* Deep sky palette (dark mode background) */
+  --color-midnight-100: 245 252 255;
+  --color-midnight-150: 225 245 255;
+  --color-midnight-200: 198 235 252;
+  --color-midnight-250: 158 217 245;
+  --color-midnight-300: 113 193 232;
+  --color-midnight-350: 73 162 207;
+  --color-midnight-400: 48 136 184;
+  --color-midnight-450: 34 109 153;
+  --color-midnight-550: 26 88 127;
+  --color-midnight-600: 22 75 110;
+  --color-midnight-650: 18 62 92;
+  --color-midnight-700: 15 50 74;
+  --color-midnight-750: 12 40 60;
+  --color-midnight-800: 10 31 47;
+  --color-midnight-850: 7 24 37;
+  --color-midnight-900: 4 17 27;
+
+  /* Mist palette (dark mode foreground) */
+  --color-slate-100: 248 253 255;
+  --color-slate-150: 232 247 255;
+  --color-slate-200: 213 239 252;
+  --color-slate-250: 190 226 244;
+  --color-slate-300: 160 207 229;
+  --color-slate-350: 126 181 209;
+  --color-slate-400: 91 151 183;
+  --color-slate-450: 57 116 150;
+  --color-slate-550: 43 96 128;
+  --color-slate-600: 37 83 112;
+  --color-slate-650: 30 69 94;
+  --color-slate-700: 24 56 77;
+  --color-slate-750: 19 43 61;
+  --color-slate-800: 14 33 47;
+  --color-slate-850: 10 24 35;
+  --color-slate-900: 6 17 26;
+}

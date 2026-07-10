@@ -1,0 +1,19 @@
+.h-lenis-wrapper {
+  height: 100dvh;
+}
+
+@media (min-width: 640px) {
+  .sm\:h-lenis-wrapper {
+    height: 100dvh;
+  }
+}
+
+@media (min-width: 768px) {
+  .md\:min-h-lenis-wrapper {
+    min-height: 100dvh;
+  }
+
+  .md\:rounded-container {
+    border-radius: 0.625rem;
+  }
+}

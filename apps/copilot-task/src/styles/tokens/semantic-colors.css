@@ -1,0 +1,86 @@
+/* ===================== Semantic Color Tokens ===================== */
+
+:root,
+[data-theme="light"] {
+  --color-background-100: var(--color-stone-100);
+  --color-background-150: var(--color-stone-150);
+  --color-background-200: var(--color-stone-200);
+  --color-background-250: var(--color-stone-250);
+  --color-background-300: var(--color-stone-300);
+  --color-background-350: var(--color-stone-350);
+  --color-background-400: var(--color-stone-400);
+  --color-background-450: var(--color-stone-450);
+  --color-background-550: var(--color-stone-550);
+  --color-background-600: var(--color-stone-600);
+  --color-background-650: var(--color-stone-650);
+  --color-background-700: var(--color-stone-700);
+  --color-background-750: var(--color-stone-750);
+  --color-background-800: var(--color-stone-800);
+  --color-background-850: var(--color-stone-850);
+  --color-background-900: var(--color-stone-900);
+
+  --color-foreground-100: var(--color-stone-100);
+  --color-foreground-150: var(--color-stone-150);
+  --color-foreground-200: var(--color-stone-200);
+  --color-foreground-250: var(--color-stone-250);
+  --color-foreground-300: var(--color-stone-300);
+  --color-foreground-350: var(--color-stone-350);
+  --color-foreground-400: var(--color-stone-400);
+  --color-foreground-450: var(--color-stone-450);
+  --color-foreground-550: var(--color-stone-550);
+  --color-foreground-600: var(--color-stone-600);
+  --color-foreground-650: var(--color-stone-650);
+  --color-foreground-700: var(--color-stone-700);
+  --color-foreground-750: var(--color-stone-750);
+  --color-foreground-800: var(--color-stone-800);
+  --color-foreground-850: var(--color-stone-850);
+  --color-foreground-900: var(--color-stone-900);
+
+  --color-stroke-250: 204 235 252;
+  --color-stroke-300: 174 219 244;
+  --color-stroke-450: 49 133 180;
+  --color-stroke-900: 8 23 35;
+  --color-accent-100: 125 211 252;
+}
+
+[data-theme="dark"] {
+  --color-background-100: var(--color-midnight-900);
+  --color-background-150: var(--color-midnight-850);
+  --color-background-200: var(--color-midnight-800);
+  --color-background-250: var(--color-midnight-750);
+  --color-background-300: var(--color-midnight-700);
+  --color-background-350: var(--color-midnight-650);
+  --color-background-400: var(--color-midnight-600);
+  --color-background-450: var(--color-midnight-550);
+  --color-background-550: var(--color-midnight-450);
+  --color-background-600: var(--color-midnight-400);
+  --color-background-650: var(--color-midnight-350);
+  --color-background-700: var(--color-midnight-300);
+  --color-background-750: var(--color-midnight-250);
+  --color-background-800: var(--color-midnight-200);
+  --color-background-850: var(--color-midnight-150);
+  --color-background-900: var(--color-midnight-100);
+
+  --color-foreground-100: var(--color-slate-900);
+  --color-foreground-150: var(--color-slate-850);
+  --color-foreground-200: var(--color-slate-800);
+  --color-foreground-250: var(--color-slate-750);
+  --color-foreground-300: var(--color-slate-700);
+  --color-foreground-350: var(--color-slate-650);
+  --color-foreground-400: var(--color-slate-600);
+  --color-foreground-450: var(--color-slate-550);
+  --color-foreground-550: var(--color-slate-450);
+  --color-foreground-600: var(--color-slate-400);
+  --color-foreground-650: var(--color-slate-350);
+  --color-foreground-700: var(--color-slate-300);
+  --color-foreground-750: var(--color-slate-250);
+  --color-foreground-800: var(--color-slate-200);
+  --color-foreground-850: var(--color-slate-150);
+  --color-foreground-900: var(--color-slate-100);
+
+  --color-stroke-250: 10 31 47;
+  --color-stroke-300: 15 50 74;
+  --color-stroke-450: 26 88 127;
+  --color-stroke-900: 248 253 255;
+  --color-accent-100: 56 189 248;
+}

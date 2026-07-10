@@ -1,0 +1,12 @@
+# Build output
+/dist
+
+# Large snapshots / downloaded assets
+/snapshot
+/assets/static
+
+# Package manager files
+pnpm-lock.yaml
+
+# Misc
+*.min.*

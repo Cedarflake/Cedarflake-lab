@@ -1,0 +1,21 @@
+/* ===================== Global Styles ===================== */
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family:
+    AgentSerif, Georgia, "Times New Roman", serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
+  background: rgb(var(--color-background-100));
+  color: rgb(var(--color-foreground-800));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar styling for Lenis wrapper */
+.lenis-scrollbar {
+  scrollbar-width: thin;
+}
