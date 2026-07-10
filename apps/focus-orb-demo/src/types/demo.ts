@@ -4,7 +4,7 @@ import type {
   ResolvedFocusOrbMotionOptions,
   ResolvedFocusOrbRenderingOptions,
   ResolvedFocusOrbShaderOptions,
-} from "@igcrystal/focus-orb"
+} from "@cedarflake/focus-orb"
 
 export type PreviewMode = "button" | "background"
 export type MotionControlKey = Extract<keyof ResolvedFocusOrbMotionOptions, string>

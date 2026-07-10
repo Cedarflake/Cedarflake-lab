@@ -4,7 +4,7 @@ export const siteConfig = {
   description:
     "A scalable web foundation with styling, theming, assets, engineering workflows and internationalization built in.",
   url: "https://shika.example",
-  author: "IGCrystal",
+  author: "Cedarflake",
   keywords: [
     "Shika",
     "Next.js",

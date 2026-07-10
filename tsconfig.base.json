@@ -13,8 +13,8 @@
     "noImplicitOverride": true,
     "noUncheckedIndexedAccess": true,
     "paths": {
-      "@igcrystal/focus-orb": ["./packages/focus-orb/src/index.ts"],
-      "@igcrystal/focus-orb/style.css": ["./packages/focus-orb/src/styles/focus-orb.css"]
+      "@cedarflake/focus-orb": ["./packages/focus-orb/src/index.ts"],
+      "@cedarflake/focus-orb/style.css": ["./packages/focus-orb/src/styles/focus-orb.css"]
     },
     "resolveJsonModule": true,
     "skipLibCheck": true,

@@ -1,4 +1,4 @@
-import { focusOrbDefaultRenderingOptions } from "@igcrystal/focus-orb"
+import { focusOrbDefaultRenderingOptions } from "@cedarflake/focus-orb"
 
 import type { AudioControlKey, PalettePreset, RenderingControls } from "../types/demo"
 

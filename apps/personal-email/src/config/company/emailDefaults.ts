@@ -8,7 +8,7 @@ export const brandDefaults: Required<Brand> = {
   // placeholder logo URL — replace with your real asset
   logoUrl: 'https://revaea.com/favicon.ico',
   primaryColor: '#38BDF8',
-  footerText: `© ${new Date().getFullYear()} IGCrystal All rights reserved.`,
+  footerText: `© ${new Date().getFullYear()} Cedarflake All rights reserved.`,
 };
 
 export function mergeBrand(base?: Brand, override?: Partial<Brand>): Required<Brand> {

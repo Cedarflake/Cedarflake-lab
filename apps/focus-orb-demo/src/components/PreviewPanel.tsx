@@ -9,7 +9,7 @@ import {
   type ResolvedFocusOrbInteractionOptions,
   type ResolvedFocusOrbMotionOptions,
   type ResolvedFocusOrbShaderOptions,
-} from "@igcrystal/focus-orb"
+} from "@cedarflake/focus-orb"
 
 import type { PreviewMode, RenderingControls } from "../types/demo"
 

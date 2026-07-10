@@ -1,4 +1,4 @@
-# @igcrystal/focus-orb
+# @cedarflake/focus-orb
 
 React WebGL focus orb component. It can be used as a round button or as a contained ambient surface.
 
@@ -20,8 +20,8 @@ React WebGL focus orb component. It can be used as a round button or as a contai
 ## Usage
 
 ```tsx
-import { FocusOrbBackground, FocusOrbButton } from "@igcrystal/focus-orb"
-import "@igcrystal/focus-orb/style.css"
+import { FocusOrbBackground, FocusOrbButton } from "@cedarflake/focus-orb"
+import "@cedarflake/focus-orb/style.css"
 
 export function Example() {
   return (

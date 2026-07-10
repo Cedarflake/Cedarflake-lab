@@ -15,13 +15,13 @@
     "format": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --if-present format",
     "format:check": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --if-present format:check",
     "dev:copilot-task": "pnpm --filter tasks-waitlist-preview dev",
-    "dev:focus-orb": "pnpm --filter @igcrystal/focus-orb-demo dev",
+    "dev:focus-orb": "pnpm --filter @cedarflake/focus-orb-demo dev",
     "dev:liminal-drift": "pnpm --filter liminal-drift dev",
     "dev:maimai-transition": "pnpm --filter maimai-transition dev",
     "dev:shika": "pnpm --filter shika dev",
     "email": "pnpm --filter personal_email email",
     "render:email": "pnpm --filter personal_email render:email",
-    "check:focus-orb-package": "pnpm --filter @igcrystal/focus-orb build && pnpm --filter @igcrystal/focus-orb-demo exec tsc -p package-consumer/tsconfig.json --noEmit"
+    "check:focus-orb-package": "pnpm --filter @cedarflake/focus-orb build && pnpm --filter @cedarflake/focus-orb-demo exec tsc -p package-consumer/tsconfig.json --noEmit"
   },
   "devDependencies": {
     "@types/node": "22.10.5",

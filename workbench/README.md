@@ -22,3 +22,7 @@ Local scripts, automation utilities, small Python projects, and experiments.
 uvx ruff format workbench
 uvx ruff check workbench
 ```
+
+## License
+
+Workbench projects are licensed under the BSD 3-Clause License. See `LICENSE`.

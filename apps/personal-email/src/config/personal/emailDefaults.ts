@@ -4,7 +4,7 @@ import type { Brand, TemplateData } from '../types';
  * Personal-level defaults and interpolation utilities.
  */
 export const brandDefaults: Required<Brand> = {
-  name: 'IGCrystal',
+  name: 'Cedarflake',
   // placeholder logo URL — usually personal emails may omit this
   logoUrl: 'https://i0c.cc/favicon.ico',
   primaryColor: '#38BDF8',

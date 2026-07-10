@@ -4,10 +4,10 @@ import {
   focusOrbDefaultTextureSrc,
   focusOrbTextureUrl,
   type FocusOrbButtonProps,
-} from "@igcrystal/focus-orb"
-import packageTextureUrl from "@igcrystal/focus-orb/noise-watercolor-m3j88gni.webp"
+} from "@cedarflake/focus-orb"
+import packageTextureUrl from "@cedarflake/focus-orb/noise-watercolor-m3j88gni.webp"
 
-import "@igcrystal/focus-orb/style.css"
+import "@cedarflake/focus-orb/style.css"
 
 const buttonProps = {
   motion: {

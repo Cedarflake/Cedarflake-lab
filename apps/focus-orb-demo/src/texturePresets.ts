@@ -1,4 +1,4 @@
-import { focusOrbTextureUrl } from "@igcrystal/focus-orb"
+import { focusOrbTextureUrl } from "@cedarflake/focus-orb"
 
 import textureNoise1 from "../../../packages/focus-orb/src/assets/noise-1.webp"
 import textureNoise2 from "../../../packages/focus-orb/src/assets/noise-2.webp"

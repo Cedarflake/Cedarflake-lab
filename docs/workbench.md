@@ -10,3 +10,7 @@ uvx ruff check workbench
 ```
 
 Local configuration, API keys, logs, downloaded files, build output, and virtual environments are intentionally ignored.
+
+## License
+
+Workbench projects use the BSD 3-Clause License. See `workbench/LICENSE`.

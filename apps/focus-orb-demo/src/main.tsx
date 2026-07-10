@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client"
 
 import { DemoApp } from "./components/DemoApp"
 
-import "@igcrystal/focus-orb/style.css"
+import "@cedarflake/focus-orb/style.css"
 import "./styles/index.css"
 
 const root = document.querySelector("#root")

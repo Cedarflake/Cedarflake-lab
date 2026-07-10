@@ -7,7 +7,7 @@ export function SiteHeader() {
         <Orbit aria-hidden="true" className="brand__icon" />
         <span>Focus Orb</span>
       </a>
-      <code className="install-command">pnpm add @igcrystal/focus-orb</code>
+      <code className="install-command">pnpm add @cedarflake/focus-orb</code>
     </header>
   )
 }

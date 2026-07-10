@@ -102,7 +102,7 @@ importers:
 
   apps/focus-orb-demo:
     dependencies:
-      '@igcrystal/focus-orb':
+      '@cedarflake/focus-orb':
         specifier: workspace:*
         version: link:../../packages/focus-orb
       '@vitejs/plugin-react':

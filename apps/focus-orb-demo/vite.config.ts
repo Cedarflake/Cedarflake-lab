@@ -7,10 +7,10 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@igcrystal/focus-orb/style.css": fileURLToPath(
+      "@cedarflake/focus-orb/style.css": fileURLToPath(
         new URL("../../packages/focus-orb/src/styles/focus-orb.css", import.meta.url),
       ),
-      "@igcrystal/focus-orb": fileURLToPath(new URL("../../packages/focus-orb/src/index.ts", import.meta.url)),
+      "@cedarflake/focus-orb": fileURLToPath(new URL("../../packages/focus-orb/src/index.ts", import.meta.url)),
     },
   },
   server: {

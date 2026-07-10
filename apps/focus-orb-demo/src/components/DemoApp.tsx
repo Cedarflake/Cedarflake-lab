@@ -12,7 +12,7 @@ import {
   type ResolvedFocusOrbInteractionOptions,
   type ResolvedFocusOrbMotionOptions,
   type ResolvedFocusOrbShaderOptions,
-} from "@igcrystal/focus-orb"
+} from "@cedarflake/focus-orb"
 
 import { essentialMotionControls } from "../config/controlDefinitions"
 import { defaultAudioControls, defaultRenderingControls, fallbackPalette, palettePresets } from "../config/demoPresets"
