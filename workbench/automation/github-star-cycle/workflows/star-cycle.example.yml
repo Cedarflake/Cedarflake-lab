@@ -1,7 +1,8 @@
-name: Star Cycle Forever ♡～
+name: Archived Star Cycle Example
+
+# Archived example. This file is intentionally outside the repository-level
+# .github/workflows directory and only supports manual execution.
 on:
-  schedule:
-    - cron: '*/5 * * * *'  # 每5分钟运行一次喵～
   workflow_dispatch:
     inputs:
       force_action:
@@ -199,8 +200,8 @@ jobs:
       - name: 提交并推送更新时间戳文件喵～
         if: always()
         run: |
-          git config user.name "Larch-c"
-          git config user.email "tr@wenturc.com"
+          git config user.name "Cedarflake"
+          git config user.email "Cedarflake@users.noreply.github.com"
           
           # 检查是否有变化
           if git diff --quiet star_timestamp.txt; then
