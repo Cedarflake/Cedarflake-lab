@@ -1,0 +1,214 @@
+name: Star Cycle Forever ♡～
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # 每5分钟运行一次喵～
+  workflow_dispatch:
+    inputs:
+      force_action:
+        description: '强制执行操作（true/false）- 自动判断当前状态并执行相反操作'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  star-unstar-loop:
+    runs-on: ubuntu-latest
+    env:
+      TARGET_OWNER: AstrBotDevs
+      TARGET_REPO: AstrBot
+      PERSONAL_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+      STAR_PERIOD_HOURS: 0.83
+      UNSTAR_PERIOD_HOURS: 0.83
+      FORCE_ACTION: ${{ github.event.inputs.force_action || 'false' }}
+
+    steps:
+      - name: Checkout repo (用于读写 star_timestamp.txt)
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PERSONAL_TOKEN }}
+
+      - name: 准备小数运算环境
+        run: |
+          echo "使用awk进行小数运算，无需额外安装包 喵～"
+
+      - name: 检查 Token 有效性喵～
+        run: |
+          echo "== 请求用户信息 ==" 
+          curl -i -H "Authorization: token $PERSONAL_TOKEN" \
+               -H "Accept: application/vnd.github+json" \
+               https://api.github.com/user
+      
+      - name: 检查当前星标状态并决定操作喵～
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: token $PERSONAL_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/user/starred/$TARGET_OWNER/$TARGET_REPO)
+          NOW=$(date +%s)
+          
+          echo "=== 当前时间: $(date) ==="
+          echo "=== 当前时间戳: $NOW ==="
+          echo "=== 目标仓库: $TARGET_OWNER/$TARGET_REPO ==="
+          echo "=== 强制模式: FORCE_ACTION=$FORCE_ACTION ==="
+          
+          # 将小时转换为秒（支持小数）
+          STAR_PERIOD_SECONDS=$(awk "BEGIN {printf \"%.0f\", $STAR_PERIOD_HOURS * 3600}")
+          UNSTAR_PERIOD_SECONDS=$(awk "BEGIN {printf \"%.0f\", $UNSTAR_PERIOD_HOURS * 3600}")
+          
+          echo "=== 星标周期: $STAR_PERIOD_HOURS 小时 ($STAR_PERIOD_SECONDS 秒) ==="
+          echo "=== 取消星标周期: $UNSTAR_PERIOD_HOURS 小时 ($UNSTAR_PERIOD_SECONDS 秒) ==="
+          
+          if [ "$STATUS" != "204" ]; then
+            echo "当前未加星，检查是否该执行加星操作喵～"
+            SHOULD_STAR=false
+            
+            if [ "$FORCE_ACTION" = "true" ]; then
+              echo "🔥 强制操作模式：当前未加星 → 强制加星喵～"
+              SHOULD_STAR=true
+            else
+              if [ -f star_timestamp.txt ]; then
+                LAST_OPERATION=$(head -n 1 star_timestamp.txt)
+                echo "上次操作记录: $LAST_OPERATION"
+                
+                if [[ "$LAST_OPERATION" == *":"* ]]; then
+                  LAST_TIME=$(echo "$LAST_OPERATION" | cut -d: -f2)
+                  LAST_ACTION=$(echo "$LAST_OPERATION" | cut -d: -f1)
+                else
+                  # 兼容旧格式（纯时间戳）
+                  LAST_TIME="$LAST_OPERATION"
+                  LAST_ACTION="star"
+                fi
+                
+                DIFF_SECONDS=$(( NOW - LAST_TIME ))
+                DIFF_HOURS=$(awk "BEGIN {printf \"%.2f\", $DIFF_SECONDS / 3600}")
+                echo "距离上次操作已过: $DIFF_HOURS 小时 ($DIFF_SECONDS 秒)"
+                
+                if [ "$LAST_ACTION" = "unstar" ]; then
+                  if [ "$DIFF_SECONDS" -ge "$UNSTAR_PERIOD_SECONDS" ]; then
+                    echo "距离上次取消星标已过 $DIFF_HOURS 小时，可以重新加星喵～"
+                    SHOULD_STAR=true
+                  else
+                    REMAIN_SECONDS=$(( UNSTAR_PERIOD_SECONDS - DIFF_SECONDS ))
+                    REMAIN_HOURS=$(awk "BEGIN {printf \"%.2f\", $REMAIN_SECONDS / 3600}")
+                    echo "距离上次取消星标只过了 $DIFF_HOURS 小时，还需等待 $REMAIN_HOURS 小时喵～"
+                  fi
+                else
+                  echo "上次操作是加星，但现在未加星，直接加星喵～"
+                  SHOULD_STAR=true
+                fi
+              else
+                echo "没有时间戳记录，直接加星喵～"
+                SHOULD_STAR=true
+              fi
+            fi
+            
+            if [ "$SHOULD_STAR" = "true" ]; then
+              echo "执行加星操作..."
+              CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+                -X PUT \
+                -H "Authorization: token $PERSONAL_TOKEN" \
+                -H "Accept: application/vnd.github+json" \
+                https://api.github.com/user/starred/$TARGET_OWNER/$TARGET_REPO)
+              if [ "$CODE" = "204" ]; then
+                echo "star:$NOW" > star_timestamp.txt
+                echo "✅ Star 成功并记录时间戳喵♡"
+              else
+                echo "❌ Star 失败，返回码：$CODE"
+                exit 1
+              fi
+            else
+              echo "⏳ 暂不执行加星操作"
+            fi
+            
+          else
+            echo "当前已加星，判断是否需要取消喵～"
+            SHOULD_UNSTAR=false
+            
+            if [ "$FORCE_ACTION" = "true" ]; then
+              echo "🔥 强制操作模式：当前已加星 → 强制取消星标喵～"
+              SHOULD_UNSTAR=true
+            else
+              if [ -f star_timestamp.txt ]; then
+                LAST_OPERATION=$(head -n 1 star_timestamp.txt)
+                echo "上次操作记录: $LAST_OPERATION"
+                
+                if [[ "$LAST_OPERATION" == *":"* ]]; then
+                  LAST_TIME=$(echo "$LAST_OPERATION" | cut -d: -f2)
+                  LAST_ACTION=$(echo "$LAST_OPERATION" | cut -d: -f1)
+                else
+                  # 兼容旧格式（纯时间戳）
+                  LAST_TIME="$LAST_OPERATION"
+                  LAST_ACTION="star"
+                fi
+                
+                DIFF_SECONDS=$(( NOW - LAST_TIME ))
+                DIFF_HOURS=$(awk "BEGIN {printf \"%.2f\", $DIFF_SECONDS / 3600}")
+                echo "距离上次操作已过: $DIFF_HOURS 小时 ($DIFF_SECONDS 秒)"
+                
+                if [ "$LAST_ACTION" = "star" ]; then
+                  if [ "$DIFF_SECONDS" -ge "$STAR_PERIOD_SECONDS" ]; then
+                    echo "距离上次加星已过 $DIFF_HOURS 小时，可以取消星标喵～"
+                    SHOULD_UNSTAR=true
+                  else
+                    REMAIN_SECONDS=$(( STAR_PERIOD_SECONDS - DIFF_SECONDS ))
+                    REMAIN_HOURS=$(awk "BEGIN {printf \"%.2f\", $REMAIN_SECONDS / 3600}")
+                    echo "距离上次加星只过了 $DIFF_HOURS 小时，还需等待 $REMAIN_HOURS 小时喵～"
+                  fi
+                else
+                  echo "上次操作是取消星标，但现在已加星，等待时间后再取消喵～"
+                  if [ "$DIFF_SECONDS" -ge "$STAR_PERIOD_SECONDS" ]; then
+                    echo "已等待足够时间，可以取消星标喵～"
+                    SHOULD_UNSTAR=true
+                  else
+                    REMAIN_SECONDS=$(( STAR_PERIOD_SECONDS - DIFF_SECONDS ))
+                    REMAIN_HOURS=$(awk "BEGIN {printf \"%.2f\", $REMAIN_SECONDS / 3600}")
+                    echo "还需等待 $REMAIN_HOURS 小时喵～"
+                  fi
+                fi
+              else
+                echo "没有时间戳记录，按默认周期取消星标喵～"
+                SHOULD_UNSTAR=true
+              fi
+            fi
+            
+            if [ "$SHOULD_UNSTAR" = "true" ]; then
+              echo "执行取消星标操作..."
+              CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+                -X DELETE \
+                -H "Authorization: token $PERSONAL_TOKEN" \
+                -H "Accept: application/vnd.github+json" \
+                https://api.github.com/user/starred/$TARGET_OWNER/$TARGET_REPO)
+              if [ "$CODE" = "204" ]; then
+                echo "unstar:$NOW" > star_timestamp.txt
+                echo "✅ Unstar 成功并记录时间戳喵♡"
+              else
+                echo "❌ Unstar 失败，返回码：$CODE"
+                exit 1
+              fi
+            else
+              echo "⭐ 继续保持星标状态喵～"
+            fi
+          fi
+          
+          # 显示当前状态
+          if [ -f star_timestamp.txt ]; then
+            echo "=== 当前时间戳文件内容 ==="
+            cat star_timestamp.txt
+          fi
+      
+      - name: 提交并推送更新时间戳文件喵～
+        if: always()
+        run: |
+          git config user.name "Larch-c"
+          git config user.email "tr@wenturc.com"
+          
+          # 检查是否有变化
+          if git diff --quiet star_timestamp.txt; then
+            echo "📝 star_timestamp.txt 没有变化，不需要提交喵～"
+          else
+            echo "📝 star_timestamp.txt 有变化，提交更新喵～"
+            git add star_timestamp.txt
+            git commit -m "chore: update star timestamp $(date '+%Y-%m-%d %H:%M:%S') [skip ci]"
+            git push
+            echo "✅ 时间戳文件已推送到仓库喵♡"
+          fi
