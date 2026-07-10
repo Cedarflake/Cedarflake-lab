@@ -14,6 +14,9 @@ permissions:
 jobs:
   build-and-release:
     runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: workbench/network/campus-net
     steps:
       - name: Checkout repository (fetch tags)
         uses: actions/checkout@v4
@@ -26,29 +29,16 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Create venv and install dependencies (PyInstaller + requirements)
+      - name: Install uv and project dependencies
         shell: pwsh
         run: |
-          python -m pip install --upgrade pip
-          python -m venv .venv
-          .\.venv\Scripts\pip.exe install --upgrade pip
-          .\.venv\Scripts\pip.exe install pyinstaller
-          if (Test-Path 'requirements.txt') {
-            .\.venv\Scripts\pip.exe install -r requirements.txt
-          } else {
-            Write-Host 'No requirements.txt found, skipping.'
-          }
-          echo "VENV_PY=.venv\\Scripts\\python.exe" >> $env:GITHUB_ENV
-          echo "VENV_PYINSTALLER=.venv\\Scripts\\pyinstaller.exe" >> $env:GITHUB_ENV
+          python -m pip install uv
+          uv sync --group dev
 
       - name: Build with PyInstaller (uses build.spec at repo root)
         shell: pwsh
         run: |
-          if (-not (Test-Path $env:VENV_PYINSTALLER)) {
-            Write-Error "pyinstaller not found in venv: $env:VENV_PYINSTALLER"
-            exit 1
-          }
-          & $env:VENV_PYINSTALLER --clean --noconfirm build.spec
+          uv run pyinstaller --clean --noconfirm build.spec
 
       - name: Find built .exe
         id: find_exe
