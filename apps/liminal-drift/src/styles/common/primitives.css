@@ -1,0 +1,67 @@
+.ui-button {
+  min-height: 44px;
+  padding: 0 18px;
+  color: rgba(46, 38, 49, 0.94);
+  cursor: pointer;
+  background:
+    linear-gradient(180deg, rgba(207, 193, 126, 0.92), rgba(151, 136, 82, 0.9)), var(--color-accent);
+  border: 1px solid rgba(232, 222, 177, 0.52);
+  border-radius: var(--radius-control);
+  box-shadow:
+    var(--shadow-control),
+    inset 0 1px 0 rgba(245, 236, 196, 0.24);
+  transition:
+    background-color var(--duration-normal) var(--ease-standard),
+    box-shadow var(--duration-normal) var(--ease-standard),
+    transform var(--duration-normal) var(--ease-standard);
+}
+
+.ui-button:hover {
+  background:
+    linear-gradient(180deg, rgba(217, 205, 141, 0.94), rgba(166, 151, 94, 0.92)),
+    var(--color-accent-hover);
+  box-shadow: var(--shadow-control-hover);
+  transform: translateY(-1px);
+}
+
+.ui-button:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+
+.ui-button--secondary {
+  color: rgba(230, 223, 207, 0.9);
+  background:
+    linear-gradient(180deg, rgba(229, 218, 189, 0.12), rgba(39, 34, 47, 0.36)),
+    rgba(55, 49, 61, 0.68);
+  border-color: rgba(199, 186, 137, 0.34);
+}
+
+.glass-panel {
+  color: var(--color-text);
+  background:
+    linear-gradient(180deg, rgba(225, 218, 205, 0.36), rgba(92, 82, 94, 0.34)), var(--color-surface);
+  border: var(--border-glass);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-panel);
+  backdrop-filter: var(--blur-panel);
+}
+
+.glass-card {
+  min-width: 0;
+  background:
+    linear-gradient(180deg, rgba(229, 218, 189, 0.12), rgba(39, 34, 47, 0.22)),
+    rgba(56, 50, 60, 0.42);
+  border: 1px solid rgba(207, 194, 152, 0.24);
+  border-radius: var(--radius-control);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-button {
+    transition: none;
+  }
+
+  .ui-button:hover {
+    transform: none;
+  }
+}

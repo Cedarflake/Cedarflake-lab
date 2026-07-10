@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Audit dependencies
+        run: pnpm audit --prod=false
+
+      - name: Check
+        run: pnpm check
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Browser smoke checks
+        run: |
+          mkdir -p artifacts
+          pnpm exec vite preview --host 127.0.0.1 --port 4173 > /tmp/liminal-drift-vite.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/ >/dev/null; then
+              break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              echo "Vite server did not become ready" >&2
+              cat /tmp/liminal-drift-vite.log >&2
+              exit 1
+            fi
+            sleep 1
+          done
+
+          cp /tmp/liminal-drift-vite.log artifacts/vite-preview.log
+
+          set +e
+          pnpm run check:canvas -- http://127.0.0.1:4173/ 2>&1 | tee artifacts/check-canvas.log
+          canvas_status=${PIPESTATUS[0]}
+          pnpm run check:interaction -- http://127.0.0.1:4173/ 2>&1 | tee artifacts/check-interaction.log
+          interaction_status=${PIPESTATUS[0]}
+          set -e
+
+          if [ "$canvas_status" -ne 0 ] || [ "$interaction_status" -ne 0 ]; then
+            echo "Browser smoke failed" >&2
+            echo "::group::vite preview log"
+            cat artifacts/vite-preview.log
+            echo "::endgroup::"
+            echo "::group::canvas smoke log"
+            cat artifacts/check-canvas.log
+            echo "::endgroup::"
+            echo "::group::interaction smoke log"
+            cat artifacts/check-interaction.log
+            echo "::endgroup::"
+            exit 1
+          fi
+
+      - name: Upload browser artifacts
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: browser-smoke-artifacts
+          path: artifacts/
+          if-no-files-found: ignore

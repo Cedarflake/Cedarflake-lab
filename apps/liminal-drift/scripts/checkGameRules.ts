@@ -1,0 +1,337 @@
+import { readBestScore } from "../src/game/bestScoreStorage"
+import {
+  memoryShardModelHalfDepth,
+  memoryShardModelHalfWidth,
+  playerModelHalfDepth,
+  playerModelHalfWidth,
+  playerCollisionHalfWidth,
+  resolveMemoryShardCollection,
+  resolveObstacleCollisionHalfWidth,
+  resolveObstacleHalfWidth,
+  resolveObstacleNearMissHalfWidth,
+  wallObstacleWidth,
+} from "../src/game/collision"
+import { resolveDebugModeFromSearch } from "../src/game/debugMode"
+import { resolveRunDifficulty } from "../src/game/difficulty"
+import {
+  resolveActiveGamepad,
+  resolveGamepadInput,
+  resolveGamepadOverlayInput,
+  type GamepadLike,
+} from "../src/game/gamepadInput"
+import { createObstacleAt } from "../src/game/generation"
+import { trackConfig } from "../src/game/gameConfig"
+import { clamp, lerp, wrapDistance } from "../src/game/number"
+import {
+  isCollisionRecovering,
+  resolveCollisionDamage,
+  willEndRunAfterDamage,
+} from "../src/game/runState"
+import { resolveScoreFeedback } from "../src/game/scoring"
+import { resolveBoostedSpeed, resolveDrivingSpeed } from "../src/game/speed"
+import { resolveSteeringVelocity } from "../src/game/steering"
+
+function assert(condition: boolean, message: string) {
+  if (!condition) {
+    throw new Error(message)
+  }
+}
+
+function assertClose(actual: number, expected: number, message: string) {
+  if (Math.abs(actual - expected) > 0.001) {
+    throw new Error(`${message}: expected ${expected}, got ${actual}`)
+  }
+}
+
+function createGamepad(
+  buttonValues: Record<number, number>,
+  axes: readonly number[] = [],
+  options: {
+    id?: string
+    index?: number
+    mapping?: string
+  } = {},
+) {
+  const buttons = Array.from({ length: 16 }, (_, index) => {
+    const value = buttonValues[index] ?? 0
+
+    return {
+      pressed: value > 0,
+      value,
+    }
+  })
+
+  return {
+    axes,
+    buttons,
+    connected: true,
+    ...options,
+  } satisfies GamepadLike
+}
+
+assert(!willEndRunAfterDamage(23, 22), "Expected non-fatal damage above the threshold")
+assert(willEndRunAfterDamage(22, 22), "Expected exact-threshold damage to end the run")
+assert(willEndRunAfterDamage(12, 22), "Expected overkill damage to end the run")
+assert(
+  isCollisionRecovering(10.8, 10, trackConfig.collisionRecoverySeconds),
+  "Expected a recent collision to keep the car recovering",
+)
+assert(
+  !isCollisionRecovering(12, 10, trackConfig.collisionRecoverySeconds),
+  "Expected recovery to expire after the configured window",
+)
+assert(
+  resolveCollisionDamage({
+    baseDamage: trackConfig.collisionDamage,
+    speed: 0,
+    speedReference: trackConfig.maxSpeed,
+    minSpeedDamageMultiplier: trackConfig.collisionMinSpeedDamageMultiplier,
+    maxSpeedDamageMultiplier: trackConfig.collisionMaxSpeedDamageMultiplier,
+    isDrifting: false,
+    driftDamageMultiplier: trackConfig.driftCollisionDamageMultiplier,
+  }) < trackConfig.collisionDamage,
+  "Expected very low speed collisions to be lighter than base damage",
+)
+assert(
+  resolveCollisionDamage({
+    baseDamage: trackConfig.collisionDamage,
+    speed: trackConfig.maxSpeed,
+    speedReference: trackConfig.maxSpeed,
+    minSpeedDamageMultiplier: trackConfig.collisionMinSpeedDamageMultiplier,
+    maxSpeedDamageMultiplier: trackConfig.collisionMaxSpeedDamageMultiplier,
+    isDrifting: false,
+    driftDamageMultiplier: trackConfig.driftCollisionDamageMultiplier,
+  }) === trackConfig.collisionDamage,
+  "Expected reference-speed collisions to use base damage",
+)
+const fastCollisionDamage = resolveCollisionDamage({
+  baseDamage: trackConfig.collisionDamage,
+  speed: trackConfig.maxSpeed + trackConfig.driftMaxSpeedBonus,
+  speedReference: trackConfig.maxSpeed,
+  minSpeedDamageMultiplier: trackConfig.collisionMinSpeedDamageMultiplier,
+  maxSpeedDamageMultiplier: trackConfig.collisionMaxSpeedDamageMultiplier,
+  isDrifting: false,
+  driftDamageMultiplier: trackConfig.driftCollisionDamageMultiplier,
+})
+const fastDriftCollisionDamage = resolveCollisionDamage({
+  baseDamage: trackConfig.collisionDamage,
+  speed: trackConfig.maxSpeed + trackConfig.driftMaxSpeedBonus,
+  speedReference: trackConfig.maxSpeed,
+  minSpeedDamageMultiplier: trackConfig.collisionMinSpeedDamageMultiplier,
+  maxSpeedDamageMultiplier: trackConfig.collisionMaxSpeedDamageMultiplier,
+  isDrifting: true,
+  driftDamageMultiplier: trackConfig.driftCollisionDamageMultiplier,
+})
+assert(
+  fastCollisionDamage > trackConfig.collisionDamage,
+  "Expected high speed crashes to hurt more",
+)
+assert(
+  fastDriftCollisionDamage > fastCollisionDamage,
+  "Expected high speed drift crashes to punish harder than straight crashes",
+)
+assert(readBestScore() === 0, "Expected best score storage to initialize outside the browser")
+assert(clamp(-2, 0, 1) === 0, "Expected clamp to honor the lower bound")
+assert(clamp(3, 0, 1) === 1, "Expected clamp to honor the upper bound")
+assert(clamp(0.4, 0, 1) === 0.4, "Expected clamp to preserve in-range values")
+assert(lerp(10, 20, 0.25) === 12.5, "Expected lerp to interpolate linearly")
+assert(wrapDistance(23, 10) === 3, "Expected wrapDistance to wrap positive distances")
+assert(wrapDistance(-2, 10) === 8, "Expected wrapDistance to wrap negative distances")
+assert(
+  resolveRunDifficulty().maxSpeed === 70,
+  "Expected ordinary max speed to be available without a startup distance ramp",
+)
+assert(!resolveDebugModeFromSearch("").isEnabled, "Expected debug mode to stay disabled by default")
+assert(
+  !resolveDebugModeFromSearch("?debug=off").isEnabled,
+  "Expected explicit debug off to stay disabled",
+)
+assert(
+  resolveDebugModeFromSearch("?debug=no-obstacles").noObstacles,
+  "Expected no-obstacles debug mode to disable obstacles",
+)
+assert(
+  resolveDebugModeFromSearch("?debug=1").noObstacles,
+  "Expected shorthand debug mode to disable obstacles",
+)
+assert(
+  resolveDebugModeFromSearch("?noObstacles=1").noObstacles,
+  "Expected noObstacles query flag to disable obstacles",
+)
+assert(
+  resolveSteeringVelocity(1, 0, trackConfig.maxSpeed) === 0,
+  "Expected steering input to avoid moving a stationary car sideways",
+)
+assert(
+  resolveSteeringVelocity(1, 12, trackConfig.maxSpeed) > 0,
+  "Expected steering input to engage after the car starts moving",
+)
+assert(
+  resolveBoostedSpeed(40, trackConfig.boostSpeed, 70) === 56,
+  "Expected boost gates to add speed below the current cap",
+)
+assert(
+  resolveBoostedSpeed(84, trackConfig.boostSpeed, 96.8) === 100,
+  "Expected boost gates to push through the current speed cap",
+)
+assertClose(
+  resolveBoostedSpeed(96.8, trackConfig.boostSpeed, 96.8),
+  112.8,
+  "Expected boost gates to apply a temporary cap bonus at the drift speed cap",
+)
+assert(
+  resolveDrivingSpeed({
+    acceleration: trackConfig.baseAcceleration,
+    drag: trackConfig.drag,
+    frameDelta: 1 / 60,
+    speed: 0,
+    speedLimit: trackConfig.maxSpeed,
+  }) < 1,
+  "Expected startup throttle to avoid an artificial launch speed floor",
+)
+assert(
+  resolveDrivingSpeed({
+    acceleration: trackConfig.baseAcceleration,
+    drag: trackConfig.drag,
+    frameDelta: 1,
+    speed: 20,
+    speedLimit: trackConfig.maxSpeed,
+  }) === 40,
+  "Expected resumed throttle acceleration to follow the same speed integration",
+)
+assert(
+  resolveObstacleHalfWidth({
+    id: "wall-check",
+    lane: 0,
+    distance: 1,
+    width: wallObstacleWidth,
+    kind: "wall",
+  }) ===
+    wallObstacleWidth / 2,
+  "Expected wall collision half width to follow the rendered wall model",
+)
+assert(
+  Array.from({ length: 120 }, (_, index) => createObstacleAt(index)).some(
+    (obstacle) => obstacle.kind === "wall" && obstacle.width === wallObstacleWidth,
+  ),
+  "Expected generated walls to store the same width used by rendering and collision",
+)
+assert(
+  resolveObstacleCollisionHalfWidth({
+    id: "pillar-check",
+    lane: 0,
+    distance: 1,
+    width: 1.8,
+    kind: "pillar",
+  }) ===
+    0.9 + playerCollisionHalfWidth,
+  "Expected pillar collision to fit the rendered obstacle plus car body",
+)
+assert(
+  resolveObstacleNearMissHalfWidth({
+    id: "hole-check",
+    lane: 0,
+    distance: 1,
+    width: 1.6,
+    kind: "hole",
+  }) >
+    resolveObstacleCollisionHalfWidth({
+      id: "hole-check",
+      lane: 0,
+      distance: 1,
+      width: 1.6,
+      kind: "hole",
+    }),
+  "Expected near-miss boundary to sit outside the collision boundary",
+)
+assert(
+  resolveMemoryShardCollection({
+    playerX: 0,
+    playerZ: 0,
+    shardX: playerModelHalfWidth + memoryShardModelHalfWidth - 0.01,
+    shardZ: 0,
+  }),
+  "Expected visual edge contact with a memory shard to collect it",
+)
+assert(
+  resolveMemoryShardCollection({
+    playerX: 0,
+    playerZ: 0,
+    shardX: 0,
+    shardZ: playerModelHalfDepth + memoryShardModelHalfDepth - 0.01,
+  }),
+  "Expected front/back visual contact with a memory shard to collect it",
+)
+assert(
+  !resolveMemoryShardCollection({
+    playerX: 0,
+    playerZ: 0,
+    shardX: playerModelHalfWidth + memoryShardModelHalfWidth + 0.01,
+    shardZ: 0,
+  }),
+  "Expected memory shard collection to stay outside the rendered model footprint",
+)
+
+assert(
+  resolveScoreFeedback({ label: "Boost copy can change", feedbackKind: "boost" }) === "boost",
+  "Expected score feedback to ignore display copy",
+)
+assert(
+  resolveScoreFeedback({ label: "Checkpoint copy can change", feedbackKind: "checkpoint" }) ===
+    "checkpoint",
+  "Expected checkpoint feedback to ignore display copy",
+)
+assert(
+  resolveScoreFeedback({ label: "Clean pass" }) === null,
+  "Expected plain score events to skip feedback",
+)
+
+const xboxDrivingInput = resolveGamepadInput([
+  createGamepad(
+    {
+      4: 1,
+      7: 1,
+    },
+    [0.42],
+  ),
+])
+assertClose(xboxDrivingInput.steer, 0.3095, "Expected Xbox left stick to steer smoothly")
+assert(xboxDrivingInput.throttle === 1, "Expected Xbox RT to drive")
+assert(xboxDrivingInput.isDrifting, "Expected Xbox shoulder button to drift")
+
+const subtleStickInput = resolveGamepadInput([createGamepad({}, [0.17])])
+assert(
+  subtleStickInput.steer > 0 && subtleStickInput.steer < 0.02,
+  "Expected stick movement just outside the deadzone to start softly",
+)
+
+const xboxBrakeInput = resolveGamepadInput([createGamepad({ 6: 1 })])
+assert(xboxBrakeInput.brake === 1, "Expected Xbox LT to brake")
+
+const xboxOverlayInput = resolveGamepadOverlayInput([createGamepad({ 0: 1 })])
+assert(xboxOverlayInput.confirm, "Expected Xbox A button to confirm overlays")
+assert(!xboxOverlayInput.pause, "Expected Xbox A button to avoid pausing by itself")
+
+const xboxMenuInput = resolveGamepadOverlayInput([createGamepad({ 9: 1 })])
+assert(xboxMenuInput.confirm, "Expected Xbox Menu button to confirm overlays")
+assert(xboxMenuInput.pause, "Expected Xbox Menu button to pause and resume")
+
+const inactiveVirtualGamepad = createGamepad({}, [], {
+  id: "Virtual controller",
+  index: 0,
+})
+const activeXboxGamepad = createGamepad({ 0: 1 }, [], {
+  id: "Xbox Wireless Controller",
+  index: 1,
+  mapping: "standard",
+})
+assert(
+  resolveActiveGamepad([inactiveVirtualGamepad, activeXboxGamepad])?.index === 1,
+  "Expected active Xbox controller to win over inactive virtual devices",
+)
+
+const axisTriggerInput = resolveGamepadInput([createGamepad({}, [0, 0, 0.72, 0, 0, 0.84])])
+assert(axisTriggerInput.throttle === 0.84, "Expected non-standard trigger axis to drive")
+assert(axisTriggerInput.brake === 0.72, "Expected non-standard trigger axis to brake")
+
+console.log("game rules ok")

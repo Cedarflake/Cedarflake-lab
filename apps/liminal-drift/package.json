@@ -1,0 +1,48 @@
+{
+  "name": "liminal-drift",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22 <25"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "check": "pnpm run format:check && pnpm lint && pnpm run check:generation && pnpm run check:rules && pnpm run check:licenses && pnpm build && pnpm run check:bundle",
+    "check:browser": "pnpm run check:canvas -- http://127.0.0.1:4173/ && pnpm run check:interaction -- http://127.0.0.1:4173/",
+    "check:bundle": "node scripts/checkBundleBudget.mjs",
+    "check:canvas": "node scripts/checkCanvas.mjs",
+    "check:generation": "tsx scripts/checkGeneration.ts",
+    "check:interaction": "node scripts/checkInteraction.mjs",
+    "check:licenses": "node scripts/checkLicenses.mjs",
+    "check:rules": "tsx scripts/checkGameRules.ts"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "three": "^0.185.1",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@types/three": "0.185.0",
+    "@vitejs/plugin-react": "^6.0.3",
+    "oxlint": "^1.71.0",
+    "playwright": "1.61.1",
+    "pngjs": "7.0.0",
+    "prettier": "3.9.4",
+    "tsx": "4.22.4",
+    "typescript": "~6.0.2",
+    "vite": "^8.1.3"
+  },
+  "packageManager": "pnpm@11.7.0"
+}

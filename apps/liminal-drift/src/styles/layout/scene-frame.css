@@ -1,0 +1,121 @@
+.scene-layer {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-scene);
+}
+
+.scene-loading {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: grid;
+  place-content: center;
+  gap: 22px;
+  padding: 24px;
+  color: var(--color-text);
+  text-align: center;
+  background:
+    radial-gradient(ellipse at 50% 38%, rgba(229, 220, 194, 0.18), transparent 32%),
+    radial-gradient(circle at 48% 55%, rgba(66, 55, 70, 0.2), transparent 45%),
+    linear-gradient(
+      180deg,
+      rgba(134, 119, 126, 0.96),
+      rgba(156, 140, 137, 0.94) 46%,
+      rgba(89, 107, 106, 0.96)
+    );
+  opacity: 1;
+  transition: opacity 600ms var(--ease-out);
+}
+
+.scene-loading::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    radial-gradient(circle at 50% 48%, transparent 0 38%, rgba(31, 25, 37, 0.32) 100%),
+    linear-gradient(180deg, rgba(240, 225, 200, 0.08), rgba(43, 58, 57, 0.2));
+  mix-blend-mode: multiply;
+}
+
+.scene-loading[data-exiting="true"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.scene-loading__cake {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(420px, 62vw);
+  aspect-ratio: 1.25;
+  place-items: center;
+  margin-inline: auto;
+  filter: drop-shadow(0 28px 58px rgba(28, 23, 34, 0.46));
+}
+
+.scene-loading__cake-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: sepia(0.58) saturate(1.42) hue-rotate(308deg) brightness(0.76) contrast(1.2);
+}
+
+.scene-loading__cake-fallback {
+  width: min(260px, 52vw);
+  aspect-ratio: 1.2;
+  background: radial-gradient(ellipse at 50% 50%, rgba(221, 211, 188, 0.26), transparent 68%);
+  border-radius: 50%;
+}
+
+.scene-loading__copy {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 6px;
+}
+
+.scene-loading__copy strong {
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: rgba(41, 35, 48, 0.88);
+  text-shadow: 0 1px 22px rgba(226, 216, 190, 0.24);
+}
+
+.scene-loading__copy span {
+  font-size: 0.76rem;
+  color: rgba(48, 42, 56, 0.62);
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-loading {
+    transition: none;
+  }
+}
+
+.scene-error {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-scene-error);
+  display: grid;
+  gap: 18px;
+  place-content: center;
+  padding: 24px;
+  color: var(--color-text);
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 240, 184, 0.48), transparent 36%),
+    linear-gradient(180deg, var(--color-bg-start), var(--color-bg-end));
+}
+
+.scene-error strong {
+  font-size: clamp(1.5rem, 5vw, 3rem);
+}
+
+.scene-layer canvas {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-scene);
+}

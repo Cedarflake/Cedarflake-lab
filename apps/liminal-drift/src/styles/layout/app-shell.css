@@ -1,0 +1,77 @@
+.game-shell {
+  position: relative;
+  isolation: isolate;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(226, 213, 176, 0.54), transparent 26%),
+    radial-gradient(circle at 86% 18%, rgba(113, 154, 154, 0.5), transparent 30%),
+    linear-gradient(
+      180deg,
+      var(--color-bg-start) 0%,
+      var(--color-bg-mid) 42%,
+      var(--color-bg-end) 100%
+    );
+}
+
+.game-shell:focus {
+  outline: none;
+}
+
+.game-shell::after {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-shell-effect);
+  pointer-events: none;
+  content: "";
+  background:
+    radial-gradient(circle at center, transparent 0 48%, rgba(44, 35, 48, 0.28) 100%),
+    linear-gradient(180deg, rgba(220, 213, 204, 0.06), rgba(72, 94, 98, 0.22));
+  mix-blend-mode: multiply;
+}
+
+.desktop-required {
+  position: relative;
+  z-index: var(--z-overlay);
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  padding: 24px;
+}
+
+.desktop-required__panel {
+  width: min(100%, 420px);
+  padding: 28px;
+  color: var(--color-text);
+  text-align: center;
+  background: rgba(255, 252, 238, 0.72);
+  border: var(--border-glass);
+  border-radius: 8px;
+  box-shadow: var(--shadow-panel);
+}
+
+.desktop-required__kicker {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--color-text-soft);
+  text-transform: uppercase;
+}
+
+.desktop-required h1 {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.desktop-required p {
+  margin: 14px 0 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-text-soft);
+}
