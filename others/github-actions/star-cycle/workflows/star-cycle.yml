@@ -1,7 +1,7 @@
 name: Archived Star Cycle Example
 
-# Archived example. This file is intentionally outside the repository-level
-# .github/workflows directory and only supports manual execution.
+# Archived workflow. This file is intentionally outside the repository-level
+# .github/workflows directory and cannot be executed in its current location.
 on:
   workflow_dispatch:
     inputs:

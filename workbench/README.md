@@ -1,6 +1,6 @@
 # Workbench
 
-Local scripts, automation utilities, small Python projects, and experiments.
+Local Python utilities, small projects, and experiments.
 
 ## Index
 
@@ -8,9 +8,7 @@ Local scripts, automation utilities, small Python projects, and experiments.
 | --- | --- |
 | `ai/nya-ai` | OpenAI-compatible Flask chat API. |
 | `automation/auto-crawler` | Image site discovery and batch download experiment. |
-| `automation/bilibili-follow-cycle` | Bilibili follow/unfollow userscript. |
 | `automation/clicker` | Mouse clicker and pointer position helpers. |
-| `automation/github-star-cycle` | Archived GitHub Star/Unstar workflow experiment. |
 | `files/scan-img-to` | Scan images and copy them to target directories. |
 | `files/sync-multi` | Multi-source directory sync utility. |
 | `media/adjust-gif` | GUI GIF speed adjuster. |
@@ -29,4 +27,4 @@ uvx ruff check workbench
 
 ## License
 
-`LICENSE` is the default BSD 3-Clause license for projects without their own license file. Projects with a local `LICENSE` retain that license; this includes ASCII Art (GPL-3.0), Bilibili Follow Cycle (AGPL-3.0), Campus Net (MIT), and GitHub Star Cycle (GPL-3.0).
+`LICENSE` is the default BSD 3-Clause license for projects without their own license file. Projects with a local `LICENSE` retain that license; this includes ASCII Art (GPL-3.0) and Campus Net (MIT).

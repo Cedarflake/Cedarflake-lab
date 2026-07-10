@@ -4,7 +4,7 @@
 // @version      5.9.3
 // @description  A script to automatically follow/unfollow on Bilibili with enhanced UI and controls.
 // @author       Larch4, Cedarflake
-// @homepageURL  https://github.com/Cedarflake/Cedarflake-lab/tree/main/workbench/automation/bilibili-follow-cycle
+// @homepageURL  https://github.com/Cedarflake/Cedarflake-lab/tree/main/others/userscripts/bilibili-follow-cycle
 // @match        https://space.bilibili.com/*
 // @grant        none
 // @license      GNU Affero General Public License v3.0
