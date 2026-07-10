@@ -1,0 +1,55 @@
+# AutoCrawler 2.0 example configuration
+
+app:
+  name: "AutoCrawler"
+  version: "2.0.0"
+  debug: false
+
+discovery:
+  max_depth: 5
+  concurrent_sites: 10
+  discovery_interval: 3600
+  min_images_threshold: 20
+  seed_sites: []
+
+download:
+  max_concurrent: 5
+  max_images_per_site: 100
+  retry_count: 3
+  timeout: 30
+  min_image_size: 10240
+
+storage:
+  base_path: "./downloads"
+  organize_by: "site"
+  max_storage_gb: 50
+  create_subdirs: true
+
+network:
+  user_agents:
+    - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  proxy_list: []
+  ssl_verify: false
+  rate_limit: 2.0
+  max_retries: 3
+
+monitoring:
+  web_port: 8080
+  enable_api: true
+  log_level: "INFO"
+  stats_interval: 60
+
+database:
+  path: "./data/crawler.db"
+  backup_interval: 3600
+
+filtering:
+  allowed_extensions:
+    - ".jpg"
+    - ".jpeg"
+    - ".png"
+    - ".gif"
+    - ".webp"
+  blocked_domains: []
+  whitelist_domains: []
+  max_file_size_mb: 50

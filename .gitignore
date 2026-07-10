@@ -51,3 +51,25 @@ coverage/
 artifacts/
 playwright-report/
 test-results/
+
+# Python and workbench
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+workbench/**/config.json
+workbench/**/config.yaml
+workbench/**/config.yml
+!workbench/**/config.example.json
+!workbench/**/config.example.yaml
+!workbench/**/config.example.yml
+workbench/**/logs/
+workbench/**/data/
+workbench/**/downloads/
+workbench/**/temp/
+workbench/**/CutImage/

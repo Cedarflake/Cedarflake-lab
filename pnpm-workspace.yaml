@@ -1,7 +1,6 @@
 packages:
   - "apps/*"
   - "packages/*"
-  - "tools/*"
 
 nodeVersion: 22.22.2
 engineStrict: true

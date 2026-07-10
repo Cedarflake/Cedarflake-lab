@@ -1,0 +1,19 @@
+{
+  "tasks": [
+    {
+      "name": "example-sync",
+      "sources": [
+        "C:\\Path\\To\\Source"
+      ],
+      "targets": [
+        "D:\\Path\\To\\Target"
+      ],
+      "exclude": [
+        "*.tmp",
+        "node_modules/**"
+      ],
+      "workers": 4,
+      "log": "logs/example-sync.log"
+    }
+  ]
+}

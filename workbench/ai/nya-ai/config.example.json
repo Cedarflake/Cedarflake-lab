@@ -1,0 +1,38 @@
+{
+  "BASE_URL": "https://api.openai.com/v1",
+  "MODEL": "gpt-4o-mini",
+  "API_KEY": "",
+  "API_KEY_ENV": "OPENAI_API_KEY",
+  "API_KEY_ENV_FALLBACKS": [
+    "DEEPSEEK_API_KEY"
+  ],
+  "TEMPERATURE": 0.8,
+  "MAX_TOKENS": 1200,
+  "TIMEOUT_SECONDS": 60,
+  "MAX_RETRIES": 3,
+  "RETRY_DELAY": 1,
+  "HISTORY_FILE": "conversation_history.json",
+  "LOG_FILE": "logs/nya_ai.log",
+  "LOG_LEVEL": "INFO",
+  "CONSOLE_LOG_LEVEL": "WARNING",
+  "HOST": "127.0.0.1",
+  "PORT": 7200,
+  "DEBUG": false,
+  "DEFAULT_RELATIONSHIP_LEVEL": 100,
+  "DEFAULT_CONTEXT_INFO": "夕阳下的露台",
+  "RELATIONSHIP_LEVELS": [
+    30,
+    70
+  ],
+  "RELATIONSHIP_TONES": [
+    "冷淡克制",
+    "轻松调侃",
+    "温柔亲近"
+  ],
+  "RELATIONSHIP_EMOJIS": [
+    "",
+    "",
+    ""
+  ],
+  "SYSTEM_PROMPT": "你是 NyaAI，一个可配置的角色聊天助手。保持自然、简洁，并遵循用户给出的上下文。"
+}

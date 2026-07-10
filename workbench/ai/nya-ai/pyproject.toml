@@ -1,0 +1,11 @@
+[project]
+name = "nya-ai"
+version = "0.1.0"
+description = "A small Flask chat API backed by an OpenAI-compatible model provider."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "flask",
+  "openai",
+  "python-dotenv",
+]

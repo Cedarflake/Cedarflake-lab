@@ -1,0 +1,13 @@
+{
+  "source_directories": [
+    "C:\\Path\\To\\Pictures"
+  ],
+  "destination_directories": [
+    "D:\\Path\\To\\PictureBackup"
+  ],
+  "ignore_patterns": [
+    ".*temp_.*",
+    ".*thumbnail_.*",
+    ".*\\.tmp$"
+  ]
+}

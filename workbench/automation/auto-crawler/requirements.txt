@@ -1,0 +1,36 @@
+# AutoCrawler 2.0 依赖包
+# HTTP和异步
+aiohttp>=3.8.0
+aiofiles>=22.0.0
+
+# HTML解析
+beautifulsoup4>=4.11.0
+lxml>=4.9.0
+
+# 图片处理
+Pillow>=9.0.0
+
+# 配置和数据
+pyyaml>=6.0
+aiosqlite>=0.17.0  # 异步SQLite支持
+
+# 网络和安全
+requests>=2.28.0
+certifi>=2022.0.0
+
+# 工具库
+tqdm>=4.64.0
+click>=8.0.0
+
+# Web界面 (后期阶段)
+flask>=2.2.0
+flask-socketio>=5.3.0
+
+# 测试框架
+pytest>=7.2.0
+pytest-asyncio>=0.20.0
+pytest-cov>=4.0.0
+
+# 开发工具
+black>=22.0.0
+flake8>=5.0.0
