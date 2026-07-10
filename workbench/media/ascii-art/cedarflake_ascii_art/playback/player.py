@@ -1,10 +1,9 @@
-# WentUrc_ASCII_Art_Tool/playback/player.py
-
+import glob
 import os
 import time
-import glob
-import logging
-from WentUrc_ASCII_Art_Tool.config import logger, config
+
+from cedarflake_ascii_art.config import logger
+
 
 def play_ascii_video(folder_path, fps=24):
     """
@@ -22,11 +21,11 @@ def play_ascii_video(folder_path, fps=24):
         logger.info(f"开始播放ASCII视频：{folder_path}，帧率：{fps} FPS")
 
         for frame_file in frame_files:
-            with open(frame_file, "r", encoding='utf-8') as f:
+            with open(frame_file, "r", encoding="utf-8") as f:
                 frame = f.read()
 
             # 清屏
-            os.system('cls' if os.name == 'nt' else 'clear')
+            os.system("cls" if os.name == "nt" else "clear")
 
             # 显示帧
             print(frame)

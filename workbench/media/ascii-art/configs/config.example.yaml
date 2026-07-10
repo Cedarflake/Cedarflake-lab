@@ -1,11 +1,9 @@
-# ASCII_drawing/configs/config.yaml
-
 output_directories:
   image_txt: "./output/image/txt"
   image_png: "./output/image/png"
   video: "./output/video"
 
-font_path: "C:\\Windows\\Fonts\\consola.ttf"  # 根据需要调整路径
+font_path: "C:\\Windows\\Fonts\\consola.ttf"
 
 default_settings:
   ascii_width_txt: 100

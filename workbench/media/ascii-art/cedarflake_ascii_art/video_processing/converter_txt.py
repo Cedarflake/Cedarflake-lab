@@ -1,11 +1,9 @@
-# WentUrc_ASCII_Art_Tool/video_processing/converter_txt.py
-
 import os
+
 import cv2
-from WentUrc_ASCII_Art_Tool.utils.file_utils import save_to_file
-from WentUrc_ASCII_Art_Tool.config import logger, config
-from WentUrc_ASCII_Art_Tool.playback import player  # 确保playback模块可导入
-import logging
+
+from cedarflake_ascii_art.config import config, logger
+from cedarflake_ascii_art.playback import player
 
 ASCII_CHARS = "@%#*+=-:. "
 
@@ -31,14 +29,16 @@ def frame_to_ascii(frame, new_width=100):
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # 转为灰度
     resized_frame = resize_frame(gray_frame, new_width)  # 调整大小
     ascii_str = pixels_to_ascii(resized_frame)  # 转换为ASCII字符
-    ascii_image = "\n".join([ascii_str[i:(i + new_width)] for i in range(0, len(ascii_str), new_width)])
+    ascii_image = "\n".join(
+        [ascii_str[i : (i + new_width)] for i in range(0, len(ascii_str), new_width)]
+    )
     return ascii_image
 
 
 def video_to_ascii(video_path, output_dir=None, new_width=100):
     """将视频逐帧转换为ASCII字符并保存为文本文件。"""
     if output_dir is None:
-        output_dir = config.get('output_directories').get('video', './output/video')
+        output_dir = config.get("output_directories").get("video", "./output/video")
 
     # 提取视频名称并创建输出目录
     video_name = os.path.splitext(os.path.basename(video_path))[0]
@@ -63,7 +63,7 @@ def video_to_ascii(video_path, output_dir=None, new_width=100):
         frame_filename = f"frame_{frame_index:06d}.txt"
         frame_path = os.path.join(video_output_dir, frame_filename)
         try:
-            with open(frame_path, "w", encoding='utf-8') as f:
+            with open(frame_path, "w", encoding="utf-8") as f:
                 f.write(ascii_art)
             logger.debug(f"保存帧 {frame_index}：{frame_path}")
         except Exception as e:
@@ -77,7 +77,7 @@ def video_to_ascii(video_path, output_dir=None, new_width=100):
 
     # 自动调用播放模块
     try:
-        player.play_ascii_video(video_output_dir, fps=config.get_default_setting('video_fps'))
+        player.play_ascii_video(video_output_dir, fps=config.get_default_setting("video_fps"))
         logger.info("ASCII视频播放已启动。")
     except Exception as e:
         logger.error(f"启动播放模块失败：{e}")
