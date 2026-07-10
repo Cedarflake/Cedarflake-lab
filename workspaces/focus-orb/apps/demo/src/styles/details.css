@@ -1,0 +1,100 @@
+.details-section {
+  display: grid;
+  width: min(1240px, 100%);
+  grid-template-columns: minmax(0, 1fr) 420px;
+  gap: 18px;
+  margin: 0 auto;
+  padding: 0 32px 56px;
+}
+
+.code-panel,
+.api-panel {
+  min-width: 0;
+  padding: 18px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.code-block-shell {
+  position: relative;
+}
+
+.copy-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgb(16 22 21 / 0.14);
+  border-radius: 7px;
+  background: rgb(16 22 21 / 0.82);
+  color: #ffffff;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+}
+
+.copy-button:hover,
+.copy-button:focus-visible {
+  border-color: rgb(255 255 255 / 0.26);
+  background: rgb(16 22 21 / 0.96);
+}
+
+.copy-button__icon {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2.2;
+}
+
+pre {
+  max-height: 390px;
+  margin: 0;
+  overflow: auto;
+  padding: 18px 58px 18px 18px;
+  border-radius: 8px;
+  background: #0f1514;
+  color: #e8fff8;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.api-list {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+}
+
+.api-list div {
+  display: grid;
+  gap: 4px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgb(16 22 21 / 0.1);
+}
+
+.api-list div:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.api-list dt {
+  color: #101615;
+  font-size: 14px;
+  font-weight: 760;
+}
+
+.api-list dd {
+  margin: 0;
+  color: rgb(16 22 21 / 0.62);
+  font-size: 13px;
+  line-height: 1.45;
+}

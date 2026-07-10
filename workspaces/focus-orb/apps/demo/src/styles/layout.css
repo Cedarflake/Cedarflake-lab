@@ -1,0 +1,83 @@
+.site-shell {
+  min-height: 100vh;
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 32px;
+  border-bottom: 1px solid rgb(16 22 21 / 0.1);
+  background: rgb(246 248 246 / 0.86);
+  backdrop-filter: blur(18px);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.brand__icon {
+  width: 18px;
+  height: 18px;
+  color: #006d67;
+  stroke-width: 2.2;
+}
+
+.install-command {
+  min-width: 0;
+  padding: 7px 9px;
+  border: 1px solid rgb(16 22 21 / 0.12);
+  border-radius: 6px;
+  background: rgb(255 255 255 / 0.72);
+  color: rgb(16 22 21 / 0.72);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.hero-section {
+  width: min(1240px, 100%);
+  margin: 0 auto;
+  padding: 48px 32px 34px;
+}
+
+.hero-copy {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.hero-copy__summary {
+  max-width: 520px;
+  margin: 0;
+  color: rgb(16 22 21 / 0.66);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.playground-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 18px;
+  align-items: stretch;
+}
+
+.preview-panel,
+.control-panel,
+.code-panel,
+.api-panel {
+  border: 1px solid rgb(16 22 21 / 0.12);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 0.86);
+  box-shadow: 0 18px 60px rgb(16 22 21 / 0.08);
+}
