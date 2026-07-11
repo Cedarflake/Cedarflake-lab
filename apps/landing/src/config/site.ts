@@ -3,6 +3,8 @@ import { workbenchCategories } from "./workbench"
 
 export const siteConfig = {
   name: "Cedarflake Lab",
+  locale: "en",
+  timeZone: "Asia/Shanghai",
   repositoryUrl: "https://github.com/Cedarflake/Cedarflake-Lab",
   repositoryBranch: "main",
   stats: [

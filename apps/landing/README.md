@@ -67,7 +67,7 @@ Add the category once in [`src/config/workbench.ts`](./src/config/workbench.ts),
 
 ## Change site copy
 
-Edit [`src/config/site.ts`](./src/config/site.ts) for navigation, headings, hero copy, repository commands, and footer text. Project content should remain in the project manifest.
+Edit [`src/config/site.ts`](./src/config/site.ts) for the locale, time zone, navigation, headings, hero copy, repository commands, and footer text. Project content should remain in the project manifest. The document language, project-date formatter, and deterministic title sorting all consume the shared locale configuration.
 
 ## Development
 

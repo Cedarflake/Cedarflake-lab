@@ -88,6 +88,12 @@ function validateRepositoryConfig() {
 validateText(siteConfig, "siteConfig")
 validateRepositoryConfig()
 
+try {
+  new Intl.DateTimeFormat(siteConfig.locale, { timeZone: siteConfig.timeZone })
+} catch {
+  errors.push(`Invalid locale or time zone: ${siteConfig.locale}, ${siteConfig.timeZone}`)
+}
+
 const statKinds = siteConfig.stats.map((stat) => stat.kind)
 const statLabels = siteConfig.stats.map((stat) => stat.label)
 const missingProjectKinds = expectedProjectKinds.filter((kind) => !statKinds.includes(kind))

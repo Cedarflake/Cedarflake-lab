@@ -1,5 +1,6 @@
 import { ArrowUpRight } from "lucide-react"
 
+import { siteConfig } from "../config/site"
 import { projectUrl } from "../lib/projectCatalog"
 import type { ShowcaseProject } from "../types/project"
 
@@ -7,10 +8,10 @@ interface ProjectCardProps {
   project: ShowcaseProject
 }
 
-const projectDateFormatter = new Intl.DateTimeFormat("en", {
+const projectDateFormatter = new Intl.DateTimeFormat(siteConfig.locale, {
   day: "2-digit",
   month: "short",
-  timeZone: "Asia/Shanghai",
+  timeZone: siteConfig.timeZone,
   year: "numeric",
 })
 

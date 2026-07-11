@@ -162,7 +162,7 @@ function compareByUpdatedAt(left: ProjectEntry, right: ProjectEntry) {
     return updatedAtDifference
   }
 
-  return left.title.localeCompare(right.title, "en")
+  return left.title.localeCompare(right.title, siteConfig.locale)
 }
 
 function encodeUrlPath(path: string) {

@@ -44,8 +44,8 @@ const heroPreload = linkTags.find(
 )
 const entryScript = scriptTags.find((tag) => getAttribute(tag, "src") === "/src/main.tsx")
 
-if (!htmlTag || getAttribute(htmlTag, "lang") !== "en") {
-  errors.push("Document language must be declared as English")
+if (!htmlTag || getAttribute(htmlTag, "lang") !== siteConfig.locale) {
+  errors.push(`Document language must match the site locale: ${siteConfig.locale}`)
 }
 
 if (titleMatches.length !== 1 || !title || !title.includes(siteConfig.name)) {
