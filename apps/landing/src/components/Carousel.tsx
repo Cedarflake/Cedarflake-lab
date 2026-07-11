@@ -49,7 +49,8 @@ export function Carousel<Project extends CarouselItem>({
   const [isAtEnd, setIsAtEnd] = useState(false)
 
   const lastIndex = items.length - 1
-  const shouldShowControls = showControls && items.length > 1
+  const hasMultipleItems = items.length > 1
+  const shouldShowControls = showControls && hasMultipleItems
 
   const syncCarouselState = useCallback(() => {
     const viewport = viewportRef.current
@@ -206,9 +207,11 @@ export function Carousel<Project extends CarouselItem>({
       aria-labelledby={labelledBy}
       aria-roledescription="carousel"
     >
-      <p className="sr-only" id={instructionsId}>
-        Focus this carousel, then use the left and right arrow keys to move between projects.
-      </p>
+      {hasMultipleItems ? (
+        <p className="sr-only" id={instructionsId}>
+          Focus this carousel, then use the left and right arrow keys to move between projects.
+        </p>
+      ) : null}
 
       {shouldShowControls ? (
         <div className="carousel__toolbar">
@@ -251,8 +254,8 @@ export function Carousel<Project extends CarouselItem>({
         ref={viewportRef}
         role="group"
         aria-label="Project slides"
-        aria-describedby={instructionsId}
-        tabIndex={items.length > 1 ? 0 : -1}
+        aria-describedby={hasMultipleItems ? instructionsId : undefined}
+        tabIndex={hasMultipleItems ? 0 : -1}
         onKeyDown={handleKeyDown}
         onScroll={handleScroll}
       >
