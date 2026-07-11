@@ -50,6 +50,11 @@ if (entryRemainder) {
 }
 
 for (const importSource of importSources) {
+  if (!importSource.endsWith(".css")) {
+    errors.push(`Stylesheet import must reference a CSS file: ${importSource}`)
+    continue
+  }
+
   const importPath = resolve(dirname(stylesEntryPath), importSource)
   const pathFromStylesRoot = relative(stylesRoot, importPath)
 
@@ -86,12 +91,13 @@ for (const importSource of importSources) {
   }
 }
 
-const styleFiles = isDirectory(stylesRoot) ? listStyles(stylesRoot) : []
+const styleFiles = isDirectory(stylesRoot) ? listStyles(stylesRoot).sort() : []
 
 for (const styleFile of styleFiles) {
   const pathFromStylesRoot = relative(stylesRoot, styleFile)
   const fileName = pathFromStylesRoot.split(sep).at(-1) ?? ""
   const source = readFileSync(styleFile, "utf8")
+  const sourceWithoutComments = source.replace(commentPattern, "")
 
   if (!importedPaths.has(styleFile)) {
     errors.push(`Stylesheet is not imported by src/styles.css: ${pathFromStylesRoot}`)
@@ -101,7 +107,7 @@ for (const styleFile of styleFiles) {
     errors.push(`Stylesheet filename must use kebab-case: ${pathFromStylesRoot}`)
   }
 
-  if (/@import\s/.test(source)) {
+  if (/@import\s/.test(sourceWithoutComments)) {
     errors.push(`Nested stylesheet imports are not allowed: ${pathFromStylesRoot}`)
   }
 }
