@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useId, useRef, useState } from "react"
 import type { ReactNode } from "react"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 
@@ -39,6 +39,7 @@ export function Carousel<Project extends CarouselItem>({
   renderItem,
   showControls = true,
 }: CarouselProps<Project>) {
+  const instructionsId = useId()
   const viewportRef = useRef<HTMLDivElement>(null)
   const slideRefs = useRef<Array<HTMLDivElement | null>>([])
   const scrollEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -205,6 +206,10 @@ export function Carousel<Project extends CarouselItem>({
       aria-labelledby={labelledBy}
       aria-roledescription="carousel"
     >
+      <p className="sr-only" id={instructionsId}>
+        Focus the project slides, then use the left and right arrow keys to move between them.
+      </p>
+
       {shouldShowControls ? (
         <div className="carousel__toolbar">
           <p className="carousel__hint">{hint}</p>
@@ -244,6 +249,9 @@ export function Carousel<Project extends CarouselItem>({
       <div
         className="carousel__viewport"
         ref={viewportRef}
+        role="group"
+        aria-label="Project slides"
+        aria-describedby={instructionsId}
         tabIndex={items.length > 1 ? 0 : -1}
         onKeyDown={handleKeyDown}
         onScroll={handleScroll}
