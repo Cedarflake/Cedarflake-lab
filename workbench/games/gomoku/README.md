@@ -18,7 +18,7 @@ uv pip install -r requirements.txt
 
 ## 运行
 
-控制台版本：
+控制台版本（输入 `h` 可查看落子、保存、加载和重新开始命令）：
 
 ```powershell
 python main.py

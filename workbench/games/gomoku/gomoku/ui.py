@@ -1,3 +1,6 @@
+from .saver import GameSaver
+
+
 class ConsoleUI:
     """控制台用户界面"""
 
@@ -49,12 +52,53 @@ class ConsoleUI:
                 elif move in ("h", "help"):
                     self.display_help()
                     continue
+                elif move in ("s", "save"):
+                    filepath = GameSaver.save_game(self.game)
+                    print(f"游戏已保存到: {filepath}")
+                    continue
+                elif move in ("l", "load"):
+                    self.load_game()
+                    if self.game.game_over:
+                        return None, None
+                    continue
 
                 # 处理落子坐标
                 row, col = map(int, move.split())
                 return row, col
             except ValueError:
                 print("输入格式错误，请重新输入（例如: 7 7）")
+
+    def load_game(self):
+        """选择并加载已有存档"""
+        saves = GameSaver.list_saves()
+        if not saves:
+            print("没有可用的游戏存档。")
+            return False
+
+        print("\n可用存档:")
+        for index, save in enumerate(saves, start=1):
+            print(f"  {index}. {save['timestamp']} ({save['filename']})")
+
+        selection = input("请输入存档编号，或按 Enter 取消: ").strip()
+        if not selection:
+            return False
+
+        try:
+            index = int(selection) - 1
+        except ValueError:
+            print("存档编号无效。")
+            return False
+        if not 0 <= index < len(saves):
+            print("存档编号无效。")
+            return False
+
+        if not GameSaver.load_game(saves[index]["filepath"], self.game):
+            return False
+
+        print("游戏存档已加载。")
+        self.display_board()
+        self.display_status()
+        return True
 
     def show_message(self, message):
         """显示消息"""
@@ -79,6 +123,8 @@ class ConsoleUI:
                 # 用户选择退出
                 self.cleanup()
                 return
+            if self.game.game_over:
+                break
 
             # 尝试落子
             if not self.game.make_move(row, col):

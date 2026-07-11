@@ -7,6 +7,8 @@ class Board:
 
     def __init__(self, size=15):
         """初始化棋盘"""
+        if type(size) is not int or size < 5:
+            raise ValueError("棋盘大小必须是至少为 5 的整数")
         self.size = size
         self.reset()
 
@@ -17,10 +19,18 @@ class Board:
 
     def is_valid_move(self, row, col):
         """检查移动是否有效"""
-        return 0 <= row < self.size and 0 <= col < self.size and self.grid[row][col] == self.EMPTY
+        return (
+            type(row) is int
+            and type(col) is int
+            and 0 <= row < self.size
+            and 0 <= col < self.size
+            and self.grid[row][col] == self.EMPTY
+        )
 
     def place_stone(self, row, col, stone):
         """在指定位置放置棋子"""
+        if type(stone) is not int or stone not in (self.BLACK, self.WHITE):
+            return False
         if not self.is_valid_move(row, col):
             return False
         self.grid[row][col] = stone
