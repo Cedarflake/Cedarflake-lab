@@ -45,7 +45,7 @@ def create_sample_config():
         "source_directories": potential_image_dirs,
         "destination_directory": sample_dest_dir,
         "include_extensions": [".jpg", ".jpeg", ".png", ".gif"],
-        "exclude_patterns": ["temp_", "thumbnail_"],
+        "ignore_patterns": ["temp_", "thumbnail_"],
     }
 
     # 保存到文件

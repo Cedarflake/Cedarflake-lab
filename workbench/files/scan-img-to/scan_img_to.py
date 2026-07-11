@@ -46,16 +46,16 @@ def setup_logging(log_level=logging.INFO, log_dir=None):
     ]
 
     logging.basicConfig(
-        level=log_level, format="%(asctime)s - %(levelname)s - %(message)s", handlers=handlers
+        level=log_level,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        handlers=handlers,
+        force=True,
     )
 
     # 减少第三方库的日志级别，避免过多输出
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("PIL").setLevel(logging.WARNING)
 
-
-# 初始化日志
-setup_logging()
 
 # 支持的图片格式
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".webp"}
@@ -139,16 +139,22 @@ def copy_file(src_file, dest_dir):
         # 确保目标目录存在
         os.makedirs(dest_dir, exist_ok=True)
 
-        # 构建目标文件路径
-        dest_file = dest_dir / src_file.name
+        counter = 0
+        while True:
+            suffix = "" if counter == 0 else f"_{counter:03d}"
+            dest_file = dest_dir / f"{src_file.stem}{suffix}{src_file.suffix}"
+            try:
+                descriptor = os.open(dest_file, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                os.close(descriptor)
+                break
+            except FileExistsError:
+                counter += 1
 
-        # 如果目标文件已存在，添加时间戳
-        if dest_file.exists():
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            dest_file = dest_dir / f"{src_file.stem}_{timestamp}{src_file.suffix}"
-
-        # 复制文件
-        shutil.copy2(src_file, dest_file)
+        try:
+            shutil.copy2(src_file, dest_file)
+        except Exception:
+            dest_file.unlink(missing_ok=True)
+            raise
         logging.info(f"成功复制: {src_file} -> {dest_file}")
         return True
     except Exception as e:
