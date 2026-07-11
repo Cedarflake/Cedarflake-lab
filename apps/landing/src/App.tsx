@@ -94,6 +94,7 @@ export function App() {
         >
           <SectionHeading {...siteConfig.sections.featured.heading} />
           <FeaturedCarousel
+            hint={siteConfig.sections.featured.carouselHint}
             labelledBy={siteConfig.sections.featured.heading.titleId}
             projects={showcaseProjects}
           />
@@ -106,6 +107,7 @@ export function App() {
         >
           <SectionHeading {...siteConfig.sections.building.heading} />
           <CatalogCarousel
+            hint={siteConfig.sections.building.carouselHint}
             labelledBy={siteConfig.sections.building.heading.titleId}
             projects={buildingProjects}
           />
@@ -134,6 +136,7 @@ export function App() {
         >
           <SectionHeading {...siteConfig.sections.others.heading} />
           <CatalogCarousel
+            hint={siteConfig.sections.others.carouselHint}
             labelledBy={siteConfig.sections.others.heading.titleId}
             projects={otherProjects}
           />

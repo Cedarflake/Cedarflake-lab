@@ -36,6 +36,7 @@ export const siteConfig = {
   sections: {
     featured: {
       id: "projects",
+      carouselHint: "Drag, scroll, or use arrow keys",
       heading: {
         index: "01",
         eyebrow: "Latest projects",
@@ -47,6 +48,7 @@ export const siteConfig = {
     },
     building: {
       id: "building-blocks",
+      carouselHint: "More building blocks along the shelf",
       heading: {
         index: "02",
         eyebrow: "Building blocks",
@@ -70,6 +72,7 @@ export const siteConfig = {
     },
     others: {
       id: "other-shelves",
+      carouselHint: "More oddities along the shelf",
       heading: {
         index: "04",
         eyebrow: "Other shelves",

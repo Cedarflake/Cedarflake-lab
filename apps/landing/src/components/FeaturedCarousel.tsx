@@ -3,15 +3,16 @@ import { Carousel } from "./Carousel"
 import { ProjectCard } from "./ProjectCard"
 
 interface FeaturedCarouselProps {
+  hint: string
   labelledBy: string
   projects: readonly ShowcaseProject[]
 }
 
-export function FeaturedCarousel({ labelledBy, projects }: FeaturedCarouselProps) {
+export function FeaturedCarousel({ hint, labelledBy, projects }: FeaturedCarouselProps) {
   return (
     <Carousel
       className="featured-carousel"
-      hint="Drag, scroll, or use arrow keys"
+      hint={hint}
       items={projects}
       labelledBy={labelledBy}
       renderItem={(project, index) => <ProjectCard project={project} isPriority={index === 0} />}
