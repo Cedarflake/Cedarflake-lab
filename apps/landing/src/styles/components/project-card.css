@@ -54,11 +54,6 @@
   padding: clamp(26px, 3vw, 40px);
 }
 
-.project-card__title-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-}
-
 .project-card__title-row svg {
   align-self: start;
   margin-top: 4px;

@@ -54,9 +54,7 @@
 }
 
 .catalog-card__title-row {
-  display: grid;
   min-width: 0;
-  grid-template-columns: minmax(0, 1fr) auto;
   margin-top: 52px;
 }
 
