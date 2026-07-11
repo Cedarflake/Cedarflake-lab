@@ -5,35 +5,36 @@ The landing app is a configuration-driven index for the projects in this monorep
 ## Architecture
 
 ```text
-src/
-├── config/
-│   ├── projects.ts    # Single project manifest
-│   ├── site.ts        # Navigation, copy, repository metadata
-│   └── workbench.ts   # Workbench category definitions
-├── lib/
-│   └── projectCatalog.ts # Filtering, grouping, sorting, counts, source links
+.
 ├── scripts/
-│   ├── validate.ts        # Validation entrypoint
-│   ├── validateCatalog.ts # Local path, cover, dimension, and asset-copy checks
-│   ├── validateSiteConfig.ts # Copy, collections, IDs, and repository metadata
+│   ├── validate.ts            # Validation entrypoint
+│   ├── validateCatalog.ts     # Taxonomy, paths, covers, and asset-copy checks
+│   ├── validateSiteConfig.ts  # Copy, IDs, locale, and repository metadata
 │   ├── validateCollections.ts # Rendered membership, ordering, groups, and stats
-│   ├── validateDocument.ts # Language, metadata, resource links, and app mount point
-│   └── validateMarkup.ts  # Static IDs, anchors, ARIA, images, and external links
-├── styles/
-│   ├── foundation/       # Tokens, reset, typography, accessibility, motion policy
-│   ├── layout/           # Site shell and reusable page-section geometry
-│   ├── components/       # Buttons, carousels, cards, headings, workbench
-│   └── pages/            # Home-page composition and page-only sections
-├── types/
-│   └── project.ts     # Discriminated project entry types
-└── components/        # Presentation only
+│   ├── validateDocument.ts    # Language, metadata, resources, and app mount point
+│   └── validateMarkup.ts      # Static IDs, links, ARIA, images, and headings
+└── src/
+    ├── components/            # Presentation only
+    ├── config/
+    │   ├── projects.ts        # Single project manifest
+    │   ├── site.ts            # Navigation, copy, repository metadata
+    │   └── workbench.ts       # Workbench category definitions
+    ├── lib/
+    │   └── projectCatalog.ts  # Validation, grouping, sorting, counts, source links
+    ├── styles/
+    │   ├── foundation/        # Tokens, reset, typography, accessibility, motion policy
+    │   ├── layout/            # Site shell and reusable page-section geometry
+    │   ├── components/        # Buttons, carousels, cards, headings, workbench
+    │   └── pages/             # Home-page composition and page-only sections
+    └── types/
+        └── project.ts         # Discriminated project entry types
 ```
 
 `projectCatalog` is the source of truth. The page derives section lists, the latest-project carousel, workbench groups, repository links, and header counts from it. Validation scans the established `apps`, `packages`, `workbench`, and `others` taxonomy so a new project directory cannot be omitted accidentally; only the landing index itself is excluded. Duplicate IDs and paths or invalid update dates fail with a clear error.
 
 Every rendered project collection is ordered by `updatedAt` from newest to oldest, with the title as a deterministic tie-breaker. Workbench categories retain the order declared in `src/config/workbench.ts`, while the projects inside each category follow the shared update order.
 
-`pnpm validate` executes the catalog and site-configuration invariants before checking repository paths, public covers, declared PNG dimensions, canonical asset copies, derived collection membership and ordering, the static document shell, and the server-rendered markup relationships. It runs automatically as part of this app's existing `check` and `build` commands; no separate CI workflow is required.
+`pnpm validate` checks catalog taxonomy, repository paths, public covers, declared PNG dimensions, canonical asset copies, site configuration, derived collection membership and ordering, the static document shell, and the server-rendered markup relationships. It runs automatically as part of this app's existing `check` and `build` commands; no separate CI workflow is required.
 
 `src/styles.css` is an import-only entrypoint, ordered from low-level foundations to page-specific composition. Keep rules in the layer that owns them:
 
@@ -55,6 +56,8 @@ Add one entry to [`src/config/projects.ts`](./src/config/projects.ts) and choose
 - `workbench` places the project in a configured workbench category.
 
 Every entry needs a unique `id`, repository-relative `path`, `title`, `summary`, `kind`, and ISO `updatedAt`. Paths use portable forward slashes without empty, `.` or `..` segments; URL-sensitive characters inside a segment are encoded automatically. By default, the card links to that path on GitHub. Add `externalUrl` when the preferred destination is a deployed site.
+
+Keep the path taxonomy consistent with the entry: `app` uses `apps/`, `package` uses `packages/`, `workbench` uses `workbench/`, and `other` uses `others/`. The primary section must match that root, and a workbench project's category must match the second path segment. Validation rejects mismatches before they can produce incorrect groups or counts.
 
 Add a `showcase` object when the project should appear in the latest-project carousel. A showcase needs a label, tags, and a real cover image with alt text and intrinsic dimensions. Any primary presentation can opt in, and the carousel includes every opted-in project without a fixed card limit. It sorts them by `updatedAt` newest first, with the title as a deterministic tie-breaker.
 

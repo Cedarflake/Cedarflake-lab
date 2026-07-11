@@ -13,6 +13,18 @@ import type {
 const catalog: readonly ProjectEntry[] = projectCatalog
 const isoTimestampPattern =
   /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?(Z|([+-])(\d{2}):(\d{2}))$/
+const projectRootByKind = {
+  app: "apps",
+  package: "packages",
+  workbench: "workbench",
+  other: "others",
+} satisfies Record<ProjectKind, string>
+const projectRootsBySection = {
+  featured: new Set(["apps", "packages"]),
+  building: new Set(["apps", "packages"]),
+  workbench: new Set(["workbench"]),
+  others: new Set(["others"]),
+} satisfies Record<ProjectEntry["section"], ReadonlySet<string>>
 
 function isValidIsoTimestamp(value: string) {
   const match = isoTimestampPattern.exec(value)
@@ -70,12 +82,25 @@ export function validateProjectCatalog(projects: readonly ProjectEntry[]) {
     }
 
     const pathSegments = project.path.split("/")
+    const projectRoot = pathSegments[0] ?? ""
 
     if (
       project.path.includes("\\") ||
       pathSegments.some((segment) => !segment || segment === "." || segment === "..")
     ) {
       throw new Error(`Invalid project path: ${project.id}`)
+    }
+
+    if (projectRoot !== projectRootByKind[project.kind]) {
+      throw new Error(`Project kind does not match its path: ${project.id}`)
+    }
+
+    if (!projectRootsBySection[project.section].has(projectRoot)) {
+      throw new Error(`Project section does not match its path: ${project.id}`)
+    }
+
+    if (project.presentation === "workbench" && pathSegments[1] !== project.category) {
+      throw new Error(`Workbench category does not match its path: ${project.id}`)
     }
 
     if (project.presentation === "catalog" && !project.status.trim()) {
