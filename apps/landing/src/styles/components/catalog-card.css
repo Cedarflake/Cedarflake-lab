@@ -45,6 +45,10 @@
   transition: background 180ms ease;
 }
 
+.catalog-card a:focus-visible {
+  outline-offset: -4px;
+}
+
 .catalog-card a:hover {
   background: var(--color-white);
 }

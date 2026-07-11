@@ -23,6 +23,14 @@ function getSlideScrollLeft(viewport: HTMLDivElement, slide: HTMLDivElement) {
   return Math.max(0, Math.floor(targetScrollLeft) - 1)
 }
 
+function getScrollBehavior(): ScrollBehavior {
+  if (typeof window === "undefined" || !window.matchMedia) {
+    return "auto"
+  }
+
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
+}
+
 export function Carousel<Project extends CarouselItem>({
   className,
   hint,
@@ -109,7 +117,7 @@ export function Carousel<Project extends CarouselItem>({
 
       viewport.scrollTo({
         left: targetScrollLeft,
-        behavior: "smooth",
+        behavior: getScrollBehavior(),
       })
       setActiveIndex(targetIndex)
       setIsAtStart(targetScrollLeft <= 1)

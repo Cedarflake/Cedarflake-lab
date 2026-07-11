@@ -17,6 +17,12 @@
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.8fr);
   min-height: 520px;
+  border-radius: inherit;
+  corner-shape: inherit;
+}
+
+.project-card__link:focus-visible {
+  outline-offset: -4px;
 }
 
 .project-card__cover {
