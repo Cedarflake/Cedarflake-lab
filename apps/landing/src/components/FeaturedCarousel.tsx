@@ -15,7 +15,7 @@ export function FeaturedCarousel({ hint, labelledBy, projects }: FeaturedCarouse
       hint={hint}
       items={projects}
       labelledBy={labelledBy}
-      renderItem={(project, index) => <ProjectCard project={project} isPriority={index === 0} />}
+      renderItem={(project) => <ProjectCard project={project} />}
     />
   )
 }

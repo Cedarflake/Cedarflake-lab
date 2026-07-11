@@ -4,7 +4,6 @@ import { projectUrl } from "../lib/projectCatalog"
 import type { ShowcaseProject } from "../types/project"
 
 interface ProjectCardProps {
-  isPriority?: boolean
   project: ShowcaseProject
 }
 
@@ -15,7 +14,7 @@ const projectDateFormatter = new Intl.DateTimeFormat("en", {
   year: "numeric",
 })
 
-export function ProjectCard({ isPriority = false, project }: ProjectCardProps) {
+export function ProjectCard({ project }: ProjectCardProps) {
   const { cover, label, note, tags } = project.showcase
 
   return (
@@ -27,8 +26,7 @@ export function ProjectCard({ isPriority = false, project }: ProjectCardProps) {
             alt={cover.alt}
             width={cover.width}
             height={cover.height}
-            loading={isPriority ? "eager" : "lazy"}
-            fetchPriority={isPriority ? "high" : "auto"}
+            loading="lazy"
             decoding="async"
           />
         </div>
