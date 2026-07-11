@@ -88,8 +88,8 @@
 
 .hero__content {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
-  gap: clamp(48px, 9vw, 132px);
+  grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
+  gap: clamp(48px, 7vw, 112px);
   align-items: end;
   margin-top: clamp(36px, 5vw, 72px);
 }
@@ -98,8 +98,8 @@
   max-width: 800px;
   font-size: clamp(40px, 5vw, 74px);
   font-weight: 700;
-  letter-spacing: -0.035em;
-  line-height: 1.08;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
   text-wrap: balance;
 }
 
