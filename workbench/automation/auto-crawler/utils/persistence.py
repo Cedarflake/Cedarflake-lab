@@ -134,18 +134,38 @@ class DatabaseManager:
         metadata: Dict = None,
     ) -> int:
         """添加发现的网站"""
+        metadata_json = json.dumps(metadata) if metadata else None
+
         async with aiosqlite.connect(self.db_path) as db:
-            cursor = await db.execute(
+            await db.execute(
                 """
                 INSERT OR IGNORE INTO discovered_sites
                 (url, domain, title, description, metadata)
                 VALUES (?, ?, ?, ?, ?)
             """,
-                (url, domain, title, description, json.dumps(metadata) if metadata else None),
+                (url, domain, title, description, metadata_json),
             )
 
+            await db.execute(
+                """
+                UPDATE discovered_sites
+                SET domain = ?,
+                    title = COALESCE(?, title),
+                    description = COALESCE(?, description),
+                    metadata = COALESCE(?, metadata)
+                WHERE url = ?
+                """,
+                (domain, title, description, metadata_json, url),
+            )
+
+            cursor = await db.execute("SELECT id FROM discovered_sites WHERE url = ?", (url,))
+            row = await cursor.fetchone()
             await db.commit()
-            return cursor.lastrowid
+
+            if row is None:
+                raise RuntimeError(f"无法读取已发现网站的ID: {url}")
+
+            return int(row[0])
 
     async def get_site_by_url(self, url: str) -> Optional[Dict]:
         """根据URL获取网站信息"""
@@ -207,19 +227,22 @@ class DatabaseManager:
             await db.commit()
             return cursor.lastrowid
 
-    async def get_sites_by_status(self, status: str, limit: int = 100) -> List[Dict]:
+    async def get_sites_by_status(self, status: str, limit: Optional[int] = 100) -> List[Dict]:
         """根据状态获取网站列表"""
         async with aiosqlite.connect(self.db_path) as db:
             db.row_factory = aiosqlite.Row
-            cursor = await db.execute(
-                """
+            query = """
                 SELECT * FROM discovered_sites
                 WHERE status = ?
                 ORDER BY score DESC, discovered_at ASC
-                LIMIT ?
-            """,
-                (status, limit),
-            )
+            """
+            params: List[Any] = [status]
+
+            if limit is not None:
+                query += " LIMIT ?"
+                params.append(limit)
+
+            cursor = await db.execute(query, params)
 
             rows = await cursor.fetchall()
             return [dict(row) for row in rows]

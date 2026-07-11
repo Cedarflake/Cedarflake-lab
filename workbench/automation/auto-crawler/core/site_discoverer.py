@@ -117,25 +117,20 @@ class SiteDiscoverer:
         logger.info(f"max_depth配置: {self.max_depth}")
         self.stats["start_time"] = time.time()
 
-        all_discovered = []
+        self.discovered_sites.clear()
+        self.processed_sites.clear()
 
-        for depth in range(self.max_depth + 1 if self.max_depth >= 0 else 1):
+        pending_sites = await self.db.get_sites_by_status("discovered", limit=None)
+        sites_to_process = list(
+            dict.fromkeys([*seed_sites, *(site["url"] for site in pending_sites)])
+        )
+        all_discovered: List[SiteInfo] = []
+        depth = 0
+
+        while sites_to_process and (self.max_depth < 0 or depth <= self.max_depth):
             self.current_depth = depth
             logger.info(f"开始第 {depth} 层发现...")
-
-            if depth == 0:
-                # 第一层：处理种子网站
-                sites_to_process = seed_sites
-                logger.info(f"第0层处理种子网站: {sites_to_process}")
-            else:
-                # 后续层：从数据库获取待处理的网站
-                sites_data = await self.db.get_sites_by_status("discovered", self.concurrent_sites)
-                sites_to_process = [site["url"] for site in sites_data]
-                logger.info(f"第{depth}层从数据库获取网站: {sites_to_process}")
-
-            if not sites_to_process:
-                logger.info(f"第 {depth} 层没有待处理网站，停止发现")
-                break
+            logger.info(f"第{depth}层处理网站: {sites_to_process}")
 
             # 批量处理网站
             logger.info(f"开始批量处理 {len(sites_to_process)} 个网站...")
@@ -153,10 +148,11 @@ class SiteDiscoverer:
                 logger.info(f"达到最大深度 {self.max_depth}，停止发现")
                 break
 
-            # 如果max_depth为-1（无限制），但这是第一层且没有新发现，也停止
-            if self.max_depth == -1 and depth == 0 and len(batch_results) == 0:
-                logger.info("第一层没有发现任何网站，停止后续发现")
-                break
+            depth += 1
+            sites_data = await self.db.get_sites_by_status("discovered", limit=None)
+            sites_to_process = [
+                site["url"] for site in sites_data if site["url"] not in self.processed_sites
+            ]
 
         logger.info(f"发现完成，总计发现 {len(all_discovered)} 个网站")
         return all_discovered
@@ -188,6 +184,7 @@ class SiteDiscoverer:
     ) -> Optional[SiteInfo]:
         """处理单个网站"""
         async with semaphore:
+            site_id = None
             try:
                 # 检查是否已处理
                 if url in self.processed_sites:
@@ -196,21 +193,32 @@ class SiteDiscoverer:
 
                 self.processed_sites.add(url)
                 logger.info(f"🔍 开始处理网站: {url}")
+                site_id = await self.db.add_discovered_site(
+                    url=url,
+                    domain=urlparse(url).netloc,
+                    metadata={"depth": self.current_depth},
+                )
 
                 # 获取网页内容
                 async with await self.session_manager.get(url) as response:
                     logger.info(f"  响应状态: {response.status}")
                     if response.status != 200:
                         logger.warning(f"网站响应错误 {response.status}: {url}")
+                        await self.db.update_site_stats(site_id=site_id, status="failed")
                         return None
 
                     content = await response.text()
                     content_type = response.headers.get("content-type", "")
                     logger.info(f"  内容类型: {content_type}, 长度: {len(content)}")
 
-                    if "text/html" not in content_type:
+                    media_type = content_type.partition(";")[0].strip().lower()
+                    if media_type not in {"text/html", "application/xhtml+xml"}:
                         logger.warning(f"非HTML内容，跳过: {url}")
+                        await self.db.update_site_stats(site_id=site_id, status="failed")
                         return None
+
+                # 所有HTML页面都参与链接发现，不要求当前页面本身是图片站。
+                await self._discover_links(url, content)
 
                 # 解析网站信息
                 logger.info("  开始分析网站内容...")
@@ -225,16 +233,19 @@ class SiteDiscoverer:
                     # 保存到数据库
                     await self._save_site_info(site_info)
                     self.stats["sites_discovered"] += 1
-
-                    # 发现链接
-                    await self._discover_links(url, content)
                 else:
                     logger.info(f"  ❌ 不符合图片网站条件: {url}")
+                    await self.db.update_site_stats(site_id=site_id, status="processed")
 
                 self.stats["sites_processed"] += 1
                 return site_info
 
             except Exception as e:
+                if site_id is not None:
+                    try:
+                        await self.db.update_site_stats(site_id=site_id, status="failed")
+                    except Exception as status_error:
+                        logger.error(f"更新网站失败状态时出错 {url}: {status_error}")
                 logger.error(f"处理网站失败 {url}: {e}")
                 import traceback
 
@@ -586,25 +597,20 @@ class SiteDiscoverer:
 
     async def _save_site_info(self, site_info: SiteInfo):
         """保存网站信息到数据库"""
-        try:
-            site_id = await self.db.add_discovered_site(
-                url=site_info.url,
-                domain=site_info.domain,
-                title=site_info.title,
-                description=site_info.description,
-                metadata=site_info.metadata,
-            )
+        site_id = await self.db.add_discovered_site(
+            url=site_info.url,
+            domain=site_info.domain,
+            title=site_info.title,
+            description=site_info.description,
+            metadata=site_info.metadata,
+        )
 
-            if site_id:
-                await self.db.update_site_stats(
-                    site_id=site_id,
-                    image_count=site_info.image_count,
-                    score=site_info.score,
-                    status="processed",
-                )
-
-        except Exception as e:
-            logger.error(f"保存网站信息失败: {e}")
+        await self.db.update_site_stats(
+            site_id=site_id,
+            image_count=site_info.image_count,
+            score=site_info.score,
+            status="processed",
+        )
 
     def get_stats(self) -> Dict[str, Any]:
         """获取发现统计"""

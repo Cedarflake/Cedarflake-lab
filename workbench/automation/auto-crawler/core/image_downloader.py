@@ -407,6 +407,7 @@ class ImageDownloader:
 
                 if saved_path:
                     # 更新任务信息
+                    task.local_path = saved_path
                     task.status = "completed"
                     task.file_size = len(file_content)
                     task.md5_hash = file_hash
@@ -476,16 +477,9 @@ class ImageDownloader:
                             logger.debug(f"非图片内容类型 {content_type}: {url}")
                             return None
 
-                        # 检查文件大小
-                        content_length = response.headers.get("content-length")
-                        if content_length:
-                            size_mb = int(content_length) / (1024 * 1024)
-                            if size_mb > self.max_file_size_mb:
-                                logger.debug(f"文件过大 {size_mb:.1f}MB: {url}")
-                                return None
-
-                        # 读取内容
-                        content = await response.read()
+                        content = await self._read_limited_content(response, url)
+                        if content is None:
+                            return None
 
                         # 检查最小大小
                         if len(content) < self.min_image_size:
@@ -539,6 +533,35 @@ class ImageDownloader:
                     return None
 
         return None
+
+    async def _read_limited_content(self, response: Any, url: str) -> Optional[bytes]:
+        """流式读取响应，并对响应头与实际内容都执行大小限制。"""
+        max_bytes = int(float(self.max_file_size_mb) * 1024 * 1024)
+        content_length = response.headers.get("content-length")
+
+        if content_length:
+            try:
+                declared_size = int(content_length)
+            except (TypeError, ValueError):
+                logger.debug(f"忽略无效的Content-Length {content_length!r}: {url}")
+            else:
+                if declared_size > max_bytes:
+                    size_mb = declared_size / (1024 * 1024)
+                    logger.debug(f"文件过大 {size_mb:.1f}MB: {url}")
+                    return None
+
+        content = bytearray()
+        async for chunk in response.content.iter_chunked(64 * 1024):
+            if not chunk:
+                continue
+
+            if len(content) + len(chunk) > max_bytes:
+                logger.debug(f"文件流超过大小限制 {self.max_file_size_mb}MB: {url}")
+                return None
+
+            content.extend(chunk)
+
+        return bytes(content)
 
     def _get_anti_crawling_headers(self, url: str, attempt: int) -> Dict[str, str]:
         """获取反爬虫请求头 - 多重策略"""
@@ -633,21 +656,30 @@ class ImageDownloader:
         """保存图片文件"""
         try:
             # 确保目录存在
-            Path(file_path).parent.mkdir(parents=True, exist_ok=True)
+            original_path = Path(file_path)
+            original_path.parent.mkdir(parents=True, exist_ok=True)
 
-            # 如果文件已存在，添加数字后缀
-            original_path = file_path
-            counter = 1
-            while os.path.exists(file_path):
-                name, ext = os.path.splitext(original_path)
-                file_path = f"{name}_{counter:03d}{ext}"
-                counter += 1
+            counter = 0
+            while True:
+                if counter == 0:
+                    candidate_path = original_path
+                else:
+                    candidate_path = original_path.with_name(
+                        f"{original_path.stem}_{counter:03d}{original_path.suffix}"
+                    )
 
-            # 异步写入文件
-            async with aiofiles.open(file_path, "wb") as f:
-                await f.write(content)
-
-            return file_path
+                file_created = False
+                try:
+                    async with aiofiles.open(candidate_path, "xb") as file:
+                        file_created = True
+                        await file.write(content)
+                    return str(candidate_path)
+                except FileExistsError:
+                    counter += 1
+                except Exception:
+                    if file_created:
+                        candidate_path.unlink(missing_ok=True)
+                    raise
 
         except Exception as e:
             logger.error(f"保存文件失败 {file_path}: {e}")
@@ -714,7 +746,7 @@ class ImageDownloader:
         if not content_type:
             return ".jpg"  # 默认扩展名
 
-        content_type = content_type.lower()
+        content_type = content_type.partition(";")[0].strip().lower()
 
         # 映射Content-Type到扩展名
         type_mapping = {

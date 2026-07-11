@@ -7,6 +7,7 @@ import os
 import sys
 
 import pytest
+import pytest_asyncio
 
 # 添加项目根目录到路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -19,7 +20,7 @@ from core.session_manager import SessionManager
 class TestEnhancedSessionManager:
     """测试增强版会话管理器"""
 
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def session_manager(self):
         """创建会话管理器实例"""
         manager = SessionManager()
@@ -51,6 +52,7 @@ class TestEnhancedSessionManager:
         assert len(user_agents) >= 1  # 至少有一种
 
     @pytest.mark.asyncio
+    @pytest.mark.integration
     async def test_bilibili_access(self, session_manager):
         """测试访问bilibili.com"""
         url = "https://bilibili.com"
@@ -85,6 +87,7 @@ class TestEnhancedSessionManager:
             assert True
 
     @pytest.mark.asyncio
+    @pytest.mark.integration
     async def test_rate_limiting(self, session_manager):
         """测试速率限制"""
         url = "https://httpbin.org/delay/1"  # 使用测试API
@@ -111,6 +114,7 @@ class TestEnhancedSessionManager:
             pytest.skip("测试API不可用")
 
     @pytest.mark.asyncio
+    @pytest.mark.integration
     async def test_retry_mechanism(self, session_manager):
         """测试重试机制"""
         # 测试一个不存在的URL

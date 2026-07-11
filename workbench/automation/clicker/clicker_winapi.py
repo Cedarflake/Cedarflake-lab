@@ -1,139 +1,68 @@
 import logging
-import sys
-import threading
-import time
 
 import keyboard
 import psutil
-import pyautogui
 import win32api
 import win32con
-
-# 配置日志
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-
-# 启用安全保护
-pyautogui.FAILSAFE = True
+from clicker_core import ClickerRuntime, ClickSafetyError
 
 
-class Clicker:
+def read_resource_usage() -> tuple[float, float]:
+    return psutil.cpu_percent(), psutil.virtual_memory().percent
+
+
+class Clicker(ClickerRuntime):
     def __init__(
         self,
-        min_interval=0.00000000000000000000000000000001,
-        max_interval=1.0,
-        default_interval=0.01,
-    ):
-        self.clicking_event = threading.Event()
-        self.interval_lock = threading.Lock()
-        self.min_interval = min_interval
-        self.max_interval = max_interval
-        self.active_interval = default_interval
-        self.inactive_interval = 0.5  # 非活动检测间隔
+        min_interval: float = 0.01,
+        max_interval: float = 1.0,
+        default_interval: float = 0.05,
+        inactive_interval: float = 0.5,
+        monitor_interval: float = 5.0,
+        press_duration: float = 0.02,
+    ) -> None:
+        super().__init__(
+            keyboard,
+            read_resource_usage,
+            min_interval=min_interval,
+            max_interval=max_interval,
+            default_interval=default_interval,
+            inactive_interval=inactive_interval,
+            monitor_interval=monitor_interval,
+        )
+        self.press_duration = self._validate_positive_interval(
+            "press_duration",
+            press_duration,
+        )
 
-    def toggle_clicking(self):
-        """开启/暂停点击"""
-        if self.clicking_event.is_set():
-            self.clicking_event.clear()
-            logging.info("🛑 点击已暂停")
-        else:
-            self.clicking_event.set()
-            logging.info("▶️ 点击进行中")
+    def perform_click(self) -> None:
+        x, y = win32api.GetCursorPos()
+        if x <= 0 and y <= 0:
+            raise ClickSafetyError("鼠标已移至屏幕左上角")
 
-    def adjust_interval(self, delta):
-        """调整点击间隔"""
-        with self.interval_lock:
-            new_val = self.active_interval + delta
-            self.active_interval = max(self.min_interval, min(new_val, self.max_interval))
-
-            status = ""
-            if self.active_interval == self.min_interval:
-                status = " (极限速度)"
-            elif self.active_interval == self.max_interval:
-                status = " (最低速度)"
-            logging.info(f"⏱️ 当前间隔：{self.active_interval:.3f}秒{status}")
-
-    def increase_speed(self):
-        """加快点击速度"""
-        self.adjust_interval(-0.005)
-
-    def decrease_speed(self):
-        """减慢点击速度"""
-        self.adjust_interval(0.005)
-
-    def click_engine(self):
-        """点击主循环"""
-        while True:
-            if self.clicking_event.is_set():
+        try:
+            win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0)
+            self.wait_for_interrupt(self.press_duration)
+        finally:
+            try:
+                win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0)
+            except Exception:
+                self.request_stop()
+                logging.critical("无法释放鼠标左键，点击器已强制停止")
                 try:
-                    # 获取当前鼠标位置
-                    x, y = win32api.GetCursorPos()  # 获取当前鼠标坐标
+                    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0)
+                except Exception:
+                    logging.exception("鼠标左键释放重试失败")
+                raise
 
-                    # 模拟鼠标点击
-                    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0)  # 模拟按下
-                    time.sleep(0.1)  # 按下和抬起之间的小延迟
-                    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0)  # 模拟抬起
 
-                    time.sleep(self.active_interval)
-                except Exception as e:
-                    logging.error(f"⚠️ 点击异常：{e}")
-                    self.clicking_event.clear()
-            else:
-                time.sleep(self.inactive_interval)
-
-    def resource_monitor(self):
-        """系统资源监控"""
-        while True:
-            if self.clicking_event.is_set():
-                cpu = psutil.cpu_percent()
-                mem = psutil.virtual_memory().percent
-                logging.info(f"📊 系统负载 | CPU: {cpu:.1f}% | 内存: {mem:.1f}%")
-            time.sleep(5)
-
-    def graceful_exit(self):
-        """退出程序"""
-        logging.info("\n🛑 正在停止所有线程...")
-        self.clicking_event.clear()
-        time.sleep(0.2)  # 等待当前点击完成
-        logging.info("✅ 资源已释放")
-        sys.exit(0)
-
-    def exit_handler(self):
-        """监听 ESC 退出"""
-        logging.info("⏎ 按 ESC 退出")
-        keyboard.wait("esc")
-        self.graceful_exit()
-
-    def start(self):
-        """启动所有线程"""
-        logging.info("🔥 Egg, Inc. 专业版点击器")
-        logging.info("==========================")
-        logging.info("功能说明：")
-        logging.info("- Ctrl+Shift+S : 启动/停止点击")
-        logging.info("- Ctrl+↑       : 每次加速0.005秒")
-        logging.info("- Ctrl+↓       : 每次减速0.005秒")
-        logging.info("- ESC          : 安全退出程序")
-        logging.info("==========================")
-
-        # 绑定热键
-        keyboard.add_hotkey("ctrl+shift+s", self.toggle_clicking)
-        keyboard.add_hotkey("ctrl+up", self.increase_speed)
-        keyboard.add_hotkey("ctrl+down", self.decrease_speed)
-
-        # 启动点击线程
-        click_thread = threading.Thread(target=self.click_engine, daemon=True)
-        click_thread.start()
-
-        # 启动资源监控线程
-        monitor_thread = threading.Thread(target=self.resource_monitor, daemon=True)
-        monitor_thread.start()
-
-        # 启动退出监听线程
-        exit_thread = threading.Thread(target=self.exit_handler, daemon=True)
-        exit_thread.start()
-
-        exit_thread.join()  # 阻塞主线程
+def main() -> None:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+    )
+    Clicker().start()
 
 
 if __name__ == "__main__":
-    clicker = Clicker()
-    clicker.start()
+    main()

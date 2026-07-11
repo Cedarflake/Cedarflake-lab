@@ -105,7 +105,7 @@ class ConfigManager:
             "network": {
                 "user_agents": ["Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"],
                 "proxy_list": [],
-                "ssl_verify": False,
+                "ssl_verify": True,
                 "rate_limit": 2.0,
                 "max_retries": 3,
             },

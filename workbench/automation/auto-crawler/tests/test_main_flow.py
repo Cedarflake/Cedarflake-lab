@@ -6,11 +6,15 @@ import asyncio
 import os
 import sys
 
+import pytest
+
 # 添加项目根目录到路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config.manager import get_config
 from core.site_discoverer import SiteDiscoverer
+
+pytestmark = [pytest.mark.asyncio, pytest.mark.integration]
 
 
 async def test_main_flow():

@@ -54,6 +54,7 @@ class TestConfigManager:
         # 应该加载默认配置
         assert manager.get("app.name") == "AutoCrawler"
         assert manager.get("discovery.max_depth") == 5
+        assert manager.get("network.ssl_verify") is True
 
     def test_get_nested_config(self):
         """测试嵌套配置获取"""

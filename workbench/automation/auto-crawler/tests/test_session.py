@@ -4,6 +4,7 @@ HTTP会话管理器单元测试
 
 import os
 import sys
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -45,6 +46,58 @@ class TestSessionManager:
 
         # 上下文退出后应该自动关闭
         assert session_manager._session.closed
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("ssl_verify", [True, False])
+    async def test_ssl_verification_matches_configuration(self, session_manager, ssl_verify):
+        session_manager._ssl_verify = ssl_verify
+        fake_session = MagicMock()
+        fake_session.closed = False
+
+        with (
+            patch("core.session_manager.aiohttp.TCPConnector") as connector_class,
+            patch(
+                "core.session_manager.aiohttp.ClientSession",
+                return_value=fake_session,
+            ),
+        ):
+            await session_manager.start()
+
+        assert connector_class.call_args.kwargs["ssl"] is ssl_verify
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        ("version_info", "expects_cleanup_closed"),
+        [
+            ((3, 11, 9), True),
+            ((3, 12, 6), True),
+            ((3, 12, 7), False),
+            ((3, 13, 0), True),
+            ((3, 13, 1), False),
+            ((3, 14, 0), False),
+        ],
+    )
+    async def test_cleanup_closed_only_enabled_when_python_needs_it(
+        self,
+        session_manager,
+        version_info,
+        expects_cleanup_closed,
+    ):
+        fake_session = MagicMock()
+        fake_session.closed = False
+
+        with (
+            patch("core.session_manager.sys.version_info", version_info),
+            patch("core.session_manager.aiohttp.TCPConnector") as connector_class,
+            patch(
+                "core.session_manager.aiohttp.ClientSession",
+                return_value=fake_session,
+            ),
+        ):
+            await session_manager.start()
+
+        connector_options = connector_class.call_args.kwargs
+        assert ("enable_cleanup_closed" in connector_options) is expects_cleanup_closed
 
     def test_user_agent_selection(self, session_manager):
         """测试用户代理选择"""
@@ -97,6 +150,22 @@ class TestSessionManager:
 
         # 验证等待时间
         assert second_call_time >= first_call_time + 0.1
+
+    @pytest.mark.asyncio
+    async def test_rate_limiting_uses_high_volume_backoff(self, session_manager):
+        domain = "example.com"
+        session_manager._rate_limit = 1.0
+        session_manager._request_counts[domain] = 51
+        session_manager._last_request_time[domain] = 99.5
+
+        with (
+            patch("core.session_manager.time.time", return_value=100.0),
+            patch("core.session_manager.random.uniform", return_value=1.0),
+            patch("core.session_manager.asyncio.sleep", new_callable=AsyncMock) as sleep,
+        ):
+            await session_manager._wait_for_rate_limit(domain)
+
+        sleep.assert_awaited_once_with(1.5)
 
     def test_stats_collection(self, session_manager):
         """测试统计信息收集"""

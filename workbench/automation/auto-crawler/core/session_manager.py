@@ -54,7 +54,7 @@ class SessionManager:
             ],
         )
         self._proxies = get_config("network.proxy_list", [])
-        self._ssl_verify = get_config("network.ssl_verify", False)
+        self._ssl_verify = get_config("network.ssl_verify", True)
         self._timeout = get_config("download.timeout", 30)
         self._max_retries = get_config("network.max_retries", 3)
         self._rate_limit = get_config("network.rate_limit", 2.0)
@@ -137,16 +137,21 @@ class SessionManager:
         if self._session and not self._session.closed:
             return
 
+        needs_cleanup_closed = sys.version_info < (3, 12, 7) or (
+            (3, 13) <= sys.version_info < (3, 13, 1)
+        )
+        cleanup_closed_options = {"enable_cleanup_closed": True} if needs_cleanup_closed else {}
+
         # 配置连接器
         connector = aiohttp.TCPConnector(
             limit=100,  # 总连接池大小
             limit_per_host=20,  # 每个主机的连接数限制
             ttl_dns_cache=300,  # DNS缓存时间
             use_dns_cache=True,
-            ssl=not self._ssl_verify,
-            enable_cleanup_closed=True,
+            ssl=self._ssl_verify,
             force_close=False,  # 不强制关闭连接以支持keepalive
             keepalive_timeout=30,  # keepalive超时
+            **cleanup_closed_options,
         )
 
         # 配置超时
@@ -191,14 +196,14 @@ class SessionManager:
 
             # 根据请求次数动态调整等待时间
             request_count = self._request_counts.get(domain, 0)
-            if request_count > 10:
-                base_wait *= 1.5
-            elif request_count > 50:
+            if request_count > 50:
                 base_wait *= 2.0
+            elif request_count > 10:
+                base_wait *= 1.5
 
             if elapsed < base_wait:
-                # 添加随机抖动 (±20%)
-                jitter = random.uniform(0.8, 1.2)
+                # 仅增加随机抖动，避免突破配置的最小请求间隔
+                jitter = random.uniform(1.0, 1.2)
                 wait_time = (base_wait - elapsed) * jitter
                 logger.debug(f"智能延迟: {wait_time:.2f}秒 - {domain} (请求数: {request_count})")
                 await asyncio.sleep(wait_time)
@@ -208,7 +213,7 @@ class SessionManager:
     def _get_domain(self, url: str) -> str:
         """从URL提取域名"""
         try:
-            return urlparse(url).netloc
+            return urlparse(url).netloc or url
         except Exception:
             return url
 

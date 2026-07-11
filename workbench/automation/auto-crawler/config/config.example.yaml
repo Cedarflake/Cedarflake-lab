@@ -29,7 +29,7 @@ network:
   user_agents:
     - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
   proxy_list: []
-  ssl_verify: false
+  ssl_verify: true
   rate_limit: 2.0
   max_retries: 3
 
