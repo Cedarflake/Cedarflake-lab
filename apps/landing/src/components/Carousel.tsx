@@ -207,7 +207,7 @@ export function Carousel<Project extends CarouselItem>({
       aria-roledescription="carousel"
     >
       <p className="sr-only" id={instructionsId}>
-        Focus the project slides, then use the left and right arrow keys to move between them.
+        Focus this carousel, then use the left and right arrow keys to move between projects.
       </p>
 
       {shouldShowControls ? (

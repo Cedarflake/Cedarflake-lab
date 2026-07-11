@@ -36,7 +36,7 @@ export const siteConfig = {
   sections: {
     featured: {
       id: "projects",
-      carouselHint: "Drag, scroll, or use arrow keys",
+      carouselHint: "Swipe, scroll, or use arrow keys",
       heading: {
         index: "01",
         eyebrow: "Latest projects",
