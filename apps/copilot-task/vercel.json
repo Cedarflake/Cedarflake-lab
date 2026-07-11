@@ -1,0 +1,4 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "cd ../.. && corepack pnpm@11.7.0 install --frozen-lockfile --filter \"tasks-waitlist-preview...\""
+}
