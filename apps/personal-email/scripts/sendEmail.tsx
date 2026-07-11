@@ -2,10 +2,10 @@ import 'dotenv/config';
 import { render } from '@react-email/render';
 import nodemailer from 'nodemailer';
 import TemplateRenderer from '../src/emails/TemplateRenderer.js';
-import { interpolateTemplate } from '../src/config/emailContent.js';
+import { interpolateTemplate, requireTemplateName } from '../src/config/emailContent.js';
 
 async function main() {
-  const templateName = process.argv[2] || process.env['EMAIL_TEMPLATE'] || 'welcome';
+  const templateName = requireTemplateName(process.argv[2] || process.env['EMAIL_TEMPLATE'] || 'welcome');
   const name = process.argv[3] || process.env['TO_NAME'] || '朋友';
 
   // interpolate subject/preview using centralized content (by template name)

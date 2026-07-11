@@ -1,13 +1,14 @@
 import { render } from '@react-email/render';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { requireTemplateName } from '../src/config/emailContent.js';
 
 async function main() {
 	try {
 		const TemplateModule = await import('../src/emails/TemplateRenderer.js');
 		const TemplateRenderer = TemplateModule.default;
 
-		const template = process.argv[2] || process.env['EMAIL_TEMPLATE'] || 'welcome';
+		const template = requireTemplateName(process.argv[2] || process.env['EMAIL_TEMPLATE'] || 'welcome');
 		const name = process.argv[3] || process.env['TO_NAME'] || '张三';
 
 		const html = await render(<TemplateRenderer templateName={template} data={{ name }} />);

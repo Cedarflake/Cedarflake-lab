@@ -2,15 +2,17 @@ import prompts from 'prompts';
 import { render } from '@react-email/render';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { requireTemplateName } from '../src/config/emailContent.js';
 
 async function renderTemplate(templateName: string, name: string) {
+  const safeTemplateName = requireTemplateName(templateName);
   const TemplateModule = await import('../src/emails/TemplateRenderer.js');
   const TemplateRenderer = TemplateModule.default;
-  const html = await render(<TemplateRenderer templateName={templateName} data={{ name }} />);
+  const html = await render(<TemplateRenderer templateName={safeTemplateName} data={{ name }} />);
 
   const outputDir = path.join(process.cwd(), 'dist', 'output');
   await fs.mkdir(outputDir, { recursive: true });
-  const outPath = path.join(outputDir, `${templateName}.html`);
+  const outPath = path.join(outputDir, `${safeTemplateName}.html`);
   await fs.writeFile(outPath, html, 'utf8');
   console.log(`Saved: ${outPath}`);
 }

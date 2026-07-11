@@ -21,6 +21,14 @@ export function listTemplates(): string[] {
   return [...listCompanyTemplates(), ...listPersonalTemplates()];
 }
 
+export function requireTemplateName(name: string): string {
+  if (!/^[a-z0-9][a-z0-9_-]*$/i.test(name) || !listTemplates().includes(name)) {
+    throw new Error(`Unknown template: ${name}`);
+  }
+
+  return name;
+}
+
 export function addTemplate(name: string, data: TemplateData, category: 'company' | 'personal' = 'company'): void {
   if (category === 'company') addCompanyTemplate(name, data);
   else addPersonalTemplate(name, data);
