@@ -26,8 +26,12 @@ export const siteConfig = {
   ],
   hero: {
     eyebrow: "A personal monorepo · shared tooling, distinct boundaries",
-    brandImage: "/Lab.png",
-    brandAlt: "Cedarflake Lab",
+    brand: {
+      src: "/Lab.png",
+      alt: "Cedarflake Lab",
+      width: 3500,
+      height: 600,
+    },
     statement: "Small tools, strange interfaces, and experiments in motion.",
     description:
       "Apps, reusable components, local utilities, and prototypes live here together—sharing an engineering layer without losing their own shape.",

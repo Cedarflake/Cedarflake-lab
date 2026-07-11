@@ -211,20 +211,38 @@ if (!isDirectory(coverDirectory)) {
   }
 }
 
-const brandPath = siteConfig.hero.brandImage.startsWith("/")
-  ? resolveWithin(publicRoot, siteConfig.hero.brandImage.slice(1), "Hero brand image")
+const heroBrand = siteConfig.hero.brand
+const brandPath = heroBrand.src.startsWith("/")
+  ? resolveWithin(publicRoot, heroBrand.src.slice(1), "Hero brand image")
   : null
 
 if (!brandPath) {
-  errors.push(`Hero brand image must use a public-root path: ${siteConfig.hero.brandImage}`)
+  errors.push(`Hero brand image must use a public-root path: ${heroBrand.src}`)
 } else if (!isFile(brandPath)) {
-  errors.push(`Hero brand image is missing: ${siteConfig.hero.brandImage}`)
+  errors.push(`Hero brand image is missing: ${heroBrand.src}`)
+} else {
+  const dimensions = readPngDimensions(brandPath)
+
+  if (!dimensions) {
+    errors.push(`Hero brand image is not a valid PNG: ${heroBrand.src}`)
+  } else if (
+    !Number.isInteger(heroBrand.width) ||
+    !Number.isInteger(heroBrand.height) ||
+    heroBrand.width <= 0 ||
+    heroBrand.height <= 0 ||
+    dimensions.width !== heroBrand.width ||
+    dimensions.height !== heroBrand.height
+  ) {
+    errors.push(
+      `Hero brand image dimensions are ${dimensions.width}x${dimensions.height}, expected ${heroBrand.width}x${heroBrand.height}`,
+    )
+  }
 }
 
 const deploymentCopies: readonly DeploymentCopy[] = [
   {
     canonicalPath: resolve(repoRoot, "assets/Lab.png"),
-    deployedPath: resolve(publicRoot, "Lab.png"),
+    deployedPath: brandPath ?? resolve(publicRoot, "Lab.png"),
     label: "Hero artwork",
   },
   {

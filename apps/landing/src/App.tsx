@@ -14,6 +14,8 @@ import {
 } from "./lib/projectCatalog"
 
 export function App() {
+  const heroBrand = siteConfig.hero.brand
+
   return (
     <div className="site-shell">
       <a className="skip-link" href="#main-content">
@@ -44,10 +46,13 @@ export function App() {
           <div className="hero__wash hero__wash--two" aria-hidden="true" />
           <p className="hero__eyebrow">{siteConfig.hero.eyebrow}</p>
           <h1 className="hero__title" id="hero-title">
-            <span className="hero__brand-text sr-only">{siteConfig.hero.brandAlt}</span>
+            <span className="hero__brand-text sr-only">{heroBrand.alt}</span>
             <span
               className="hero__brand-visual"
-              style={{ backgroundImage: `url("${siteConfig.hero.brandImage}")` }}
+              style={{
+                aspectRatio: `${heroBrand.width} / ${heroBrand.height}`,
+                backgroundImage: `url("${heroBrand.src}")`,
+              }}
               aria-hidden="true"
             />
           </h1>

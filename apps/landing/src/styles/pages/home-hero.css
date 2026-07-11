@@ -79,7 +79,6 @@
 .hero__brand-visual {
   display: block;
   width: 100%;
-  aspect-ratio: 3500 / 600;
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;

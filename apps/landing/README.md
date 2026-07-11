@@ -74,7 +74,7 @@ Add the category once in [`src/config/workbench.ts`](./src/config/workbench.ts),
 
 ## Change site copy
 
-Edit [`src/config/site.ts`](./src/config/site.ts) for the locale, time zone, navigation, headings, hero copy, repository commands, and footer text. Project content should remain in the project manifest. The document language, project-date formatter, and deterministic title sorting all consume the shared locale configuration. Source links require a canonical `https://github.com/<owner>/<repository>` URL and a portable Git branch name because the catalog derives GitHub tree URLs from them.
+Edit [`src/config/site.ts`](./src/config/site.ts) for the locale, time zone, navigation, headings, hero copy and artwork metadata, repository commands, and footer text. Project content should remain in the project manifest. The document language, project-date formatter, and deterministic title sorting all consume the shared locale configuration. Declared hero artwork dimensions are validated against the deployed PNG and drive its layout ratio. Source links require a canonical `https://github.com/<owner>/<repository>` URL and a portable Git branch name because the catalog derives GitHub tree URLs from them.
 
 ## Development
 

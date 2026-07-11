@@ -40,7 +40,7 @@ const heroPreload = linkTags.find(
   (tag) =>
     (getAttribute(tag, "rel") ?? "").toLowerCase().split(/\s+/).includes("preload") &&
     getAttribute(tag, "as")?.toLowerCase() === "image" &&
-    getAttribute(tag, "href") === siteConfig.hero.brandImage,
+    getAttribute(tag, "href") === siteConfig.hero.brand.src,
 )
 const entryScript = scriptTags.find((tag) => getAttribute(tag, "src") === "/src/main.tsx")
 
@@ -81,7 +81,7 @@ if (
   getAttribute(heroPreload, "type") !== "image/png" ||
   getAttribute(heroPreload, "fetchpriority") !== "high"
 ) {
-  errors.push(`Document must preload the hero artwork: ${siteConfig.hero.brandImage}`)
+  errors.push(`Document must preload the hero artwork: ${siteConfig.hero.brand.src}`)
 }
 
 if (rootTags.length !== 1) {
