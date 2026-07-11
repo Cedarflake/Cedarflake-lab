@@ -14,7 +14,7 @@
 @import "./styles/components/card-shared.css";
 @import "./styles/components/project-card.css";
 @import "./styles/components/catalog-card.css";
-@import "./styles/components/workbench.css";
+@import "./styles/components/workbench-group.css";
 
 @import "./styles/pages/home-hero.css";
 @import "./styles/pages/home-sections.css";
