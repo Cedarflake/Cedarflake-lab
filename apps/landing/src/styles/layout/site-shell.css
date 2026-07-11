@@ -72,7 +72,7 @@
 .site-header nav a:hover,
 .github-link:hover,
 .mini-brand:hover {
-  color: var(--color-coral-dark);
+  color: var(--color-coral-deep);
 }
 
 .github-link {

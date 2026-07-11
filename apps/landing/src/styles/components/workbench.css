@@ -51,7 +51,7 @@
 }
 
 .workbench-group__header span {
-  color: var(--color-coral-dark);
+  color: var(--color-coral-deep);
   font-family: var(--font-label);
   font-size: 10px;
   font-weight: 750;
@@ -97,7 +97,7 @@
 }
 
 .workbench-list a:hover strong {
-  color: var(--color-coral-dark);
+  color: var(--color-coral-deep);
 }
 
 .workbench-list a:hover svg {

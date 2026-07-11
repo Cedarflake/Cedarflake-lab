@@ -66,8 +66,8 @@
 }
 
 .carousel__controls button:hover:not([aria-disabled="true"]) {
-  border-color: var(--color-coral-dark);
-  color: var(--color-coral-dark);
+  border-color: var(--color-coral-deep);
+  color: var(--color-coral-deep);
 }
 
 .carousel__controls button[aria-disabled="true"] {
