@@ -18,7 +18,6 @@ export function CatalogCarousel({ hint, labelledBy, projects }: CatalogCarouselP
       items={projects}
       labelledBy={labelledBy}
       renderItem={(project) => <CatalogCard project={project} />}
-      showControls={!isSparse}
     />
   )
 }

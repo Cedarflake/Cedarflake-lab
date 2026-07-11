@@ -118,3 +118,13 @@
     min-height: 310px;
   }
 }
+
+@media (min-width: 761px) {
+  .catalog-carousel--sparse {
+    --carousel-slide-width: calc((100% - 18px) / 2);
+  }
+
+  .catalog-carousel--sparse .carousel__toolbar {
+    display: none;
+  }
+}
