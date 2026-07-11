@@ -1,4 +1,5 @@
 import "./validateCatalog"
 import "./validateSiteConfig"
+import "./validateCollections"
 import "./validateDocument"
 import "./validateMarkup"
