@@ -9,6 +9,7 @@ const projectKindCoverage = {
   other: true,
 } satisfies Record<ProjectKind, true>
 const expectedProjectKinds = Object.keys(projectKindCoverage) as ProjectKind[]
+const invalidBranchCharacters = new Set(["~", "^", ":", "?", "*", "[", "\\"])
 
 function validateText(value: unknown, path: string) {
   if (typeof value === "string") {
@@ -54,33 +55,67 @@ function validateUnique(values: readonly string[], label: string) {
   }
 }
 
-function validateRepositoryConfig() {
+export function isCanonicalGitHubRepositoryUrl(value: string) {
   try {
-    const repositoryUrl = new URL(siteConfig.repositoryUrl)
+    const repositoryUrl = new URL(value)
+    const repositoryPathSegments = repositoryUrl.pathname.split("/").filter(Boolean)
+    const [owner, repository] = repositoryPathSegments
 
-    if (
-      repositoryUrl.protocol !== "https:" ||
+    return !(
+      repositoryUrl.origin !== "https://github.com" ||
       repositoryUrl.username ||
       repositoryUrl.password ||
-      repositoryUrl.pathname === "/" ||
+      repositoryPathSegments.length !== 2 ||
+      !owner ||
+      !repository ||
+      repositoryUrl.pathname !== `/${owner}/${repository}` ||
+      repository.toLowerCase().endsWith(".git") ||
       repositoryUrl.search ||
       repositoryUrl.hash ||
-      siteConfig.repositoryUrl.endsWith("/")
-    ) {
-      throw new Error("Invalid repository URL")
-    }
+      value.endsWith("/")
+    )
   } catch {
+    return false
+  }
+}
+
+export function isPortableGitBranch(repositoryBranch: string) {
+  const branchSegments = repositoryBranch.split("/")
+  const hasInvalidBranchCharacter = [...repositoryBranch].some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0
+
+    return (
+      /\s/u.test(character) ||
+      codePoint < 32 ||
+      codePoint === 127 ||
+      invalidBranchCharacters.has(character)
+    )
+  })
+
+  return !(
+    repositoryBranch === "@" ||
+    repositoryBranch.startsWith("-") ||
+    repositoryBranch.includes("..") ||
+    repositoryBranch.includes("@{") ||
+    repositoryBranch.endsWith(".") ||
+    hasInvalidBranchCharacter ||
+    branchSegments.some(
+      (segment) =>
+        !segment ||
+        segment.startsWith(".") ||
+        segment.endsWith(".lock") ||
+        segment === "." ||
+        segment === "..",
+    )
+  )
+}
+
+function validateRepositoryConfig() {
+  if (!isCanonicalGitHubRepositoryUrl(siteConfig.repositoryUrl)) {
     errors.push(`Invalid repository URL: ${siteConfig.repositoryUrl}`)
   }
 
-  const branchSegments = siteConfig.repositoryBranch.split("/")
-
-  if (
-    siteConfig.repositoryBranch.includes("\\") ||
-    branchSegments.some(
-      (segment) => !segment || segment !== segment.trim() || segment === "." || segment === "..",
-    )
-  ) {
+  if (!isPortableGitBranch(siteConfig.repositoryBranch)) {
     errors.push(`Invalid repository branch: ${siteConfig.repositoryBranch}`)
   }
 }
