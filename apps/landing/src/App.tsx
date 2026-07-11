@@ -151,13 +151,15 @@ export function App() {
             <p className="eyebrow">{siteConfig.openBench.eyebrow}</p>
             <h2 id={siteConfig.openBench.titleId}>{siteConfig.openBench.title}</h2>
           </div>
-          <div className="command-stack" aria-label="Common repository commands">
+          <ul className="command-stack" aria-label="Common repository commands">
             {siteConfig.openBench.commands.map((command) => (
-              <code key={command}>
-                <span>$</span> {command}
-              </code>
+              <li key={command}>
+                <code>
+                  <span>$</span> {command}
+                </code>
+              </li>
             ))}
-          </div>
+          </ul>
           <a href={siteConfig.repositoryUrl} rel="noreferrer" target="_blank">
             {siteConfig.openBench.actionLabel}
             <ArrowUpRight aria-hidden="true" />
