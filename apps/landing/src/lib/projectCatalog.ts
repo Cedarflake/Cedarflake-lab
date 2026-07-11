@@ -12,7 +12,45 @@ import type {
 
 const catalog: readonly ProjectEntry[] = projectCatalog
 const isoTimestampPattern =
-  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/
+  /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?(Z|([+-])(\d{2}):(\d{2}))$/
+
+function isValidIsoTimestamp(value: string) {
+  const match = isoTimestampPattern.exec(value)
+
+  if (!match) {
+    return false
+  }
+
+  const timestamp = Date.parse(value)
+
+  if (Number.isNaN(timestamp)) {
+    return false
+  }
+
+  const year = Number(match[1])
+  const month = Number(match[2])
+  const day = Number(match[3])
+  const hour = Number(match[4])
+  const minute = Number(match[5])
+  const second = Number(match[6])
+  const millisecond = Number((match[7] ?? "").padEnd(3, "0"))
+  const zone = match[8]
+  const offsetDirection = match[9] === "-" ? -1 : 1
+  const offsetHour = Number(match[10] ?? "0")
+  const offsetMinute = Number(match[11] ?? "0")
+  const offset = zone === "Z" ? 0 : offsetDirection * (offsetHour * 60 + offsetMinute)
+  const localDate = new Date(timestamp + offset * 60_000)
+
+  return (
+    localDate.getUTCFullYear() === year &&
+    localDate.getUTCMonth() + 1 === month &&
+    localDate.getUTCDate() === day &&
+    localDate.getUTCHours() === hour &&
+    localDate.getUTCMinutes() === minute &&
+    localDate.getUTCSeconds() === second &&
+    localDate.getUTCMilliseconds() === millisecond
+  )
+}
 
 export function validateProjectCatalog(projects: readonly ProjectEntry[]) {
   const ids = new Set<string>()
@@ -44,10 +82,7 @@ export function validateProjectCatalog(projects: readonly ProjectEntry[]) {
       throw new Error(`Missing catalog project status: ${project.id}`)
     }
 
-    if (
-      !isoTimestampPattern.test(project.updatedAt) ||
-      Number.isNaN(Date.parse(project.updatedAt))
-    ) {
+    if (!isValidIsoTimestamp(project.updatedAt)) {
       throw new Error(`Invalid project updatedAt: ${project.id}`)
     }
 
