@@ -225,7 +225,7 @@ export function Carousel<Project extends CarouselItem>({
   return (
     <div
       className={`carousel${className ? ` ${className}` : ""}`}
-      role="region"
+      role="group"
       aria-labelledby={labelledBy}
       aria-roledescription="carousel"
     >
