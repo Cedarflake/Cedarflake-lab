@@ -3,7 +3,7 @@ import type { WorkbenchCategory } from "../config/workbench"
 export type ProjectKind = "app" | "package" | "workbench" | "other"
 
 export interface ProjectCover {
-  src: `/${string}.png`
+  src: `/covers/${string}.png`
   alt: string
   width: number
   height: number

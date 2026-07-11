@@ -57,7 +57,7 @@ Every entry needs a unique `id`, repository-relative `path`, `title`, `summary`,
 
 Add a `showcase` object when the project should appear in the latest-project carousel. A showcase needs a label, tags, and a real cover image with alt text and intrinsic dimensions. Any primary presentation can opt in, and the carousel includes every opted-in project without a fixed card limit. It sorts them by `updatedAt` newest first, with the title as a deterministic tie-breaker.
 
-Put deployment-ready PNG covers in `public/covers/`. Prefer a representative project image or a 16:9 page snapshot; update the cover and `updatedAt` together when the visible project changes materially. Other formats require matching intrinsic-dimension validation before they can be added to the cover type.
+Put deployment-ready PNG covers in `public/covers/`. Prefer a representative project image or a 16:9 page snapshot; update the cover and `updatedAt` together when the visible project changes materially. Remove obsolete cover files when their project reference is removed because unreferenced assets fail validation. Other formats require matching intrinsic-dimension validation before they can be added to the cover type.
 
 No component or count changes are needed for a new project. TypeScript reports missing or incompatible fields for the selected presentation.
 

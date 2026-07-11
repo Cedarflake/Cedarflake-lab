@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto"
-import { existsSync, readFileSync, statSync } from "node:fs"
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs"
 import { extname, isAbsolute, relative, resolve, sep } from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -22,6 +22,7 @@ const errors: string[] = []
 const projects: readonly ProjectEntry[] = projectCatalog
 const workbenchCategoryKeys = new Set<string>()
 const workbenchCategoryIds = new Set<string>()
+const referencedCoverSources = new Set<string>()
 
 function resolveWithin(root: string, relativePath: string, label: string) {
   const targetPath = resolve(root, relativePath)
@@ -47,6 +48,18 @@ function fileHash(filePath: string) {
   return createHash("sha256").update(readFileSync(filePath)).digest("hex")
 }
 
+function listFiles(directoryPath: string): string[] {
+  return readdirSync(directoryPath, { withFileTypes: true }).flatMap((entry) => {
+    const entryPath = resolve(directoryPath, entry.name)
+
+    if (entry.isDirectory()) {
+      return listFiles(entryPath)
+    }
+
+    return entry.isFile() ? [entryPath] : []
+  })
+}
+
 function readPngDimensions(filePath: string) {
   const header = readFileSync(filePath).subarray(0, 24)
   const pngSignature = "89504e470d0a1a0a"
@@ -62,10 +75,12 @@ function readPngDimensions(filePath: string) {
 }
 
 function validateCover(projectId: string, cover: ProjectCover) {
-  if (!cover.src.startsWith("/")) {
-    errors.push(`Project ${projectId} cover must use a public-root path: ${cover.src}`)
+  if (!cover.src.startsWith("/covers/")) {
+    errors.push(`Project ${projectId} cover must use the public covers directory: ${cover.src}`)
     return
   }
+
+  referencedCoverSources.add(cover.src)
 
   const coverPath = resolveWithin(publicRoot, cover.src.slice(1), `Project ${projectId} cover`)
 
@@ -129,6 +144,20 @@ for (const project of projects) {
 
   if (project.presentation === "workbench" && !workbenchCategoryKeys.has(project.category)) {
     errors.push(`Project ${project.id} uses an unknown workbench category: ${project.category}`)
+  }
+}
+
+const coverDirectory = resolve(publicRoot, "covers")
+
+if (!isDirectory(coverDirectory)) {
+  errors.push(`Public cover directory is missing: ${coverDirectory}`)
+} else {
+  for (const coverPath of listFiles(coverDirectory)) {
+    const coverSource = `/${relative(publicRoot, coverPath).split(sep).join("/")}`
+
+    if (!referencedCoverSources.has(coverSource)) {
+      errors.push(`Unreferenced cover asset: ${coverSource}`)
+    }
   }
 }
 
