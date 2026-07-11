@@ -9,12 +9,20 @@
 
 .project-card__meta,
 .catalog-card__topline {
+  flex-wrap: wrap;
+  row-gap: 8px;
   color: #746a75;
   font-family: var(--font-label);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.project-card__meta time,
+.catalog-card__topline span:last-child {
+  margin-left: auto;
+  text-align: right;
 }
 
 .project-card__title-row,
