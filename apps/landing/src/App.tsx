@@ -38,7 +38,7 @@ export function App() {
         </a>
       </header>
 
-      <main id="main-content">
+      <main id="main-content" tabIndex={-1}>
         <section className="hero" id="top" aria-labelledby="hero-title">
           <div className="hero__wash hero__wash--one" aria-hidden="true" />
           <div className="hero__wash hero__wash--two" aria-hidden="true" />

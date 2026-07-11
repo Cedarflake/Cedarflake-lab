@@ -9,6 +9,10 @@
   border: 0;
 }
 
+#main-content:focus {
+  outline: none;
+}
+
 a:focus-visible,
 button:focus-visible {
   outline: 3px solid var(--color-ink);
