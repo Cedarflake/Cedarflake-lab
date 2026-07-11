@@ -38,7 +38,7 @@ export function validateProjectCatalog(projects: readonly ProjectEntry[]) {
       throw new Error(`Invalid project updatedAt: ${project.id}`)
     }
 
-    if (project.externalUrl) {
+    if (project.externalUrl !== undefined) {
       try {
         const externalUrl = new URL(project.externalUrl)
 
