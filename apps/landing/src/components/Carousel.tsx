@@ -40,6 +40,7 @@ export function Carousel<Project extends CarouselItem>({
   showControls = true,
 }: CarouselProps<Project>) {
   const instructionsId = useId()
+  const viewportId = useId()
   const viewportRef = useRef<HTMLDivElement>(null)
   const slideRefs = useRef<Array<HTMLDivElement | null>>([])
   const scrollEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -231,6 +232,7 @@ export function Carousel<Project extends CarouselItem>({
                 if (!isAtStart) scrollToProject(activeIndex - 1)
               }}
               aria-disabled={isAtStart}
+              aria-controls={viewportId}
               aria-label="Show previous project"
             >
               <ArrowLeft aria-hidden="true" />
@@ -241,6 +243,7 @@ export function Carousel<Project extends CarouselItem>({
                 if (!isAtEnd) scrollToProject(activeIndex + 1)
               }}
               aria-disabled={isAtEnd}
+              aria-controls={viewportId}
               aria-label="Show next project"
             >
               <ArrowRight aria-hidden="true" />
@@ -251,6 +254,7 @@ export function Carousel<Project extends CarouselItem>({
 
       <div
         className="carousel__viewport"
+        id={viewportId}
         ref={viewportRef}
         role="group"
         aria-label="Project slides"

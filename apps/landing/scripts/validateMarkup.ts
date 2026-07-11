@@ -14,6 +14,9 @@ const labelledByTargets = [...html.matchAll(/\saria-labelledby="([^"]+)"/g)].fla
 const describedByTargets = [...html.matchAll(/\saria-describedby="([^"]+)"/g)].flatMap((match) =>
   (match[1] ?? "").split(" "),
 )
+const controlledTargets = [...html.matchAll(/\saria-controls="([^"]+)"/g)].flatMap((match) =>
+  (match[1] ?? "").split(" "),
+)
 const imageTags = [...html.matchAll(/<img\b[^>]*>/g)].map((match) => match[0])
 const anchorMatches = [...html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)]
 const buttonMatches = [...html.matchAll(/<button\b([^>]*)>([\s\S]*?)<\/button>/g)]
@@ -53,6 +56,7 @@ function findMissingTargets(targets: readonly string[]) {
 const missingFragments = findMissingTargets(fragmentTargets)
 const missingLabels = findMissingTargets(labelledByTargets)
 const missingDescriptions = findMissingTargets(describedByTargets)
+const missingControls = findMissingTargets(controlledTargets)
 const imagesWithoutAlt = imageTags.filter((tag) => !/\salt="[^"]*"/.test(tag))
 const anchorsWithoutHref = anchorMatches.filter((match) => !/\shref="[^"]*"/.test(match[1] ?? ""))
 const linkHrefs = anchorMatches.flatMap((match) => {
@@ -101,6 +105,10 @@ if (missingLabels.length > 0) {
 
 if (missingDescriptions.length > 0) {
   errors.push(`Missing aria-describedby targets: ${missingDescriptions.join(", ")}`)
+}
+
+if (missingControls.length > 0) {
+  errors.push(`Missing aria-controls targets: ${missingControls.join(", ")}`)
 }
 
 if (imagesWithoutAlt.length > 0) {
