@@ -25,6 +25,21 @@ importers:
         specifier: 6.4.3
         version: 6.4.3(@types/node@22.10.5)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.22.4)
 
+  others/userscripts/youtube-auto-resume:
+    devDependencies:
+      '@types/node':
+        specifier: 22.10.5
+        version: 22.10.5
+      esbuild:
+        specifier: 0.25.0
+        version: 0.25.0
+      playwright:
+        specifier: 1.61.1
+        version: 1.61.1
+      typescript:
+        specifier: 5.7.3
+        version: 5.7.3
+
   apps/copilot-task:
     dependencies:
       framer-motion:

@@ -8,12 +8,12 @@
     "node": ">=22 <25"
   },
   "scripts": {
-    "build": "pnpm -r --workspace-concurrency=1 --filter \"./apps/**\" --filter \"./packages/**\" --if-present build",
-    "check": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --if-present check && pnpm check:focus-orb-package",
-    "lint": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --if-present lint",
-    "typecheck": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --if-present typecheck",
-    "format": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --if-present format",
-    "format:check": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --if-present format:check",
+    "build": "pnpm -r --workspace-concurrency=1 --filter \"./apps/**\" --filter \"./packages/**\" --filter \"./others/userscripts/**\" --if-present build",
+    "check": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --filter \"./others/userscripts/**\" --if-present check && pnpm check:focus-orb-package",
+    "lint": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --filter \"./others/userscripts/**\" --if-present lint",
+    "typecheck": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --filter \"./others/userscripts/**\" --if-present typecheck",
+    "format": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --filter \"./others/userscripts/**\" --if-present format",
+    "format:check": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --filter \"./others/userscripts/**\" --if-present format:check",
     "dev:copilot-task": "pnpm --filter tasks-waitlist-preview dev",
     "dev:focus-orb": "pnpm --filter @cedarflake/focus-orb-demo dev",
     "dev:landing": "pnpm --filter @cedarflake/landing dev",

@@ -1,6 +1,7 @@
 packages:
   - "apps/*"
   - "packages/*"
+  - "others/userscripts/*"
 
 nodeVersion: 22.22.2
 engineStrict: true

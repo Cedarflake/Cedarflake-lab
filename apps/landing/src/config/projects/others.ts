@@ -2,6 +2,18 @@ import type { CatalogProject } from "../../types/project"
 
 export const otherProjectEntries = [
   {
+    title: "YouTube Auto Resume",
+    path: "others/userscripts/youtube-auto-resume",
+    updatedAt: "2026-07-13T01:34:05+08:00",
+    summary:
+      "A YouTube userscript that restores paused playback with optional skippable-ad handling, best-quality selection, and a resilient Shadow DOM control panel.",
+    label: "Userscript",
+    lifecycle: "active",
+    kind: "other",
+    presentation: "catalog",
+    section: "others",
+  },
+  {
     title: "Bilibili Follow Cycle",
     path: "others/userscripts/bilibili-follow-cycle",
     updatedAt: "2026-07-11T01:01:23+08:00",
