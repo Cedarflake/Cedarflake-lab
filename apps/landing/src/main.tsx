@@ -3,8 +3,8 @@ import { createRoot, hydrateRoot } from "react-dom/client"
 
 import { App } from "./App"
 
-import "@fontsource-variable/jetbrains-mono"
-import "@fontsource-variable/manrope"
+import "@fontsource-variable/jetbrains-mono/index.css"
+import "@fontsource-variable/manrope/index.css"
 import "./styles.css"
 
 const root = document.querySelector("#root")

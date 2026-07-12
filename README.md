@@ -1,5 +1,7 @@
 <p align="center">
-  <img src="./assets/Lab.png" alt="Cedarflake Lab" width="960"/>
+  <a href="https://test.i0c.cc/">
+    <img src="./assets/Lab.png" alt="Cedarflake Lab" width="960"/>
+  </a>
 </p>
 
 #
