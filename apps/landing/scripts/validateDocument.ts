@@ -6,6 +6,7 @@ import { siteConfig } from "../src/config/site"
 
 const appRoot = fileURLToPath(new URL("../", import.meta.url))
 const html = readFileSync(resolve(appRoot, "index.html"), "utf8")
+const doctypeMatches = [...html.matchAll(/<!doctype\s+html\s*>/gi)]
 const errors: string[] = []
 
 function getTags(tagName: string) {
@@ -52,6 +53,10 @@ const themeColorMeta = themeColorMetas[0]
 const faviconLink = faviconLinks[0]
 const heroPreload = heroPreloads[0]
 const entryScript = entryScripts[0]
+
+if (doctypeMatches.length !== 1 || !/^\s*<!doctype\s+html\s*>/i.test(html)) {
+  errors.push("Document must begin with exactly one HTML5 doctype")
+}
 
 if (htmlTags.length !== 1 || !htmlTag || getAttribute(htmlTag, "lang") !== siteConfig.locale) {
   errors.push(`Document language must match the site locale: ${siteConfig.locale}`)
