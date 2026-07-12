@@ -16,6 +16,7 @@
     "format:check": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --if-present format:check",
     "dev:copilot-task": "pnpm --filter tasks-waitlist-preview dev",
     "dev:focus-orb": "pnpm --filter @cedarflake/focus-orb-demo dev",
+    "dev:landing": "pnpm --filter @cedarflake/landing dev",
     "dev:liminal-drift": "pnpm --filter liminal-drift dev",
     "dev:maimai-transition": "pnpm --filter maimai-transition dev",
     "dev:shika": "pnpm --filter shika dev",

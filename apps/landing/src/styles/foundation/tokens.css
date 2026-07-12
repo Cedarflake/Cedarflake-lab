@@ -1,0 +1,31 @@
+:root {
+  color-scheme: light;
+  font-family: var(--font-sans);
+  color: #251d2a;
+  background: #fff;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+
+  --font-sans: "Manrope Variable", sans-serif;
+  --font-label: "JetBrains Mono Variable", monospace;
+  --color-ink: #251d2a;
+  --color-muted: #6b626d;
+  --color-muted-strong: #5f5662;
+  --color-coral: #ff7076;
+  --color-coral-deep: #b72e43;
+  --color-selection-text: var(--color-coral-deep);
+  --color-white: #fff;
+  --color-surface-catalog: #fbf8fa;
+  --color-surface-others: #f7f2f5;
+  --border-subtle: rgba(37, 29, 42, 0.12);
+  --border-soft: rgba(37, 29, 42, 0.18);
+  --page-gutter: clamp(20px, 4vw, 64px);
+  --section-space: clamp(96px, 12vw, 176px);
+  --shell-max-width: 1536px;
+  --header-height: 72px;
+  --display-heading-size: clamp(42px, 6vw, 82px);
+  --display-heading-weight: 760;
+  --display-heading-tracking: -0.06em;
+  --display-heading-leading: 0.98;
+  --corner-shape-smooth: squircle;
+}

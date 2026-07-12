@@ -12,6 +12,7 @@ Personal monorepo for apps, packages, local Python projects, and assorted experi
 | --- | --- |
 | `apps/copilot-task` | Vite/React AI Agent preview site. |
 | `apps/focus-orb-demo` | Demo app for the Focus Orb package. |
+| `apps/landing` | Landing page for the Cedarflake Lab project index. |
 | `apps/liminal-drift` | Vite/React game project. |
 | `apps/maimai-transition` | Vite/React transition experience. |
 | `apps/personal-email` | React Email templates and mail scripts. |
@@ -26,6 +27,7 @@ Personal monorepo for apps, packages, local Python projects, and assorted experi
 pnpm install
 pnpm check
 pnpm build
+pnpm dev:landing
 pnpm dev:shika
 pnpm dev:focus-orb
 pnpm render:email

@@ -1,0 +1,4 @@
+.page-section {
+  padding: var(--section-space) var(--page-gutter);
+  border-top: 1px solid var(--border-subtle);
+}

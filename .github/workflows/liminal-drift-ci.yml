@@ -5,24 +5,12 @@ on:
   pull_request:
     paths:
       - "apps/liminal-drift/**"
-      - ".editorconfig"
-      - ".gitattributes"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - "pnpm-workspace.yaml"
-      - "tsconfig.base.json"
       - ".github/workflows/liminal-drift-ci.yml"
   push:
     branches:
       - main
     paths:
       - "apps/liminal-drift/**"
-      - ".editorconfig"
-      - ".gitattributes"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - "pnpm-workspace.yaml"
-      - "tsconfig.base.json"
       - ".github/workflows/liminal-drift-ci.yml"
 
 permissions:

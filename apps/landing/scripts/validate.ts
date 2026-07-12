@@ -1,0 +1,7 @@
+import "./validateCatalog"
+import "./validateSiteConfig"
+import "./validateCollections"
+import "./validateStyles"
+import "./validateDeployment"
+import "./validateDocument"
+import "./validateMarkup"
