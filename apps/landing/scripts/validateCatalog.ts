@@ -2,6 +2,7 @@ import { createHash } from "node:crypto"
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs"
 import { extname, isAbsolute, relative, resolve, sep } from "node:path"
 import { fileURLToPath } from "node:url"
+import { inflateSync } from "node:zlib"
 
 import { projectCatalog } from "../src/config/projects"
 import { siteConfig } from "../src/config/site"
@@ -107,6 +108,138 @@ function readPngDimensions(filePath: string) {
   return {
     width: header.readUInt32BE(16),
     height: header.readUInt32BE(20),
+  }
+}
+
+function paethPredictor(left: number, above: number, upperLeft: number) {
+  const estimate = left + above - upperLeft
+  const leftDistance = Math.abs(estimate - left)
+  const aboveDistance = Math.abs(estimate - above)
+  const upperLeftDistance = Math.abs(estimate - upperLeft)
+
+  if (leftDistance <= aboveDistance && leftDistance <= upperLeftDistance) {
+    return left
+  }
+
+  return aboveDistance <= upperLeftDistance ? above : upperLeft
+}
+
+function getPngFilterPredictor(filterType: number, left: number, above: number, upperLeft: number) {
+  switch (filterType) {
+    case 0:
+      return 0
+    case 1:
+      return left
+    case 2:
+      return above
+    case 3:
+      return Math.floor((left + above) / 2)
+    case 4:
+      return paethPredictor(left, above, upperLeft)
+    default:
+      return null
+  }
+}
+
+function hasTransparentRgbaPixel(filePath: string) {
+  try {
+    const source = readFileSync(filePath)
+    const pngSignature = "89504e470d0a1a0a"
+
+    if (
+      source.length < 33 ||
+      source.subarray(0, 8).toString("hex") !== pngSignature ||
+      source.toString("ascii", 12, 16) !== "IHDR"
+    ) {
+      return false
+    }
+
+    const width = source.readUInt32BE(16)
+    const height = source.readUInt32BE(20)
+    const bitDepth = source.readUInt8(24)
+    const colorType = source.readUInt8(25)
+    const interlaceMethod = source.readUInt8(28)
+
+    if (width === 0 || height === 0 || bitDepth !== 8 || colorType !== 6 || interlaceMethod !== 0) {
+      return false
+    }
+
+    const imageDataChunks: Buffer[] = []
+    let chunkOffset = 8
+
+    while (chunkOffset + 12 <= source.length) {
+      const chunkLength = source.readUInt32BE(chunkOffset)
+      const chunkType = source.toString("ascii", chunkOffset + 4, chunkOffset + 8)
+      const dataStart = chunkOffset + 8
+      const dataEnd = dataStart + chunkLength
+
+      if (dataEnd + 4 > source.length) {
+        return false
+      }
+
+      if (chunkType === "IDAT") {
+        imageDataChunks.push(source.subarray(dataStart, dataEnd))
+      }
+
+      chunkOffset = dataEnd + 4
+
+      if (chunkType === "IEND") {
+        break
+      }
+    }
+
+    if (imageDataChunks.length === 0) {
+      return false
+    }
+
+    const bytesPerPixel = 4
+    const rowLength = width * bytesPerPixel
+    const inflated = inflateSync(Buffer.concat(imageDataChunks))
+    const expectedLength = (rowLength + 1) * height
+
+    if (inflated.length !== expectedLength) {
+      return false
+    }
+
+    let previousRow = Buffer.alloc(rowLength)
+    let currentRow = Buffer.alloc(rowLength)
+    let sourceOffset = 0
+
+    for (let rowIndex = 0; rowIndex < height; rowIndex += 1) {
+      const filterType = inflated.readUInt8(sourceOffset)
+      sourceOffset += 1
+
+      for (let byteIndex = 0; byteIndex < rowLength; byteIndex += 1) {
+        const encodedValue = inflated.readUInt8(sourceOffset)
+        const left =
+          byteIndex >= bytesPerPixel ? currentRow.readUInt8(byteIndex - bytesPerPixel) : 0
+        const above = previousRow.readUInt8(byteIndex)
+        const upperLeft =
+          byteIndex >= bytesPerPixel ? previousRow.readUInt8(byteIndex - bytesPerPixel) : 0
+        const predictor = getPngFilterPredictor(filterType, left, above, upperLeft)
+
+        if (predictor === null) {
+          return false
+        }
+
+        currentRow.writeUInt8((encodedValue + predictor) & 0xff, byteIndex)
+        sourceOffset += 1
+      }
+
+      for (let alphaIndex = 3; alphaIndex < rowLength; alphaIndex += bytesPerPixel) {
+        if (currentRow.readUInt8(alphaIndex) < 255) {
+          return true
+        }
+      }
+
+      const completedRow = previousRow
+      previousRow = currentRow
+      currentRow = completedRow
+    }
+
+    return false
+  } catch {
+    return false
   }
 }
 
@@ -245,14 +378,16 @@ if (!brandPath) {
     errors.push(
       `Hero brand image dimensions are ${dimensions.width}x${dimensions.height}, expected ${heroBrand.width}x${heroBrand.height}`,
     )
+  } else if (!hasTransparentRgbaPixel(brandPath)) {
+    errors.push(`Hero brand image must contain transparent pixels: ${heroBrand.src}`)
   }
 }
 
 const deploymentCopies: readonly DeploymentCopy[] = [
   {
     canonicalPath: resolve(repoRoot, "assets/Lab.png"),
-    deployedPath: brandPath ?? resolve(publicRoot, "Lab.png"),
-    label: "Hero artwork",
+    deployedPath: resolve(publicRoot, "Lab.png"),
+    label: "Canonical Lab artwork",
   },
   {
     canonicalPath: resolve(repoRoot, "assets/favicon.png"),

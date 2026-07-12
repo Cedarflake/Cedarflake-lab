@@ -5,6 +5,7 @@ import { FeaturedCarousel } from "./components/FeaturedCarousel"
 import { SectionHeading } from "./components/SectionHeading"
 import { WorkbenchGroup } from "./components/WorkbenchGroup"
 import { siteConfig } from "./config/site"
+import { useEntranceReveal } from "./hooks/useEntranceReveal"
 import {
   buildingProjects,
   labStats,
@@ -15,14 +16,15 @@ import {
 
 export function App() {
   const heroBrand = siteConfig.hero.brand
+  const siteShellRef = useEntranceReveal()
 
   return (
-    <div className="site-shell">
+    <div className="site-shell" data-motion-root ref={siteShellRef}>
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
 
-      <header className="site-header">
+      <header className="site-header" data-reveal>
         <a className="mini-brand" href="#top" aria-label={siteConfig.header.homeLabel}>
           <span>{siteConfig.header.brand}</span>
           <span>{siteConfig.header.edition}</span>
@@ -44,7 +46,9 @@ export function App() {
         <section className="hero" id="top" aria-labelledby="hero-title">
           <div className="hero__wash hero__wash--one" aria-hidden="true" />
           <div className="hero__wash hero__wash--two" aria-hidden="true" />
-          <p className="hero__eyebrow">{siteConfig.hero.eyebrow}</p>
+          <p className="hero__eyebrow" data-reveal>
+            {siteConfig.hero.eyebrow}
+          </p>
           <h1 className="hero__title" id="hero-title">
             <span className="hero__brand-text sr-only">{heroBrand.alt}</span>
             <span
@@ -53,10 +57,11 @@ export function App() {
                 aspectRatio: `${heroBrand.width} / ${heroBrand.height}`,
                 backgroundImage: `url("${heroBrand.src}")`,
               }}
+              data-reveal
               aria-hidden="true"
             />
           </h1>
-          <div className="hero__content">
+          <div className="hero__content" data-reveal>
             <p className="hero__statement">{siteConfig.hero.statement}</p>
             <div className="hero__intro">
               <p>{siteConfig.hero.description}</p>
@@ -77,7 +82,7 @@ export function App() {
               </div>
             </div>
           </div>
-          <dl className="hero__stats">
+          <dl className="hero__stats" data-reveal>
             {labStats.map((stat) => (
               <div key={stat.label}>
                 <dt>{stat.label}</dt>
@@ -85,7 +90,7 @@ export function App() {
               </div>
             ))}
           </dl>
-          <div className="lab-rule" aria-hidden="true">
+          <div className="lab-rule" data-reveal aria-hidden="true">
             {siteConfig.hero.ruler.map((item) => (
               <span key={item}>{item}</span>
             ))}
@@ -96,6 +101,7 @@ export function App() {
           className="page-section"
           id={siteConfig.sections.featured.id}
           aria-labelledby={siteConfig.sections.featured.heading.titleId}
+          data-reveal
         >
           <SectionHeading {...siteConfig.sections.featured.heading} />
           <FeaturedCarousel
@@ -109,6 +115,7 @@ export function App() {
           className="page-section page-section--catalog"
           id={siteConfig.sections.building.id}
           aria-labelledby={siteConfig.sections.building.heading.titleId}
+          data-reveal
         >
           <SectionHeading {...siteConfig.sections.building.heading} />
           <CatalogCarousel
@@ -122,6 +129,7 @@ export function App() {
           className="page-section page-section--workbench"
           id={siteConfig.sections.workbench.id}
           aria-labelledby={siteConfig.sections.workbench.heading.titleId}
+          data-reveal
         >
           <div className="workbench-intro">
             <SectionHeading {...siteConfig.sections.workbench.heading} />
@@ -138,6 +146,7 @@ export function App() {
           className="page-section page-section--others"
           id={siteConfig.sections.others.id}
           aria-labelledby={siteConfig.sections.others.heading.titleId}
+          data-reveal
         >
           <SectionHeading {...siteConfig.sections.others.heading} />
           <CatalogCarousel
@@ -151,6 +160,7 @@ export function App() {
           className="open-bench"
           id={siteConfig.openBench.id}
           aria-labelledby={siteConfig.openBench.titleId}
+          data-reveal
         >
           <div className="open-bench__heading">
             <p className="eyebrow">{siteConfig.openBench.eyebrow}</p>
@@ -172,7 +182,7 @@ export function App() {
         </section>
       </main>
 
-      <footer className="site-footer">
+      <footer className="site-footer" data-reveal>
         <p>{siteConfig.name}</p>
         <p>{siteConfig.footer.note}</p>
         <a href="#top">{siteConfig.footer.backToTopLabel}</a>

@@ -49,7 +49,11 @@ Add new imports to the matching block in `src/styles.css`; do not create cross-l
 
 Validation keeps `src/styles.css` import-only, requires every stylesheet to be imported exactly once, enforces the documented layer order and kebab-case filenames, and rejects nested imports. A misplaced or orphaned style file therefore fails locally instead of silently disappearing from the page.
 
-Repository-wide brand assets remain in the root `assets/` directory. The landing app keeps deployment copies in `public/` so a Vercel project rooted at `apps/landing` is self-contained. Refresh those copies when the canonical assets change. Validation checks their PNG format and byte identity, and requires the favicon source to remain square.
+Viewport entrance motion is opt-in through `data-reveal`. `useEntranceReveal` observes each target once and disconnects on unmount, while the shared motion stylesheet owns timing and stagger values. Keep reveal effects limited to opacity and transforms so they do not shift carousel geometry. Reduced-motion users and browsers without `IntersectionObserver` receive the final visible state immediately.
+
+Showcase covers expose an explicit loading state: successful images fade from a soft loading treatment, while failed images become visible immediately so alternative text is not hidden. Keep intrinsic dimensions on every cover to prevent the transition from introducing layout shift.
+
+Repository-wide brand assets remain in the root `assets/` directory. The landing app keeps deployment copies in `public/` so a Vercel project rooted at `apps/landing` is self-contained. Refresh those copies when the canonical assets change. The Hero uses a landing-owned transparent variant so its entrance animation never depends on background blending. Validation checks the configured artwork dimensions and real pixel transparency, verifies canonical-copy byte identity, and requires the favicon source to remain square.
 
 ## Add a project
 

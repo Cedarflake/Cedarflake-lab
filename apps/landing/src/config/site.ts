@@ -27,7 +27,7 @@ export const siteConfig = {
   hero: {
     eyebrow: "A personal monorepo · shared tooling, distinct boundaries",
     brand: {
-      src: "/Lab.png",
+      src: "/Lab-nobg.png",
       alt: "Cedarflake Lab",
       width: 3500,
       height: 600,

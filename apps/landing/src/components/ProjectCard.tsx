@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { ArrowUpRight } from "lucide-react"
 
 import { siteConfig } from "../config/site"
@@ -8,6 +9,8 @@ interface ProjectCardProps {
   project: ShowcaseProject
 }
 
+type CoverLoadState = "loading" | "ready" | "error"
+
 const projectDateFormatter = new Intl.DateTimeFormat(siteConfig.locale, {
   day: "2-digit",
   month: "short",
@@ -16,12 +19,13 @@ const projectDateFormatter = new Intl.DateTimeFormat(siteConfig.locale, {
 })
 
 export function ProjectCard({ project }: ProjectCardProps) {
+  const [coverLoadState, setCoverLoadState] = useState<CoverLoadState>("loading")
   const { cover, label, note, tags } = project.showcase
 
   return (
     <article className="project-card">
       <a className="project-card__link" href={projectUrl(project)} rel="noreferrer" target="_blank">
-        <div className="project-card__cover">
+        <div className="project-card__cover" data-load-state={coverLoadState}>
           <img
             src={cover.src}
             alt={cover.alt}
@@ -29,6 +33,8 @@ export function ProjectCard({ project }: ProjectCardProps) {
             height={cover.height}
             loading="lazy"
             decoding="async"
+            onLoad={() => setCoverLoadState("ready")}
+            onError={() => setCoverLoadState("error")}
           />
         </div>
         <div className="project-card__body">
