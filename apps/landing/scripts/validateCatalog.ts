@@ -5,8 +5,8 @@ import { fileURLToPath } from "node:url"
 import { inflateSync } from "node:zlib"
 
 import { projectCatalog } from "../src/config/projects"
+import { workbenchCategories } from "../src/config/projects/workbench"
 import { siteConfig } from "../src/config/site"
-import { workbenchCategories } from "../src/config/workbench"
 import { validateProjectCatalog } from "../src/lib/projectCatalog"
 import type { ProjectCover, ProjectEntry } from "../src/types/project"
 

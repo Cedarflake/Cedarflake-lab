@@ -1,5 +1,5 @@
 import type { ProjectKind } from "../types/project"
-import { workbenchCategories } from "./workbench"
+import { workbenchCategories } from "./projects/workbench"
 
 const siteLocale = "en"
 const siteTimeZone = "Asia/Shanghai"

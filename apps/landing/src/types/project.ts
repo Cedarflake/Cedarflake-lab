@@ -1,5 +1,3 @@
-import type { WorkbenchCategory } from "../config/workbench"
-
 export type ProjectKind = "app" | "package" | "workbench" | "other"
 
 export interface ProjectCover {
@@ -40,10 +38,10 @@ export interface CatalogProject extends ProjectBase {
   isMuted?: boolean
 }
 
-export interface WorkbenchProject extends ProjectBase {
+export interface WorkbenchProject<Category extends string = string> extends ProjectBase {
   presentation: "workbench"
   section: "workbench"
-  category: WorkbenchCategory
+  category: Category
 }
 
 export type ProjectEntry = FeaturedProject | CatalogProject | WorkbenchProject

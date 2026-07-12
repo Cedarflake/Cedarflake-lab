@@ -1,6 +1,6 @@
 import { projectCatalog } from "../src/config/projects"
+import type { WorkbenchCategory } from "../src/config/projects/workbench"
 import { siteConfig } from "../src/config/site"
-import type { WorkbenchCategory } from "../src/config/workbench"
 import {
   buildingProjects,
   labStats,
