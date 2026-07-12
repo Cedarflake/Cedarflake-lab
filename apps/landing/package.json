@@ -3,7 +3,11 @@
   "private": true,
   "version": "0.1.0",
   "license": "BSD-3-Clause",
+  "packageManager": "pnpm@11.7.0",
   "type": "module",
+  "engines": {
+    "node": ">=22 <25"
+  },
   "scripts": {
     "build": "pnpm validate && tsc -p tsconfig.json --noEmit && vite build",
     "check": "pnpm format:check && pnpm typecheck && pnpm validate",

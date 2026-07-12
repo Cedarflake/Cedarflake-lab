@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url"
 
 const appRoot = fileURLToPath(new URL("../", import.meta.url))
 const configPath = resolve(appRoot, "vercel.json")
+const appPackagePath = resolve(appRoot, "package.json")
 const rootPackagePath = resolve(appRoot, "../../package.json")
 const expectedSchema = "https://openapi.vercel.sh/vercel.json"
 const packageManagerPattern = /^pnpm@\d+\.\d+\.\d+$/
@@ -29,7 +30,31 @@ function readJsonObject(filePath: string, label: string) {
   return null
 }
 
+function readPackageManager(packageJson: Record<string, unknown>, label: string) {
+  const packageManager = packageJson["packageManager"]
+
+  if (typeof packageManager !== "string" || !packageManagerPattern.test(packageManager)) {
+    errors.push(`${label} must pin a semantic pnpm packageManager version`)
+    return null
+  }
+
+  return packageManager
+}
+
+function readNodeEngine(packageJson: Record<string, unknown>, label: string) {
+  const engines = packageJson["engines"]
+  const nodeEngine = isRecord(engines) ? engines["node"] : null
+
+  if (typeof nodeEngine !== "string" || nodeEngine.trim().length === 0) {
+    errors.push(`${label} must declare a Node.js engine range`)
+    return null
+  }
+
+  return nodeEngine
+}
+
 const config = readJsonObject(configPath, "vercel.json")
+const appPackage = readJsonObject(appPackagePath, "Landing package.json")
 const rootPackage = readJsonObject(rootPackagePath, "Root package.json")
 
 if (config) {
@@ -51,16 +76,21 @@ if (config) {
   }
 }
 
-if (
-  rootPackage &&
-  (typeof rootPackage["packageManager"] !== "string" ||
-    !packageManagerPattern.test(rootPackage["packageManager"]))
-) {
-  errors.push("Root package.json must pin a semantic pnpm packageManager version")
+const rootPackageManager = rootPackage ? readPackageManager(rootPackage, "Root package.json") : null
+const appPackageManager = appPackage ? readPackageManager(appPackage, "Landing package.json") : null
+const rootNodeEngine = rootPackage ? readNodeEngine(rootPackage, "Root package.json") : null
+const appNodeEngine = appPackage ? readNodeEngine(appPackage, "Landing package.json") : null
+
+if (rootPackageManager && appPackageManager && rootPackageManager !== appPackageManager) {
+  errors.push("Landing package.json must use the root pnpm packageManager version")
+}
+
+if (rootNodeEngine && appNodeEngine && rootNodeEngine !== appNodeEngine) {
+  errors.push("Landing package.json must use the root Node.js engine range")
 }
 
 if (errors.length > 0) {
   throw new Error(`Landing deployment validation failed:\n- ${errors.join("\n- ")}`)
 }
 
-console.log("Validated Vercel deployment config with a direct pnpm install command.")
+console.log("Validated Vercel deployment config, app runtime, and direct pnpm install command.")
