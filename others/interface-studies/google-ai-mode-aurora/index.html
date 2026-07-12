@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Google AI 模式按钮 Aurora 复刻</title>
+    <style>
+      @property --aurora-mask-angle {
+        syntax: "<angle>";
+        initial-value: 0deg;
+        inherits: true;
+      }
+
+      @property --aurora-gradient-angle {
+        syntax: "<angle>";
+        initial-value: 0deg;
+        inherits: true;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: #1f1f1f;
+        background: #fff;
+        font-family: Arial, sans-serif;
+      }
+
+      .demo-stage {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+      }
+
+      .ai-mode-button {
+        position: relative;
+        height: 36px;
+        padding: 0 12px;
+        border: 0;
+        border-radius: 100px;
+        color: inherit;
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .ai-mode-button:focus-visible {
+        outline: 2px solid #0b57d0;
+        outline-offset: 2px;
+      }
+
+      .aurora-shell {
+        --aurora-border-radius: 100px;
+        --aurora-blur: 4px;
+        --aurora-inset: -1px;
+        --aurora-scale-x: 4;
+        --aurora-scale-y: 1.5;
+
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        display: block;
+        overflow: visible;
+        border-radius: var(--aurora-border-radius);
+        opacity: 0.6;
+        pointer-events: none;
+      }
+
+      .aurora-motion {
+        --aurora-mask-angle: 0deg;
+        --aurora-gradient-angle: 0deg;
+
+        position: absolute;
+        inset: 0;
+        display: block;
+        border-radius: inherit;
+        opacity: 0;
+        will-change: --aurora-mask-angle, --aurora-gradient-angle, opacity;
+      }
+
+      .aurora-stack {
+        position: absolute;
+        inset: 0;
+        display: block;
+        border-radius: inherit;
+      }
+
+      .aurora-clip {
+        position: absolute;
+        inset: var(--aurora-inset);
+        display: block;
+        overflow: hidden;
+        border-radius: inherit;
+        backface-visibility: hidden;
+        transform: translateZ(0);
+        filter: blur(var(--aurora-blur));
+      }
+
+      .aurora-clip--sharp {
+        filter: blur(1px);
+      }
+
+      .aurora-mask {
+        position: absolute;
+        inset: 0;
+        display: block;
+        border-radius: inherit;
+        scale: var(--aurora-scale-x) var(--aurora-scale-y);
+        -webkit-mask-image:
+          conic-gradient(
+            from var(--aurora-mask-angle),
+            transparent 0,
+            transparent 50%,
+            black 68%,
+            black 75%,
+            transparent 89%
+          ),
+          conic-gradient(
+            from var(--aurora-mask-angle),
+            black 30%,
+            transparent 50%,
+            black 70%
+          );
+        mask-image:
+          conic-gradient(
+            from var(--aurora-mask-angle),
+            transparent 0,
+            transparent 50%,
+            black 68%,
+            black 75%,
+            transparent 89%
+          ),
+          conic-gradient(
+            from var(--aurora-mask-angle),
+            black 30%,
+            transparent 50%,
+            black 70%
+          );
+        -webkit-mask-composite: source-in, xor;
+        mask-composite: intersect;
+      }
+
+      .aurora-clip--sharp .aurora-mask {
+        -webkit-mask-image:
+          conic-gradient(
+            from var(--aurora-mask-angle),
+            transparent 0,
+            transparent 62%,
+            black 82%,
+            transparent 89%
+          ),
+          conic-gradient(
+            from var(--aurora-mask-angle),
+            black 30%,
+            transparent 50%,
+            black 70%
+          );
+        mask-image:
+          conic-gradient(
+            from var(--aurora-mask-angle),
+            transparent 0,
+            transparent 62%,
+            black 82%,
+            transparent 89%
+          ),
+          conic-gradient(
+            from var(--aurora-mask-angle),
+            black 30%,
+            transparent 50%,
+            black 70%
+          );
+      }
+
+      .aurora-gradient {
+        position: absolute;
+        inset: 0;
+        inset-block-start: 50%;
+        display: block;
+        border-radius: 50%;
+        aspect-ratio: 1;
+        translate: 0 -50%;
+        rotate: var(--aurora-gradient-angle);
+        backface-visibility: hidden;
+        transform: translateZ(0);
+        background: conic-gradient(
+          #3186ff 34%,
+          #9378ff 37%,
+          #f96bd6 39%,
+          #fc413d 41%,
+          #fc413d 48%,
+          #ff6b2b 50%,
+          #fec700 52%,
+          #ffdb0f 56%,
+          #88de42 58%,
+          #0ebc5f 61%,
+          #0ebc5f 65%,
+          #2eaab2 70%,
+          #00a9bb 72%,
+          #3186ff 73%,
+          #3186ff 83%,
+          #3186ff 100%
+        );
+      }
+
+      .button-surface {
+        position: absolute;
+        inset: 1px;
+        display: block;
+        overflow: hidden;
+        border-radius: 100px;
+        clip-path: inset(0 0 0 0 round 100px);
+        background: #edf2fa;
+      }
+
+      .button-surface::after {
+        position: absolute;
+        inset: -10px;
+        border-radius: inherit;
+        background: inherit;
+        opacity: 0.5;
+        content: "";
+      }
+
+      .ai-mode-button:hover .button-surface {
+        filter: blur(2px);
+      }
+
+      .button-content {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 100%;
+        font-size: 14px;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+
+      .button-icon {
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="demo-stage">
+      <button class="ai-mode-button" type="button">
+        <span class="aurora-shell" aria-hidden="true">
+          <span class="aurora-motion">
+            <span class="aurora-stack">
+              <span class="aurora-clip aurora-clip--soft">
+                <span class="aurora-mask">
+                  <span class="aurora-gradient"></span>
+                </span>
+              </span>
+
+              <span class="aurora-clip aurora-clip--sharp">
+                <span class="aurora-mask">
+                  <span class="aurora-gradient"></span>
+                </span>
+              </span>
+            </span>
+          </span>
+        </span>
+
+        <span class="button-surface" aria-hidden="true"></span>
+
+        <span class="button-content">
+          <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M17.5 12c0-3.04 2.46-5.5 5.5-5.5-3.04 0-5.5-2.46-5.5-5.5 0 3.04-2.46 5.5-5.5 5.5 3.04 0 5.5 2.46 5.5 5.5Z"
+            ></path>
+            <path
+              d="M15.65 11.58c.18-.5.27-1.03.31-1.58h-2c-.1 1.03-.51 1.93-1.27 2.69-.88.87-1.94 1.31-3.19 1.31C7.03 14 5 12.07 5 9.5 5 7.03 6.93 5 9.5 5c.46 0 .89.08 1.3.2l1.56-1.56C11.5 3.22 10.55 3 9.5 3 5.85 3 3 5.85 3 9.5S5.85 16 9.5 16c.56 0 2.26-.06 3.8-1.3l6.3 6.3 1.4-1.4-6.3-6.3c.4-.5.72-1.08.95-1.72Z"
+            ></path>
+          </svg>
+
+          <span>AI 模式</span>
+        </span>
+      </button>
+    </main>
+
+    <script>
+      const button = document.querySelector(".ai-mode-button");
+      const motion = document.querySelector(".aurora-motion");
+      const softClip = document.querySelector(".aurora-clip--soft");
+
+      if (!button || !motion || !softClip) {
+        throw new Error("Aurora button structure is incomplete");
+      }
+
+      const scaleX = 4;
+      const scaleY = 1.5;
+
+      let bounds = null;
+      let targetAngle = 0;
+      let maskAngle = 0;
+      let gradientAngle = 0;
+      let angularVelocity = 0;
+      let frameId = 0;
+      let fadeAnimation = null;
+      let isTracking = false;
+      let introAnimations = [];
+
+      function shortestAngleDelta(fromAngle, toAngle) {
+        const delta = (toAngle - fromAngle) % 360;
+
+        return ((2 * delta) % 360) - delta;
+      }
+
+      function interpolateAngle(fromAngle, toAngle, amount) {
+        return fromAngle + shortestAngleDelta(fromAngle, toAngle) * amount;
+      }
+
+      function updateTargetAngle(event) {
+        if (!bounds) {
+          return;
+        }
+
+        const centerX = bounds.left + bounds.width / 2;
+        const centerY = bounds.top + bounds.height / 2;
+        const normalizedX = (event.clientX - centerX) / scaleX;
+        const normalizedY = (event.clientY - centerY) / scaleY;
+
+        targetAngle = (Math.atan2(normalizedY, normalizedX) * 180) / Math.PI;
+      }
+
+      function renderFrame() {
+        if (!isTracking) {
+          return;
+        }
+
+        const targetDelta = shortestAngleDelta(maskAngle, targetAngle);
+
+        angularVelocity += targetDelta * 0.05;
+        angularVelocity *= 0.75;
+        maskAngle += angularVelocity;
+
+        const gradientDelta = shortestAngleDelta(gradientAngle, maskAngle);
+        const gradientFollow = Math.pow(
+          Math.min(Math.abs(gradientDelta) / 90, 1),
+          3,
+        );
+
+        gradientAngle = interpolateAngle(
+          gradientAngle,
+          maskAngle,
+          gradientFollow,
+        );
+
+        motion.style.setProperty(
+          "--aurora-mask-angle",
+          `${maskAngle - 167}deg`,
+        );
+        motion.style.setProperty(
+          "--aurora-gradient-angle",
+          `${gradientAngle - 142}deg`,
+        );
+
+        frameId = requestAnimationFrame(renderFrame);
+      }
+
+      function cancelIntro() {
+        for (const animation of introAnimations) {
+          animation.cancel();
+        }
+
+        introAnimations = [];
+      }
+
+      function showAurora() {
+        bounds = button.getBoundingClientRect();
+        isTracking = true;
+        angularVelocity = 0;
+
+        cancelIntro();
+        fadeAnimation?.cancel();
+
+        fadeAnimation = motion.animate([{ opacity: 1 }], {
+          duration: 350,
+          fill: "forwards",
+        });
+
+        button.addEventListener("mousemove", updateTargetAngle);
+
+        if (frameId === 0) {
+          frameId = requestAnimationFrame(renderFrame);
+        }
+      }
+
+      function hideAurora() {
+        isTracking = false;
+        angularVelocity = 0;
+
+        fadeAnimation?.cancel();
+        fadeAnimation = motion.animate([{ opacity: 1 }, { opacity: 0 }], {
+          duration: 350,
+          fill: "forwards",
+        });
+
+        button.removeEventListener("mousemove", updateTargetAngle);
+        bounds = null;
+
+        if (frameId !== 0) {
+          cancelAnimationFrame(frameId);
+          frameId = 0;
+        }
+      }
+
+      function playIntro() {
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          return;
+        }
+
+        introAnimations = [
+          motion.animate(
+            [
+              {
+                opacity: 0,
+                easing: "cubic-bezier(0, 0, 0, 1)",
+                offset: 0,
+              },
+              {
+                opacity: 1,
+                offset: 0.25,
+              },
+              {
+                opacity: 1,
+                easing: "cubic-bezier(0.30, 0.00, 0.80, 0.15)",
+                offset: 0.5,
+              },
+              {
+                opacity: 0,
+                offset: 1,
+              },
+            ],
+            {
+              duration: 1000,
+              fill: "both",
+            },
+          ),
+          softClip.animate(
+            [
+              { filter: "blur(1px)" },
+              {
+                filter: "blur(5px)",
+                offset: 0.15,
+              },
+              {
+                filter: "blur(3px)",
+                offset: 0.25,
+              },
+              {
+                filter: "blur(5px)",
+                offset: 0.45,
+              },
+              { filter: "blur(1px)" },
+            ],
+            {
+              duration: 1000,
+              easing: "linear",
+              fill: "both",
+            },
+          ),
+          motion.animate(
+            [
+              {
+                "--aurora-gradient-angle": "170deg",
+                "--aurora-mask-angle": "-90deg",
+                easing: "cubic-bezier(0, 0, 0, 1)",
+              },
+              {
+                "--aurora-gradient-angle": "225deg",
+                "--aurora-mask-angle": "200deg",
+              },
+            ],
+            {
+              duration: 1000,
+              fill: "both",
+            },
+          ),
+        ];
+      }
+
+      button.addEventListener("mouseenter", showAurora);
+      button.addEventListener("mouseleave", hideAurora);
+
+      playIntro();
+    </script>
+  </body>
+</html>
