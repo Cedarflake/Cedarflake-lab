@@ -1,10 +1,17 @@
 import type { ProjectKind } from "../types/project"
 import { workbenchCategories } from "./workbench"
 
+const siteLocale = "en"
+const siteTimeZone = "Asia/Shanghai"
+const currentYear = new Intl.DateTimeFormat(siteLocale, {
+  timeZone: siteTimeZone,
+  year: "numeric",
+}).format(new Date())
+
 export const siteConfig = {
   name: "Cedarflake Lab",
-  locale: "en",
-  timeZone: "Asia/Shanghai",
+  locale: siteLocale,
+  timeZone: siteTimeZone,
   repositoryUrl: "https://github.com/Cedarflake/Cedarflake-Lab",
   repositoryBranch: "main",
   stats: [
@@ -15,7 +22,7 @@ export const siteConfig = {
   ] satisfies readonly { kind: ProjectKind; label: string }[],
   header: {
     brand: "Cedarflake",
-    edition: "Lab / 2026",
+    edition: `Lab / ${currentYear}`,
     homeLabel: "Cedarflake Lab home",
     sourceLabel: "GitHub",
   },

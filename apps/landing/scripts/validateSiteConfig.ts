@@ -129,6 +129,15 @@ try {
   errors.push(`Invalid locale or time zone: ${siteConfig.locale}, ${siteConfig.timeZone}`)
 }
 
+const currentYear = new Intl.DateTimeFormat(siteConfig.locale, {
+  timeZone: siteConfig.timeZone,
+  year: "numeric",
+}).format(new Date())
+
+if (!siteConfig.header.edition.endsWith(` / ${currentYear}`)) {
+  errors.push(`Header edition does not use the current year: ${siteConfig.header.edition}`)
+}
+
 const statKinds = siteConfig.stats.map((stat) => stat.kind)
 const statLabels = siteConfig.stats.map((stat) => stat.label)
 const missingProjectKinds = expectedProjectKinds.filter((kind) => !statKinds.includes(kind))
