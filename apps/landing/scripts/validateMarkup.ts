@@ -73,6 +73,7 @@ const imagesWithoutDimensions = imageTags.filter(
 )
 const eagerlyLoadedImages = projectImageTags.filter((tag) => !/\sloading="lazy"/.test(tag))
 const synchronouslyDecodedImages = projectImageTags.filter((tag) => !/\sdecoding="async"/.test(tag))
+const draggableProjectImages = projectImageTags.filter((tag) => !/\sdraggable="false"/.test(tag))
 const anchorsWithoutHref = anchorMatches.filter((match) => !/\shref="[^"]*"/.test(match[1] ?? ""))
 const linkHrefs = anchorMatches.flatMap((match) => {
   const href = (match[1] ?? "").match(/\shref="([^"]*)"/)?.[1]
@@ -145,6 +146,10 @@ if (eagerlyLoadedImages.length > 0) {
 
 if (synchronouslyDecodedImages.length > 0) {
   errors.push(`${synchronouslyDecodedImages.length} project images do not use async decoding`)
+}
+
+if (draggableProjectImages.length > 0) {
+  errors.push(`${draggableProjectImages.length} project images allow native dragging`)
 }
 
 if (anchorsWithoutHref.length > 0) {

@@ -32,6 +32,9 @@
   overflow: hidden;
   border-right: 1px solid var(--border-subtle);
   background: var(--color-surface-catalog);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .project-card__cover::after {
@@ -57,6 +60,8 @@
   opacity: 0;
   object-fit: cover;
   object-position: center;
+  pointer-events: none;
+  -webkit-user-drag: none;
   filter: blur(7px);
   transform: scale(1.035);
   transition:

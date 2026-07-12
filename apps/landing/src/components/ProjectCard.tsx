@@ -33,6 +33,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             height={cover.height}
             loading="lazy"
             decoding="async"
+            draggable={false}
             onLoad={() => setCoverLoadState("ready")}
             onError={() => setCoverLoadState("error")}
           />
