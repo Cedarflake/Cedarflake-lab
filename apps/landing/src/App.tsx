@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowUpRight, GitFork } from "lucide-react"
+import type { DragEvent } from "react"
 
 import { CatalogCarousel } from "./components/CatalogCarousel"
 import { FeaturedCarousel } from "./components/FeaturedCarousel"
@@ -14,12 +15,18 @@ import {
   workbenchGroups,
 } from "./lib/projectCatalog"
 
+function preventLinkDrag(event: DragEvent<HTMLElement>) {
+  if (event.target instanceof Element && event.target.closest("a")) {
+    event.preventDefault()
+  }
+}
+
 export function App() {
   const heroBrand = siteConfig.hero.brand
   const siteShellRef = useEntranceReveal()
 
   return (
-    <div className="site-shell" data-motion-root ref={siteShellRef}>
+    <div className="site-shell" data-motion-root ref={siteShellRef} onDragStart={preventLinkDrag}>
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
