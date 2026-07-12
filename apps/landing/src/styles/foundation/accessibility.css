@@ -1,9 +1,9 @@
 ::selection {
   background: transparent;
-  color: var(--color-coral);
-  text-shadow:
-    -1px -1px 0 var(--color-white),
-    1px 1px 0 var(--color-ink);
+  color: var(--color-selection-text);
+  text-decoration-line: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.08em;
 }
 
 .sr-only {

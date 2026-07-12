@@ -1,4 +1,6 @@
 .open-bench {
+  --color-selection-text: #ff9b9f;
+
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
   gap: 48px clamp(48px, 9vw, 132px);
@@ -63,6 +65,8 @@
 }
 
 .open-bench > a:hover {
+  --color-selection-text: var(--color-coral-deep);
+
   background: var(--color-coral);
   color: var(--color-ink);
 }

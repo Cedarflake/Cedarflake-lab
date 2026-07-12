@@ -13,6 +13,7 @@
   --color-muted-strong: #5f5662;
   --color-coral: #ff7076;
   --color-coral-deep: #b72e43;
+  --color-selection-text: var(--color-coral-deep);
   --color-white: #fff;
   --color-surface-catalog: #fbf8fa;
   --color-surface-others: #f7f2f5;

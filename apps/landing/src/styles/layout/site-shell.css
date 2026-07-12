@@ -6,6 +6,8 @@
 }
 
 .skip-link {
+  --color-selection-text: #ff9b9f;
+
   position: fixed;
   z-index: 100;
   top: 12px;
