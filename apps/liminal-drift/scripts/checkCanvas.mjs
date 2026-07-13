@@ -408,7 +408,7 @@ async function assertDocumentMetadata(page) {
     metadata.title !== "Liminal Drift" ||
     metadata.ogTitle !== "Liminal Drift" ||
     metadata.themeColor !== "#f7d6cb" ||
-    !metadata.description?.includes("dreamcore 3D racing game") ||
+    !metadata.description?.includes("dreamcore 3D driving game") ||
     !metadata.viewport?.includes("viewport-fit=cover")
   ) {
     throw new Error(`Unexpected document metadata: ${JSON.stringify(metadata)}`)
