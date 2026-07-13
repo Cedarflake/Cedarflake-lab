@@ -236,7 +236,17 @@ function countProjects(kind: ProjectKind) {
     .padStart(2, "0")
 }
 
-function compareByUpdatedAt(left: ProjectEntry, right: ProjectEntry) {
+function lifecycleSortRank(project: ProjectEntry) {
+  return project.presentation === "catalog" && project.lifecycle === "archived" ? 1 : 0
+}
+
+function compareProjects(left: ProjectEntry, right: ProjectEntry) {
+  const lifecycleDifference = lifecycleSortRank(left) - lifecycleSortRank(right)
+
+  if (lifecycleDifference !== 0) {
+    return lifecycleDifference
+  }
+
   const updatedAtDifference = Date.parse(right.updatedAt) - Date.parse(left.updatedAt)
 
   if (updatedAtDifference !== 0) {
@@ -254,6 +264,10 @@ export function projectSourceUrl(path: string) {
   return `${siteConfig.repositoryUrl}/tree/${encodeUrlPath(siteConfig.repositoryBranch)}/${encodeUrlPath(path)}`
 }
 
+export function projectPrimaryUrl(project: ProjectEntry) {
+  return projectSourceUrl(project.path)
+}
+
 export function catalogProjectNumber(project: CatalogProject, index: number) {
   const prefix = catalogProjectPrefixBySection[project.section]
 
@@ -262,19 +276,19 @@ export function catalogProjectNumber(project: CatalogProject, index: number) {
 
 export const showcaseProjects: readonly ShowcaseProject[] = catalog
   .filter(hasShowcase)
-  .sort(compareByUpdatedAt)
+  .sort(compareProjects)
 
 export const buildingProjects: readonly CatalogProject[] = catalog
   .filter(isBuildingProject)
-  .sort(compareByUpdatedAt)
+  .sort(compareProjects)
 
 export const workbenchProjects: readonly WorkbenchProject[] = catalog
   .filter(isWorkbenchProject)
-  .sort(compareByUpdatedAt)
+  .sort(compareProjects)
 
 export const otherProjects: readonly CatalogProject[] = catalog
   .filter(isOtherProject)
-  .sort(compareByUpdatedAt)
+  .sort(compareProjects)
 
 export const workbenchGroups: readonly WorkbenchGroupData[] = siteConfig.workbenchCategories
   .map((category) => ({

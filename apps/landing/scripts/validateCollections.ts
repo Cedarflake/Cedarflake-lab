@@ -10,6 +10,7 @@ import {
 } from "../src/lib/projectCatalog"
 
 interface OrderedProject {
+  lifecycle?: "active" | "archived"
   path: string
   title: string
   updatedAt: string
@@ -56,7 +57,7 @@ function validateSamePaths(
   }
 }
 
-function validateNewestFirst(projects: readonly OrderedProject[], label: string) {
+function validateCollectionOrder(projects: readonly OrderedProject[], label: string) {
   for (let index = 1; index < projects.length; index += 1) {
     const previousProject = projects[index - 1]
     const project = projects[index]
@@ -65,11 +66,18 @@ function validateNewestFirst(projects: readonly OrderedProject[], label: string)
       continue
     }
 
+    const previousLifecycleRank = previousProject.lifecycle === "archived" ? 1 : 0
+    const lifecycleRank = project.lifecycle === "archived" ? 1 : 0
+    const lifecycleDifference = previousLifecycleRank - lifecycleRank
     const dateDifference = Date.parse(previousProject.updatedAt) - Date.parse(project.updatedAt)
     const titleDifference = previousProject.title.localeCompare(project.title, siteConfig.locale)
 
-    if (dateDifference < 0 || (dateDifference === 0 && titleDifference > 0)) {
-      errors.push(`${label} is not newest-first at project ${project.path}`)
+    if (
+      lifecycleDifference > 0 ||
+      (lifecycleDifference === 0 &&
+        (dateDifference < 0 || (dateDifference === 0 && titleDifference > 0)))
+    ) {
+      errors.push(`${label} does not follow lifecycle and update ordering at ${project.path}`)
     }
   }
 }
@@ -100,9 +108,9 @@ validateSamePaths(
   "Workbench groups",
 )
 
-validateNewestFirst(showcaseProjects, "Showcase collection")
-validateNewestFirst(buildingProjects, "Building collection")
-validateNewestFirst(otherProjects, "Other collection")
+validateCollectionOrder(showcaseProjects, "Showcase collection")
+validateCollectionOrder(buildingProjects, "Building collection")
+validateCollectionOrder(otherProjects, "Other collection")
 
 const categoryKeys = new Set<string>(siteConfig.workbenchCategories.map((category) => category.key))
 const expectedGroupKeys = siteConfig.workbenchCategories
@@ -126,7 +134,7 @@ for (const group of workbenchGroups) {
     }
   }
 
-  validateNewestFirst(group.items, `Workbench group ${group.key}`)
+  validateCollectionOrder(group.items, `Workbench group ${group.key}`)
 }
 
 if (labStats.length !== siteConfig.stats.length) {

@@ -1,4 +1,4 @@
-import { Code2, Download, ExternalLink, type LucideIcon } from "lucide-react"
+import { Code2, Download, Globe2, type LucideIcon } from "lucide-react"
 
 import { projectSourceUrl } from "../lib/projectCatalog"
 import type { ProjectEntry, ProjectExternalActionKind } from "../types/project"
@@ -10,19 +10,19 @@ interface ProjectActionsProps {
 interface ExternalActionPresentation {
   accessibleVerb: string
   Icon: LucideIcon
-  label: string
+  title: string
 }
 
 const externalActionPresentation = {
   install: {
     accessibleVerb: "Install",
     Icon: Download,
-    label: "Install",
+    title: "Install",
   },
   live: {
     accessibleVerb: "Open the live site for",
-    Icon: ExternalLink,
-    label: "Live",
+    Icon: Globe2,
+    title: "Open live site",
   },
 } satisfies Record<ProjectExternalActionKind, ExternalActionPresentation>
 
@@ -34,17 +34,6 @@ export function ProjectActions({ project }: ProjectActionsProps) {
 
   return (
     <div className="project-actions">
-      <a
-        className="project-action project-action--source"
-        data-project-action="source"
-        href={projectSourceUrl(project.path)}
-        rel="noreferrer"
-        target="_blank"
-        aria-label={`View ${project.title} source on GitHub (opens in a new tab)`}
-      >
-        <span>Source</span>
-        <Code2 aria-hidden="true" />
-      </a>
       {externalAction && externalPresentation ? (
         <a
           className={`project-action project-action--${externalAction.kind}`}
@@ -52,12 +41,23 @@ export function ProjectActions({ project }: ProjectActionsProps) {
           href={externalAction.url}
           rel="noreferrer"
           target="_blank"
+          title={externalPresentation.title}
           aria-label={`${externalPresentation.accessibleVerb} ${project.title} (opens in a new tab)`}
         >
-          <span>{externalPresentation.label}</span>
-          <externalPresentation.Icon aria-hidden="true" />
+          <externalPresentation.Icon aria-hidden="true" strokeWidth={1.7} />
         </a>
       ) : null}
+      <a
+        className="project-action project-action--source"
+        data-project-action="source"
+        href={projectSourceUrl(project.path)}
+        rel="noreferrer"
+        target="_blank"
+        title="View source"
+        aria-label={`View ${project.title} source on GitHub (opens in a new tab)`}
+      >
+        <Code2 aria-hidden="true" strokeWidth={1.7} />
+      </a>
     </div>
   )
 }

@@ -1,4 +1,6 @@
 .project-card {
+  position: relative;
+  isolation: isolate;
   height: 100%;
   min-width: 0;
   overflow: hidden;
@@ -97,6 +99,11 @@
   min-width: 0;
   flex-direction: column;
   padding: clamp(26px, 3vw, 40px);
+}
+
+.project-card__title-row > svg {
+  align-self: start;
+  margin-top: 4px;
 }
 
 .project-card h3 {

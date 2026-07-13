@@ -8,12 +8,13 @@ import {
   buildingProjects,
   catalogProjectNumber,
   otherProjects,
+  projectPrimaryUrl,
   projectSourceUrl,
   showcaseProjects,
 } from "../src/lib/projectCatalog"
 import type { ProjectEntry } from "../src/types/project"
 
-interface ProjectActionCardCase {
+interface ProjectCardCase {
   cardType: "catalog" | "showcase"
   markup: string
   project: ProjectEntry
@@ -22,7 +23,6 @@ interface ProjectActionCardCase {
 interface RenderedProjectAction {
   href: string | undefined
   kind: string
-  label: string
 }
 
 const htmlAttributeEntityValues: Readonly<Record<string, string>> = {
@@ -32,12 +32,6 @@ const htmlAttributeEntityValues: Readonly<Record<string, string>> = {
   "&lt;": "<",
   "&quot;": '"',
 }
-const projectActionLabels: Readonly<Record<string, string>> = {
-  install: "Install",
-  live: "Live",
-  source: "Source",
-}
-
 function decodeHtmlValue(value: string) {
   return value.replace(
     /&(?:#x27|amp|gt|lt|quot);/g,
@@ -56,9 +50,7 @@ function getAnchorAttributes(markup: string) {
 }
 
 function getRenderedProjectActions(markup: string): readonly RenderedProjectAction[] {
-  return [...markup.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].flatMap((match) => {
-    const attributes = match[1] ?? ""
-    const content = match[2] ?? ""
+  return getAnchorAttributes(markup).flatMap((attributes) => {
     const kind = readHtmlAttribute(attributes, "data-project-action")
 
     return kind === undefined
@@ -67,7 +59,6 @@ function getRenderedProjectActions(markup: string): readonly RenderedProjectActi
           {
             href: readHtmlAttribute(attributes, "href"),
             kind,
-            label: getRenderedText(content),
           },
         ]
   })
@@ -104,7 +95,7 @@ function hasInvalidAnchorStructure(markup: string) {
   return depth !== 0
 }
 
-function formatProjectActionCard({ cardType, project }: ProjectActionCardCase) {
+function formatProjectCard({ cardType, project }: ProjectCardCase) {
   return `${project.path} (${cardType})`
 }
 
@@ -142,7 +133,7 @@ const expectedCatalogNumbers = [
   ...buildingProjects.map(catalogProjectNumber),
   ...otherProjects.map(catalogProjectNumber),
 ]
-const showcaseCardCases: readonly ProjectActionCardCase[] = showcaseProjects.map((project) => ({
+const showcaseCardCases: readonly ProjectCardCase[] = showcaseProjects.map((project) => ({
   cardType: "showcase",
   markup: renderToStaticMarkup(createElement(ProjectCard, { project })),
   project,
@@ -159,10 +150,7 @@ const catalogCardCases = [buildingProjects, otherProjects].flatMap((projects) =>
     project,
   })),
 )
-const projectActionCardCases: readonly ProjectActionCardCase[] = [
-  ...showcaseCardCases,
-  ...catalogCardCases,
-]
+const projectCardCases: readonly ProjectCardCase[] = [...showcaseCardCases, ...catalogCardCases]
 const cardsWithInvalidLifecycle = catalogCardCases.filter(({ markup, project }) => {
   const renderedLifecycle = markup.match(/\sdata-lifecycle="([^"]+)"/)?.[1]
 
@@ -176,12 +164,25 @@ const cardsWithInvalidArchiveBadge = catalogCardCases.filter(({ markup, project 
 
   return badgeCount !== expectedBadgeCount
 })
-const cardsWithInvalidSourceAction = projectActionCardCases.filter(({ markup, project }) => {
+const cardsWithInvalidPrimaryLink = projectCardCases.filter(({ markup, project }) => {
+  const primaryLinks = getAnchorAttributes(markup).filter(
+    (attributes) => readHtmlAttribute(attributes, "data-project-primary-link") === "true",
+  )
+  const primaryLink = primaryLinks[0] ?? ""
+
+  return (
+    primaryLinks.length !== 1 ||
+    readHtmlAttribute(primaryLink, "href") !== projectPrimaryUrl(project) ||
+    readHtmlAttribute(primaryLink, "aria-label") !==
+      `View ${project.title} source on GitHub (opens in a new tab)`
+  )
+})
+const cardsWithInvalidSourceAction = projectCardCases.filter(({ markup, project }) => {
   const sourceActions = getRenderedProjectActions(markup).filter(({ kind }) => kind === "source")
 
   return sourceActions.length !== 1 || sourceActions[0]?.href !== projectSourceUrl(project.path)
 })
-const cardsWithInvalidExternalAction = projectActionCardCases.filter(({ markup, project }) => {
+const cardsWithInvalidExternalAction = projectCardCases.filter(({ markup, project }) => {
   const externalActions = getRenderedProjectActions(markup).filter(({ kind }) => kind !== "source")
   const expectedAction = project.externalAction
 
@@ -195,11 +196,11 @@ const cardsWithInvalidExternalAction = projectActionCardCases.filter(({ markup, 
     externalActions[0]?.href !== expectedAction.url
   )
 })
-const cardsWithInvalidActionOrder = projectActionCardCases.filter(({ markup, project }) => {
+const cardsWithInvalidActionOrder = projectCardCases.filter(({ markup, project }) => {
   const renderedKinds = getRenderedProjectActions(markup).map(({ kind }) => kind)
   const expectedKinds = [
-    "source",
     ...(project.externalAction === undefined ? [] : [project.externalAction.kind]),
+    "source",
   ]
 
   return (
@@ -207,20 +208,19 @@ const cardsWithInvalidActionOrder = projectActionCardCases.filter(({ markup, pro
     renderedKinds.some((kind, index) => kind !== expectedKinds[index])
   )
 })
-const cardsWithInvalidActionLabels = projectActionCardCases.filter(({ markup }) =>
-  getRenderedProjectActions(markup).some(
-    ({ kind, label }) =>
-      projectActionLabels[kind] === undefined || label !== projectActionLabels[kind],
-  ),
-)
-const cardsWithUnmarkedAnchors = projectActionCardCases.filter(({ markup }) => {
+const cardsWithInvalidLinkRoles = projectCardCases.filter(({ markup }) => {
   const anchorAttributes = getAnchorAttributes(markup)
 
-  return anchorAttributes.some(
-    (attributes) => readHtmlAttribute(attributes, "data-project-action") === undefined,
-  )
+  return anchorAttributes.some((attributes) => {
+    const primaryMarker = readHtmlAttribute(attributes, "data-project-primary-link")
+    const actionMarker = readHtmlAttribute(attributes, "data-project-action")
+    const hasPrimaryRole = primaryMarker !== undefined
+    const hasActionRole = actionMarker !== undefined
+
+    return hasPrimaryRole === hasActionRole || (hasPrimaryRole && primaryMarker !== "true")
+  })
 })
-const cardsWithInvalidAnchorStructure = projectActionCardCases.filter(({ markup }) =>
+const cardsWithInvalidAnchorStructure = projectCardCases.filter(({ markup }) =>
   hasInvalidAnchorStructure(markup),
 )
 const errors: string[] = []
@@ -327,10 +327,18 @@ if (cardsWithInvalidArchiveBadge.length > 0) {
   )
 }
 
+if (cardsWithInvalidPrimaryLink.length > 0) {
+  errors.push(
+    `Project card primary links do not match their configured destinations: ${cardsWithInvalidPrimaryLink
+      .map(formatProjectCard)
+      .join(", ")}`,
+  )
+}
+
 if (cardsWithInvalidSourceAction.length > 0) {
   errors.push(
     `Project cards do not render exactly one derived Source action: ${cardsWithInvalidSourceAction
-      .map(formatProjectActionCard)
+      .map(formatProjectCard)
       .join(", ")}`,
   )
 }
@@ -338,31 +346,23 @@ if (cardsWithInvalidSourceAction.length > 0) {
 if (cardsWithInvalidExternalAction.length > 0) {
   errors.push(
     `Project card external actions do not match configuration: ${cardsWithInvalidExternalAction
-      .map(formatProjectActionCard)
+      .map(formatProjectCard)
       .join(", ")}`,
   )
 }
 
 if (cardsWithInvalidActionOrder.length > 0) {
   errors.push(
-    `Project card actions do not render in Source-then-external order: ${cardsWithInvalidActionOrder
-      .map(formatProjectActionCard)
+    `Project card actions do not render in external-then-Source order: ${cardsWithInvalidActionOrder
+      .map(formatProjectCard)
       .join(", ")}`,
   )
 }
 
-if (cardsWithInvalidActionLabels.length > 0) {
+if (cardsWithInvalidLinkRoles.length > 0) {
   errors.push(
-    `Project card action labels do not match Source, Live, or Install semantics: ${cardsWithInvalidActionLabels
-      .map(formatProjectActionCard)
-      .join(", ")}`,
-  )
-}
-
-if (cardsWithUnmarkedAnchors.length > 0) {
-  errors.push(
-    `Project cards contain links without data-project-action: ${cardsWithUnmarkedAnchors
-      .map(formatProjectActionCard)
+    `Project card links do not declare exactly one primary or action role: ${cardsWithInvalidLinkRoles
+      .map(formatProjectCard)
       .join(", ")}`,
   )
 }
@@ -372,9 +372,7 @@ if (cardsWithInvalidAnchorStructure.length > 0 || hasInvalidAnchorStructure(html
     `Static markup contains nested or unbalanced anchors${
       cardsWithInvalidAnchorStructure.length === 0
         ? ""
-        : ` in project cards: ${cardsWithInvalidAnchorStructure
-            .map(formatProjectActionCard)
-            .join(", ")}`
+        : ` in project cards: ${cardsWithInvalidAnchorStructure.map(formatProjectCard).join(", ")}`
     }`,
   )
 }
@@ -464,5 +462,5 @@ if (errors.length > 0) {
 }
 
 console.log(
-  `Validated static markup with ${ids.length} IDs, ${linkHrefs.length} links, ${projectActionCardCases.length} project cards, ${fragmentTargets.length} fragment targets, ${headingLevels.length} headings, ${buttonMatches.length} buttons, and ${imageTags.length} images.`,
+  `Validated static markup with ${ids.length} IDs, ${linkHrefs.length} links, ${projectCardCases.length} project cards, ${fragmentTargets.length} fragment targets, ${headingLevels.length} headings, ${buttonMatches.length} buttons, and ${imageTags.length} images.`,
 )
