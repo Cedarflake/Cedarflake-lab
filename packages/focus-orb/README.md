@@ -2,6 +2,26 @@
 
 React WebGL focus orb component. It can be used as a round button or as a contained ambient surface.
 
+## Distribution Status
+
+Version 0.1.0 is a release candidate. This repository currently supports it through `workspace:*` and does not document an npm installation channel or a public demo URL.
+
+The package targets React 18.2 or 19. Its visual renderer requires browser DOM APIs and WebGL 2; the built import and type surface is checked through the demo's package-consumer fixture. Use `onError` when the host needs an explicit fallback for unavailable WebGL or texture loading.
+
+Before the first external publication, a maintainer must verify ownership of the `@cedarflake` npm scope, confirm the official registry target, authorize the release write, and create a version-matching project tag. `publishConfig` and a successful package dry run establish release readiness; they do not prove that a registry publication exists.
+
+## Release Candidate Validation
+
+Run these commands from the repository root:
+
+```bash
+pnpm --filter @cedarflake/focus-orb check
+pnpm --filter @cedarflake/focus-orb pack:check
+pnpm check:focus-orb-package
+```
+
+`pack:check` builds the package, tests the package-contract validator, and inspects the actual `pnpm pack --dry-run` file list. It rejects missing public export targets, undeclared package files, required contract metadata drift, and a dry-run-selected package-file total above the 300 KiB budget. The root integration check additionally type-checks the demo's package-consumer fixture against the built public API.
+
 ## Source Layout
 
 `src/index.ts` is the public package entry. Internal implementation is split by responsibility:

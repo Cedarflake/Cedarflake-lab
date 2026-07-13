@@ -20,7 +20,8 @@
     "dist"
   ],
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -40,6 +41,8 @@
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json --emitDeclarationOnly && node scripts/copyAssets.mjs",
     "check": "tsc -p tsconfig.json --noEmit",
+    "pack:check": "pnpm run build && pnpm run test:package-contract && node scripts/checkPackage.mjs",
+    "test:package-contract": "node --test scripts/packageContract.test.mjs",
     "prepack": "pnpm run build"
   },
   "peerDependencies": {

@@ -24,7 +24,7 @@
     "dev:shika": "pnpm --filter shika dev",
     "email": "pnpm --filter personal_email email",
     "render:email": "pnpm --filter personal_email render:email",
-    "check:focus-orb-package": "pnpm --filter @cedarflake/focus-orb build && pnpm --filter @cedarflake/focus-orb-demo exec tsc -p package-consumer/tsconfig.json --noEmit",
+    "check:focus-orb-package": "pnpm --filter @cedarflake/focus-orb pack:check && pnpm --filter @cedarflake/focus-orb-demo exec tsc -p package-consumer/tsconfig.json --noEmit",
     "test:repository-contract": "tsx --test scripts/repository-contract/*.test.ts",
     "typecheck:repository-contract": "tsc -p tsconfig.repository-contract.json --noEmit"
   },

@@ -4,9 +4,9 @@ Reusable frontend packages in the Cedarflake Lab monorepo.
 
 ## Packages
 
-| Path | Project |
-| --- | --- |
-| `focus-orb` | React WebGL focus orb component. |
+| Path        | Project                          | Distribution                                               |
+| ----------- | -------------------------------- | ---------------------------------------------------------- |
+| `focus-orb` | React WebGL focus orb component. | Release candidate; the repository documents workspace consumption only. |
 
 ## License
 

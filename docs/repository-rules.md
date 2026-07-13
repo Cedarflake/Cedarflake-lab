@@ -152,7 +152,9 @@ For `packages/<slug>`:
 2. Add the package to the landing catalog.
 3. Provide a project README, local license, and package manifest.
 4. For a publishable package, make `repository.directory` match the real repository path, make `homepage` and `bugs` resolve to their documented destinations, and verify every `files` and export path exists after build.
-5. When the public API changes, validate the package and every repository workspace whose manifest depends on it and whose source calls the changed API. If no such workspace exists, add or update a fixture or demo that imports the built public export instead of a source-only alias.
+5. A publishable package must expose a deterministic pack check that builds the package, inspects the package manager's real dry-run file list, rejects missing public targets and unintended source or tooling files, and enforces a reviewed size budget.
+6. `publishConfig`, a successful dry run, and a locally generated tarball prove only release readiness. Before claiming an install command or registry URL, verify the external package exists. Before a first publication, also verify registry ownership, the intended official registry, authentication or trusted-publishing configuration, and the authorized release identity.
+7. When the public API changes, validate the package and every repository workspace whose manifest depends on it and whose source calls the changed API. If no such workspace exists, add or update a fixture or demo that imports the built public export instead of a source-only alias.
 
 ### 7.3 Python Workbench Project
 
@@ -258,6 +260,21 @@ Do not edit build output such as `dist/`, `.next/`, coverage, artifacts, or cach
 
 Node and build-policy compatibility requires `pnpm install --frozen-lockfile` to pass under the repository's strict Node policy. A native dependency must not appear in both `allowBuilds` and `ignoredBuiltDependencies`.
 
+### 10.1 Release Authorization and Tags
+
+Release preparation is an ordinary repository change; publishing is an external write. Authorization to edit, commit, push a branch, or open a pull request does not by itself authorize any of these actions:
+
+- Creating or pushing a version tag.
+- Creating or modifying a GitHub Release or its assets.
+- Publishing to npm, another registry, a browser-extension store, or a userscript catalog.
+- Creating registry credentials, repository secrets, environments, or trusted-publisher bindings.
+
+In this multi-project repository, new project release tags use `<project-slug>-v<SemVer>`, such as `focus-orb-v0.1.0` or `youtube-auto-resume-v0.4.0`. The tag version must exactly equal the owning manifest or generated metadata version, and the tag must point to a commit where the project-specific release check passed. Do not create repository-wide version tags for a single-project release.
+
+A release workflow must use a project-scoped `project-<slug>-release.yml` filename and tag prefix, verify tag-to-version equality before writing, rebuild and validate the distributable, publish checksums with immutable assets, remain safe to rerun, and grant write permissions only to the release job. Do not add registry publication until the registry identity and authentication path are verified.
+
+A userscript may intentionally use a committed raw `main` artifact as its install and update channel. In that model, keep the project README, generated `@downloadURL`, and generated `@updateURL` identical, and treat a GitHub Release asset as an immutable archive unless the project explicitly migrates its update channel. Do not use the repository-wide `releases/latest/download` URL for one project in a multi-project repository because another project's release can become latest.
+
 ## 11. GitHub Actions Rules
 
 Workflow filenames use:
@@ -351,7 +368,7 @@ Run the smallest owning checks first:
 | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Ordinary app or package                          | Always run `pnpm --filter <package-name> check`. Also run `build` after changes to source, public assets, build configuration, dependency manifests or importer resolutions, generator inputs, or other files consumed by the build.                                   |
 | Landing catalog, metadata, components, or styles | Run `pnpm --filter @cedarflake/landing check` and `pnpm --filter @cedarflake/landing build` for every production-visible catalog, component, style, document, SEO, asset, or deployment change.                                                                        |
-| Focus Orb package/demo                           | Run both workspace `check` scripts and `pnpm check:focus-orb-package`. Build the demo when its source, assets, or build inputs change.                                                                                                                                 |
+| Focus Orb package/demo                           | Run both workspace `check` scripts and `pnpm check:focus-orb-package`; the root check includes the package dry-run contract and built-consumer fixture. Build the demo when its source, assets, or build inputs change.                                                |
 | Liminal Drift gameplay, rendering, input, or UI  | Run the project `check` plus its documented canvas and interaction browser checks.                                                                                                                                                                                     |
 | Userscript with committed output                 | Run the project `check`. Inspect its script definition: run `build:check` and browser tests separately only when `check` does not already include them. Install every documented browser prerequisite first.                                                           |
 | Python workbench                                 | Run `uvx ruff format --check workbench`, `uvx ruff check workbench`, and the affected project's README- or CI-declared tests.                                                                                                                                          |
@@ -386,6 +403,7 @@ Before considering any repository change complete, confirm:
 - [ ] Landing path, presentation, date, external URL, and cover are correct; `lifecycle` is present only for building and others catalog entries.
 - [ ] Public Live URLs were verified and synchronized.
 - [ ] Workspace metadata, lockfiles, and generated artifacts are current.
+- [ ] Distribution claims distinguish a validated release candidate from an externally verified package, tag, Release, or install channel.
 - [ ] Every documented browser, binary, service, and environment prerequisite is reproducible on a new machine.
 - [ ] CI naming, trigger scope, commands, and manual test/audit lists are current.
 - [ ] Repository contract policy, checker scope, diagnostics, and fixtures agree; `pnpm check:repository-contract` passed when an owned invariant changed.

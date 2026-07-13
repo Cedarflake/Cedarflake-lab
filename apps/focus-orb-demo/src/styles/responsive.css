@@ -21,7 +21,7 @@
     padding: 16px 18px;
   }
 
-  .install-command {
+  .workspace-command {
     width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
