@@ -10,6 +10,7 @@
   "scripts": {
     "build": "pnpm -r --workspace-concurrency=1 --filter \"./apps/**\" --filter \"./packages/**\" --filter \"./others/userscripts/**\" --if-present build",
     "check": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --filter \"./others/userscripts/**\" --if-present check && pnpm check:focus-orb-package",
+    "check:workflows": "pnpm --filter @cedarflake/landing exec prettier --check \"../../.github/workflows/*.yml\"",
     "lint": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --filter \"./others/userscripts/**\" --if-present lint",
     "typecheck": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --filter \"./others/userscripts/**\" --if-present typecheck",
     "format": "pnpm -r --filter \"./apps/**\" --filter \"./packages/**\" --filter \"./others/userscripts/**\" --if-present format",

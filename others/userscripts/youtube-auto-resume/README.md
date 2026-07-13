@@ -25,13 +25,16 @@ Automatic ad skipping is disabled by default. Enable it from the floating launch
 
 The project uses Node.js 22, pnpm, TypeScript, and esbuild.
 
+Run these commands from the repository root. Chromium installation is required once on a new machine because `pnpm check` includes the Playwright panel test.
+
 ```bash
 pnpm install
-pnpm build
-pnpm check
+pnpm --dir others/userscripts/youtube-auto-resume exec playwright install chromium
+pnpm --filter @cedarflake/youtube-auto-resume build
+pnpm --filter @cedarflake/youtube-auto-resume check
 ```
 
-`pnpm build` writes the installable userscript to `dist/youtube-auto-resume.user.js`. Do not edit the generated file directly. `pnpm build:check` verifies that the committed build matches the TypeScript source.
+`pnpm --filter @cedarflake/youtube-auto-resume build` writes the installable userscript to `dist/youtube-auto-resume.user.js`. Do not edit the generated file directly. `pnpm --filter @cedarflake/youtube-auto-resume build:check` verifies that the committed build matches the TypeScript source.
 
 ## Structure
 
