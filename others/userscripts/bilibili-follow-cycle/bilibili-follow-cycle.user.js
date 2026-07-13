@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name         Custom Bilibili Auto Follow/Unfollow
 // @namespace    https://github.com/Cedarflake/Cedarflake-lab/
-// @version      5.9.3
+// @version      5.9.4
 // @description  A script to automatically follow/unfollow on Bilibili with enhanced UI and controls.
 // @author       Larch4, Cedarflake
-// @homepageURL  https://github.com/Cedarflake/Cedarflake-lab/tree/main/others/userscripts/bilibili-follow-cycle
+// @homepageURL  https://github.com/Cedarflake/Cedarflake-Lab/tree/main/others/userscripts/bilibili-follow-cycle
 // @match        https://space.bilibili.com/*
 // @grant        none
 // @license      GNU Affero General Public License v3.0
-// @downloadURL https://update.greasyfork.org/scripts/512572/Custom%20Bilibili%20Auto%20FollowUnfollow.user.js
-// @updateURL https://update.greasyfork.org/scripts/512572/Custom%20Bilibili%20Auto%20FollowUnfollow.meta.js
+// @downloadURL  https://raw.githubusercontent.com/Cedarflake/Cedarflake-Lab/main/others/userscripts/bilibili-follow-cycle/bilibili-follow-cycle.user.js
+// @updateURL    https://raw.githubusercontent.com/Cedarflake/Cedarflake-Lab/main/others/userscripts/bilibili-follow-cycle/bilibili-follow-cycle.user.js
 // ==/UserScript==
 
 (function () {

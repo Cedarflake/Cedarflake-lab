@@ -20,7 +20,11 @@ export const otherProjectEntries = [
   {
     title: "Bilibili Follow Cycle",
     path: "others/userscripts/bilibili-follow-cycle",
-    updatedAt: "2026-07-11T01:01:23+08:00",
+    externalAction: {
+      kind: "install",
+      url: "https://raw.githubusercontent.com/Cedarflake/Cedarflake-Lab/main/others/userscripts/bilibili-follow-cycle/bilibili-follow-cycle.user.js",
+    },
+    updatedAt: "2026-07-13T23:30:17+08:00",
     summary:
       "A browser userscript for controlled follow and unfollow cycles with interval and log panels.",
     label: "Userscript",
