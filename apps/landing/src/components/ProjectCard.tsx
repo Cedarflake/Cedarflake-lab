@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from "react"
-import { ArrowUpRight } from "lucide-react"
 
 import { siteConfig } from "../config/site"
-import { projectUrl } from "../lib/projectCatalog"
 import type { ShowcaseProject } from "../types/project"
+import { ProjectActions } from "./ProjectActions"
 
 interface ProjectCardProps {
   project: ShowcaseProject
@@ -40,7 +39,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
   return (
     <article className="project-card">
-      <a className="project-card__link" href={projectUrl(project)} rel="noreferrer" target="_blank">
+      <div className="project-card__surface">
         <div className="project-card__cover" data-load-state={coverLoadState}>
           <img
             ref={coverImageRef}
@@ -64,20 +63,20 @@ export function ProjectCard({ project }: ProjectCardProps) {
           </div>
           <div className="project-card__title-row">
             <h3>{project.title}</h3>
-            <ArrowUpRight aria-hidden="true" />
           </div>
           <p className="project-card__summary">{project.summary}</p>
-          <div className="project-card__footer">
+          <footer className="project-card__footer">
             <ul className="tag-list" aria-label={`${project.title} technologies`}>
               {tags.map((tag) => (
                 <li key={tag}>{tag}</li>
               ))}
             </ul>
             <code className="source-path">{project.path}</code>
-          </div>
-          {note ? <span className="project-card__note">{note}</span> : null}
+            {note ? <span className="project-card__note">{note}</span> : null}
+            <ProjectActions project={project} />
+          </footer>
         </div>
-      </a>
+      </div>
     </article>
   )
 }

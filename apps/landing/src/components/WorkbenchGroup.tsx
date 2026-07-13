@@ -9,7 +9,7 @@ import {
   type LucideIcon,
 } from "lucide-react"
 
-import { projectUrl } from "../lib/projectCatalog"
+import { projectSourceUrl } from "../lib/projectCatalog"
 import type { WorkbenchGroupData, WorkbenchIconName } from "../types/project"
 
 const workbenchIconByName = {
@@ -37,7 +37,7 @@ export function WorkbenchGroup({ group }: WorkbenchGroupProps) {
       <ul className="workbench-list">
         {group.items.map((item) => (
           <li key={item.path}>
-            <a href={projectUrl(item)} rel="noreferrer" target="_blank">
+            <a href={projectSourceUrl(item.path)} rel="noreferrer" target="_blank">
               <div>
                 <strong>{item.title}</strong>
                 <code className="source-path">{item.path}</code>

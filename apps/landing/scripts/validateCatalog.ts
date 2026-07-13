@@ -295,7 +295,37 @@ function validateCover(projectPath: string, cover: ProjectCover) {
   }
 }
 
+function validateWorkbenchExternalActionGuard() {
+  const invalidWorkbenchProject = {
+    title: "Invalid Workbench Action Fixture",
+    path: "workbench/fixtures/invalid-external-action",
+    updatedAt: "2026-07-13T00:00:00Z",
+    summary: "Exercises the runtime guard for source-only workbench entries.",
+    kind: "workbench",
+    presentation: "workbench",
+    section: "workbench",
+    category: "fixtures",
+    externalAction: {
+      kind: "live",
+      url: "https://example.com/",
+    },
+  } as const
+
+  try {
+    validateProjectCatalog([invalidWorkbenchProject as unknown as ProjectEntry])
+    errors.push("Workbench externalAction guard accepted an invalid fixture")
+  } catch (error) {
+    if (
+      !(error instanceof Error) ||
+      !error.message.startsWith("Workbench project cannot define externalAction:")
+    ) {
+      errors.push("Workbench externalAction guard returned an unexpected validation error")
+    }
+  }
+}
+
 validateProjectCatalog(projects)
+validateWorkbenchExternalActionGuard()
 
 const discoveredProjectPaths = discoverProjectPaths()
 

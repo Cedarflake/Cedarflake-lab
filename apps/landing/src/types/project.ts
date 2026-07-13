@@ -1,7 +1,13 @@
 export type ProjectKind = "app" | "package" | "workbench" | "other"
 export type ProjectLifecycle = "active" | "archived"
+export type ProjectExternalActionKind = "live" | "install"
 export type WorkbenchIconName =
   "brain-circuit" | "workflow" | "folder-open" | "gamepad-2" | "images" | "network"
+
+export interface ProjectExternalAction {
+  kind: ProjectExternalActionKind
+  url: `https://${string}`
+}
 
 export interface ProjectCover {
   src: `/covers/${string}.png`
@@ -23,17 +29,20 @@ interface ProjectBase {
   updatedAt: string
   summary: string
   kind: ProjectKind
-  externalUrl?: string
   showcase?: ProjectShowcase
 }
 
-export interface FeaturedProject extends ProjectBase {
+interface ProjectActionable {
+  externalAction?: ProjectExternalAction
+}
+
+export interface FeaturedProject extends ProjectBase, ProjectActionable {
   presentation: "featured"
   section: "featured"
   showcase: ProjectShowcase
 }
 
-export interface CatalogProject extends ProjectBase {
+export interface CatalogProject extends ProjectBase, ProjectActionable {
   presentation: "catalog"
   section: "building" | "others"
   label: string
@@ -44,6 +53,7 @@ export interface WorkbenchProject<Category extends string = string> extends Proj
   presentation: "workbench"
   section: "workbench"
   category: Category
+  externalAction?: never
 }
 
 export type ProjectEntry = FeaturedProject | CatalogProject | WorkbenchProject

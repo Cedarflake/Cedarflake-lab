@@ -1,7 +1,5 @@
-import { ArrowUpRight } from "lucide-react"
-
-import { projectUrl } from "../lib/projectCatalog"
 import type { CatalogProject } from "../types/project"
+import { ProjectActions } from "./ProjectActions"
 
 interface CatalogCardProps {
   displayNumber: string
@@ -13,7 +11,7 @@ export function CatalogCard({ displayNumber, project }: CatalogCardProps) {
 
   return (
     <article className="catalog-card" data-lifecycle={project.lifecycle}>
-      <a href={projectUrl(project)} rel="noreferrer" target="_blank">
+      <div className="catalog-card__surface">
         <div className="catalog-card__topline">
           <span>{displayNumber}</span>
           <div className="catalog-card__labels">
@@ -23,11 +21,13 @@ export function CatalogCard({ displayNumber, project }: CatalogCardProps) {
         </div>
         <div className="catalog-card__title-row">
           <h3>{project.title}</h3>
-          <ArrowUpRight aria-hidden="true" />
         </div>
         <p>{project.summary}</p>
-        <code className="source-path">{project.path}</code>
-      </a>
+        <footer className="catalog-card__footer">
+          <code className="source-path">{project.path}</code>
+          <ProjectActions project={project} />
+        </footer>
+      </div>
     </article>
   )
 }

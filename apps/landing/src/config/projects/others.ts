@@ -4,6 +4,10 @@ export const otherProjectEntries = [
   {
     title: "YouTube Auto Resume",
     path: "others/userscripts/youtube-auto-resume",
+    externalAction: {
+      kind: "install",
+      url: "https://raw.githubusercontent.com/Cedarflake/Cedarflake-Lab/main/others/userscripts/youtube-auto-resume/dist/youtube-auto-resume.user.js",
+    },
     updatedAt: "2026-07-13T13:05:36+08:00",
     summary:
       "A YouTube userscript for playback recovery, guarded ad handling, and a resilient Shadow DOM panel with a persistent Aurora launcher.",
