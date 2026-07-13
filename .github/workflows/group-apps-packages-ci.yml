@@ -1,4 +1,4 @@
-name: Workspace CI
+name: "[Group] Apps & Packages CI"
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ on:
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
       - "tsconfig.base.json"
-      - ".github/workflows/workspace-ci.yml"
+      - ".github/workflows/group-apps-packages-ci.yml"
   push:
     branches:
       - main
@@ -25,7 +25,7 @@ on:
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
       - "tsconfig.base.json"
-      - ".github/workflows/workspace-ci.yml"
+      - ".github/workflows/group-apps-packages-ci.yml"
 
 permissions:
   contents: read

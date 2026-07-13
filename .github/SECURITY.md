@@ -20,4 +20,10 @@ The maintainer will make a best effort to acknowledge the report privately, asse
 
 ## Repository Security Checks
 
-Dependabot checks repository-level GitHub Actions references for updates, and CodeQL runs from the repository-level GitHub configuration. Workspace CI audits production dependencies and runs repository checks and builds. Liminal Drift additionally runs bundle-budget validation and browser smoke checks.
+Dependabot checks repository-level GitHub Actions references for updates. The automated checks are split by ownership and cost:
+
+- **[Repo] CodeQL Security (JS/TS)** scans JavaScript and TypeScript across the repository.
+- **[Group] Apps & Packages CI** audits production dependencies, checks apps and packages, and builds them.
+- **[Group] Workbench Python CI** checks formatting and lint, runs the registered Python tests, and audits the dependency sets registered in its audit matrix.
+- **[Project] Liminal Drift CI** adds bundle-budget validation and browser smoke checks for Liminal Drift.
+- **[Project] YouTube Auto Resume CI** runs the userscript checks and Chromium end-to-end coverage without expanding the apps/packages workflow.

@@ -8,5 +8,5 @@ Follow the existing project style first.
 - Use TypeScript strictness: avoid `any`, avoid non-null assertions, and prefer precise interfaces for object shapes.
 - Do not introduce system-font-only UI. Bundle or explicitly document project fonts.
 - Keep the Three.js scene full-bleed and verify desktop and mobile screenshots after visual changes.
-- Run `pnpm format`, `pnpm check`, `pnpm check:canvas -- <url>`, and `pnpm check:interaction -- <url>` before committing changes that affect gameplay, rendering, input, or UI.
-- Commit locally with Conventional Commits. Do not push unless explicitly asked.
+- Run commands from the repository root. For changes that affect gameplay, rendering, input, or UI, run `pnpm --filter liminal-drift format:check`, `pnpm --filter liminal-drift check`, `pnpm --filter liminal-drift check:canvas -- <url>`, and `pnpm --filter liminal-drift check:interaction -- <url>`.
+- Use Conventional Commits when the task explicitly requests a commit. Do not commit or push otherwise.

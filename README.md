@@ -43,3 +43,7 @@ Python workbench checks:
 uvx ruff format workbench
 uvx ruff check workbench
 ```
+
+## Repository Maintenance
+
+See [Repository Rules](./docs/repository-rules.md) before adding, moving, archiving, or deleting a project. The rules define when to update the landing catalog, README indexes, Live links, licenses, workspace metadata, and CI.

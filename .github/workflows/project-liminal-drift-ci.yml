@@ -1,17 +1,17 @@
-name: Liminal Drift CI
+name: "[Project] Liminal Drift CI"
 
 on:
   workflow_dispatch:
   pull_request:
     paths:
       - "apps/liminal-drift/**"
-      - ".github/workflows/liminal-drift-ci.yml"
+      - ".github/workflows/project-liminal-drift-ci.yml"
   push:
     branches:
       - main
     paths:
       - "apps/liminal-drift/**"
-      - ".github/workflows/liminal-drift-ci.yml"
+      - ".github/workflows/project-liminal-drift-ci.yml"
 
 permissions:
   contents: read

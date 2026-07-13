@@ -1,4 +1,4 @@
-name: CodeQL
+name: "[Repo] CodeQL Security (JS/TS)"
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ on:
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
       - "tsconfig.base.json"
-      - ".github/workflows/codeql.yml"
+      - ".github/workflows/repo-codeql-security.yml"
   push:
     branches:
       - main
@@ -23,7 +23,7 @@ on:
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
       - "tsconfig.base.json"
-      - ".github/workflows/codeql.yml"
+      - ".github/workflows/repo-codeql-security.yml"
   schedule:
     - cron: "24 3 * * 1"
 

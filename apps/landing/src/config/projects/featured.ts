@@ -4,6 +4,7 @@ export const featuredProjectEntries = [
   {
     title: "Copilot Task Study",
     path: "apps/copilot-task",
+    externalUrl: "https://3kf1.test.i0c.cc/",
     updatedAt: "2026-07-11T11:20:33+08:00",
     summary:
       "A motion-led recreation of the animated Copilot Tasks preview, rebuilt in React for close study.",
@@ -25,6 +26,7 @@ export const featuredProjectEntries = [
   {
     title: "Liminal Drift",
     path: "apps/liminal-drift",
+    externalUrl: "https://4po7.test.i0c.cc/",
     updatedAt: "2026-07-11T12:40:45+08:00",
     summary:
       "A dreamcore 3D driving game about pastel highways, memory fragments, and half-remembered exits.",
@@ -45,6 +47,7 @@ export const featuredProjectEntries = [
   {
     title: "Maimai Transition",
     path: "apps/maimai-transition",
+    externalUrl: "https://7gkp.test.i0c.cc/",
     updatedAt: "2026-07-11T11:20:33+08:00",
     summary:
       "A kinetic scene-swap study that turns a rhythm-game-inspired opening into a reusable transition.",

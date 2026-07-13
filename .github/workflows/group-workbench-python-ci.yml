@@ -1,4 +1,4 @@
-name: Workbench Python CI
+name: "[Group] Workbench Python CI"
 
 on:
   workflow_dispatch:
@@ -6,14 +6,14 @@ on:
     paths:
       - "workbench/**"
       - "pyproject.toml"
-      - ".github/workflows/workbench-python-ci.yml"
+      - ".github/workflows/group-workbench-python-ci.yml"
   push:
     branches:
       - main
     paths:
       - "workbench/**"
       - "pyproject.toml"
-      - ".github/workflows/workbench-python-ci.yml"
+      - ".github/workflows/group-workbench-python-ci.yml"
 
 permissions:
   contents: read

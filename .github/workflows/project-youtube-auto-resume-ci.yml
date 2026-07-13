@@ -1,17 +1,17 @@
-name: YouTube Auto Resume CI
+name: "[Project] YouTube Auto Resume CI"
 
 on:
   workflow_dispatch:
   pull_request:
     paths:
       - "others/userscripts/youtube-auto-resume/**"
-      - ".github/workflows/youtube-auto-resume-ci.yml"
+      - ".github/workflows/project-youtube-auto-resume-ci.yml"
   push:
     branches:
       - main
     paths:
       - "others/userscripts/youtube-auto-resume/**"
-      - ".github/workflows/youtube-auto-resume-ci.yml"
+      - ".github/workflows/project-youtube-auto-resume-ci.yml"
 
 permissions:
   contents: read
