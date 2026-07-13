@@ -4,15 +4,17 @@ A userscript for recovering paused YouTube playback and handling ads from a resi
 
 ## Status
 
-Active. Version 0.3.0 focuses on playback recovery, guarded ad handling, and panel resilience; automatic quality selection is no longer included.
+Active. Version 0.4.0 adds an Aurora launcher while retaining the playback recovery, guarded ad handling, and panel resilience introduced in 0.3.0; automatic quality selection is no longer included.
 
 ## Features
 
 - Resumes playback after a configurable pause threshold
 - Handles ads with visible controls first, then a finite seekable fallback only for the active player YouTube explicitly marks as an ad
-- Provides a YouTube-inspired control panel isolated with Shadow DOM
+- Provides a YouTube-inspired Shadow DOM panel whose collapsed launcher keeps a full Aurora ring and switches to pointer-tracked edge light on hover
 - Reattaches the panel when YouTube's single-page navigation replaces page content
 - Exposes userscript menu commands for opening and resetting the panel
+
+The launcher adapts the layered glow documented by the repository's [Google AI Mode Aurora interface study](../../interface-studies/google-ai-mode-aurora/). One Aurora layer morphs continuously between states: the initial sweep expands into a complete ring, hover contracts that ring toward the pointer, and leaving expands it back. This keeps the static and dynamic shapes mutually exclusive without a hard visual cut. Pointer tracking stops while hidden or destroyed; reduced motion skips the sweep and keeps hover feedback static.
 
 ## Install
 
@@ -63,6 +65,7 @@ Every change that alters the generated userscript must also increase `package.js
 ```text
 scripts/build.ts        esbuild configuration and userscript metadata
 src/core/settings.ts    normalized persistent settings
+src/ui/fabAurora.ts     launcher Aurora rendering and interaction state
 src/ui/panel.ts         isolated and resilient panel view
 src/youtube/            YouTube player and ad-control integrations
 src/app.ts              application state and scheduling

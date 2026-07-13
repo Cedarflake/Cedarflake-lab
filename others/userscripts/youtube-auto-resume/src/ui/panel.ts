@@ -4,6 +4,7 @@ import {
   type Settings,
   type SettingsSaveResult,
 } from "../core/settings.ts"
+import { mountFabAurora, type FabAuroraController } from "./fabAurora.ts"
 import { createIcon } from "./icons.ts"
 
 const HOST_ID = "auto-chick-yt-auto-resume-host"
@@ -40,25 +41,208 @@ const PANEL_CSS = `
   }
 
   .fab {
+    position: relative;
+    isolation: isolate;
     display: flex;
     align-items: center;
     justify-content: center;
     width: 48px;
     height: 48px;
+    overflow: visible;
     padding: 0;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 0;
     border-radius: 50%;
     outline: none;
-    background: rgba(33, 33, 33, 0.96);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    background: transparent;
     color: #ff0000;
     cursor: pointer;
-    backdrop-filter: blur(8px);
-    transition: background-color 0.2s, transform 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.2s;
   }
 
-  .fab:hover {
-    background: rgba(63, 63, 63, 0.98);
+  .fab-aurora {
+    --ytar-fab-aurora-blur: 4px;
+    --ytar-fab-aurora-inset: -1px;
+    --ytar-fab-aurora-scale-x: 1;
+    --ytar-fab-aurora-scale-y: 1;
+    --ytar-fab-aurora-gradient: conic-gradient(
+      #3186ff 34%,
+      #9378ff 37%,
+      #f96bd6 39%,
+      #fc413d 41%,
+      #fc413d 48%,
+      #ff6b2b 50%,
+      #fec700 52%,
+      #ffdb0f 56%,
+      #88de42 58%,
+      #0ebc5f 61%,
+      #0ebc5f 65%,
+      #2eaab2 70%,
+      #00a9bb 72%,
+      #3186ff 73%,
+      #3186ff 83%,
+      #3186ff 100%
+    );
+
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: block;
+    overflow: visible;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .fab-aurora-motion {
+    --ytar-fab-aurora-focus: 0;
+    --ytar-fab-aurora-mask-angle: 0deg;
+    --ytar-fab-aurora-gradient-angle: 0deg;
+    --ytar-fab-aurora-soft-fade-start: 0%;
+    --ytar-fab-aurora-soft-solid-start: 0%;
+    --ytar-fab-aurora-soft-solid-end: 100%;
+    --ytar-fab-aurora-soft-fade-end: 100%;
+    --ytar-fab-aurora-sharp-fade-start: 0%;
+    --ytar-fab-aurora-sharp-solid-start: 0%;
+    --ytar-fab-aurora-sharp-solid-end: 100%;
+    --ytar-fab-aurora-sharp-fade-end: 100%;
+
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: block;
+    border-radius: inherit;
+    opacity: 0;
+    will-change:
+      --ytar-fab-aurora-mask-angle,
+      --ytar-fab-aurora-gradient-angle,
+      opacity;
+  }
+
+  .fab-aurora-stack,
+  .fab-aurora-clip,
+  .fab-aurora-mask,
+  .fab-aurora-gradient {
+    position: absolute;
+    display: block;
+    border-radius: inherit;
+  }
+
+  .fab-aurora-stack,
+  .fab-aurora-mask,
+  .fab-aurora-gradient {
+    inset: 0;
+  }
+
+  .fab-aurora-clip {
+    inset: var(--ytar-fab-aurora-inset);
+    overflow: hidden;
+    backface-visibility: hidden;
+    filter: blur(var(--ytar-fab-aurora-blur));
+    opacity: calc(0.55 + var(--ytar-fab-aurora-focus) * 0.45);
+    transform: translateZ(0);
+  }
+
+  .fab-aurora-clip-sharp {
+    filter: blur(1px);
+    opacity: calc(0.9 + var(--ytar-fab-aurora-focus) * 0.1);
+  }
+
+  .fab-aurora-mask {
+    scale:
+      var(--ytar-fab-aurora-scale-x)
+      var(--ytar-fab-aurora-scale-y);
+    -webkit-mask-image:
+      conic-gradient(
+        from var(--ytar-fab-aurora-mask-angle),
+        transparent 0,
+        transparent var(--ytar-fab-aurora-soft-fade-start),
+        black var(--ytar-fab-aurora-soft-solid-start),
+        black var(--ytar-fab-aurora-soft-solid-end),
+        transparent var(--ytar-fab-aurora-soft-fade-end),
+        transparent 100%
+      );
+    mask-image:
+      conic-gradient(
+        from var(--ytar-fab-aurora-mask-angle),
+        transparent 0,
+        transparent var(--ytar-fab-aurora-soft-fade-start),
+        black var(--ytar-fab-aurora-soft-solid-start),
+        black var(--ytar-fab-aurora-soft-solid-end),
+        transparent var(--ytar-fab-aurora-soft-fade-end),
+        transparent 100%
+      );
+  }
+
+  .fab-aurora-clip-sharp .fab-aurora-mask {
+    -webkit-mask-image:
+      conic-gradient(
+        from var(--ytar-fab-aurora-mask-angle),
+        transparent 0,
+        transparent var(--ytar-fab-aurora-sharp-fade-start),
+        black var(--ytar-fab-aurora-sharp-solid-start),
+        black var(--ytar-fab-aurora-sharp-solid-end),
+        transparent var(--ytar-fab-aurora-sharp-fade-end),
+        transparent 100%
+      );
+    mask-image:
+      conic-gradient(
+        from var(--ytar-fab-aurora-mask-angle),
+        transparent 0,
+        transparent var(--ytar-fab-aurora-sharp-fade-start),
+        black var(--ytar-fab-aurora-sharp-solid-start),
+        black var(--ytar-fab-aurora-sharp-solid-end),
+        transparent var(--ytar-fab-aurora-sharp-fade-end),
+        transparent 100%
+      );
+  }
+
+  .fab-aurora-gradient {
+    rotate: var(--ytar-fab-aurora-gradient-angle);
+    backface-visibility: hidden;
+    background: var(--ytar-fab-aurora-gradient);
+    transform: translateZ(0);
+  }
+
+  .fab-surface {
+    position: absolute;
+    inset: 1px;
+    z-index: 1;
+    display: block;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    background: rgba(33, 33, 33, 0.96);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    clip-path: circle(50%);
+    pointer-events: none;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    transition: background-color 0.2s, filter 0.2s;
+  }
+
+  .fab-surface::after {
+    position: absolute;
+    inset: -10px;
+    border-radius: inherit;
+    background: inherit;
+    opacity: 0.5;
+    content: "";
+  }
+
+  .fab:hover .fab-surface {
+    background: rgba(48, 48, 48, 0.98);
+    filter: blur(2px);
+  }
+
+  .fab-content {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
   }
 
   .fab:active {
@@ -78,7 +262,7 @@ const PANEL_CSS = `
     outline-offset: 3px;
   }
 
-  .fab svg {
+  .fab-content svg {
     width: 24px;
     height: 24px;
   }
@@ -345,13 +529,13 @@ const PANEL_CSS = `
       color: #0f0f0f;
     }
 
-    .fab {
+    .fab-surface {
       border-color: rgba(0, 0, 0, 0.1);
       background: rgba(255, 255, 255, 0.96);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
-    .fab:hover {
+    .fab:hover .fab-surface {
       background: rgba(240, 240, 240, 0.98);
     }
 
@@ -437,6 +621,7 @@ const PANEL_CSS = `
 
   @media (prefers-reduced-motion: reduce) {
     .fab,
+    .fab-surface,
     .icon-button,
     .number-input,
     .track,
@@ -447,6 +632,27 @@ const PANEL_CSS = `
 
     .fade-in {
       animation: none;
+    }
+
+    .fab-aurora-motion {
+      will-change: auto;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .fab-aurora {
+      display: none;
+    }
+
+    .fab-surface {
+      border-color: ButtonText;
+      background: ButtonFace;
+      box-shadow: none;
+      filter: none;
+    }
+
+    .fab-content {
+      color: ButtonText;
     }
   }
 `
@@ -631,6 +837,7 @@ export function createPanelView(options: PanelViewOptions): PanelView {
   let host: HTMLDivElement | null = null
   let shadow: ShadowRoot | null = null
   let elements: PanelElements | null = null
+  let fabAuroraController: FabAuroraController | null = null
   let mountObserver: MutationObserver | null = null
   let observedMountTarget: Element | null = null
   let statusText = ""
@@ -727,6 +934,7 @@ export function createPanelView(options: PanelViewOptions): PanelView {
     }
 
     target.appendChild(host)
+    fabAuroraController?.resetInteraction()
   }
 
   function watchMountState(): void {
@@ -904,7 +1112,7 @@ export function createPanelView(options: PanelViewOptions): PanelView {
     fab.type = "button"
     fab.title = "YouTube Auto Resume"
     fab.setAttribute("aria-label", "打开 YouTube Auto Resume 面板")
-    fab.appendChild(createIcon("bolt"))
+    fabAuroraController = mountFabAurora(fab, createIcon("bolt"))
 
     panel.className = "panel fade-in"
     panel.setAttribute("role", "dialog")
@@ -1055,6 +1263,7 @@ export function createPanelView(options: PanelViewOptions): PanelView {
     const isOpen = !settings.collapsed
     setHiddenIfChanged(elements.panel, !isOpen)
     setHiddenIfChanged(elements.fab, isOpen)
+    fabAuroraController?.setVisible(!isOpen)
     setCheckedIfChanged(elements.enabled, settings.enabled)
 
     if (shadow?.activeElement !== elements.interval) {
@@ -1092,6 +1301,8 @@ export function createPanelView(options: PanelViewOptions): PanelView {
     }
 
     isDestroyed = true
+    fabAuroraController?.destroy()
+    fabAuroraController = null
     mountObserver?.disconnect()
     mountObserver = null
     observedMountTarget = null

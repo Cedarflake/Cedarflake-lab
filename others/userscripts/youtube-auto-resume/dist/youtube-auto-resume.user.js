@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube Auto Resume
 // @namespace    https://github.com/Cedarflake/Cedarflake-Lab
-// @version      0.3.0
+// @version      0.4.0
 // @description  Resume paused YouTube videos, handle ads with button-first guarded fallbacks, and manage playback from a resilient panel.
 // @author       Cedarflake Lab
 // @license      MIT
@@ -211,6 +211,445 @@
     return "isContentEditable" in activeElement && activeElement.isContentEditable === true;
   }
 
+  // src/ui/fabAurora.ts
+  var INTRO_DURATION_MS = 1100;
+  var MASK_ANGLE_OFFSET = 167;
+  var GRADIENT_ANGLE_OFFSET = 142;
+  var MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+  var ANGLE_STIFFNESS = 140;
+  var ANGLE_DAMPING = 20;
+  var GRADIENT_RESPONSE = 8;
+  var FOCUS_IN_STIFFNESS = 180;
+  var FOCUS_IN_DAMPING = 27;
+  var FOCUS_OUT_STIFFNESS = 120;
+  var FOCUS_OUT_DAMPING = 22;
+  var OPACITY_RESPONSE = 14;
+  var INTRO_BLUR_KEYFRAMES = [
+    { offset: 0, value: 1 },
+    { offset: 0.15, value: 5 },
+    { offset: 0.25, value: 3 },
+    { offset: 0.45, value: 5 },
+    { offset: 1, value: 4 }
+  ];
+  function clampProgress(progress) {
+    return Math.min(Math.max(progress, 0), 1);
+  }
+  function easeOutCubic(progress) {
+    return 1 - (1 - progress) ** 3;
+  }
+  function smoothstep(progress) {
+    return progress * progress * (3 - 2 * progress);
+  }
+  function interpolateKeyframes(progress, keyframes) {
+    const first = keyframes[0];
+    if (!first) {
+      return 0;
+    }
+    for (let index = 1; index < keyframes.length; index += 1) {
+      const next = keyframes[index];
+      if (!next || progress > next.offset) {
+        continue;
+      }
+      const previous = keyframes[index - 1] ?? first;
+      const span = next.offset - previous.offset;
+      if (span <= 0) {
+        return next.value;
+      }
+      const localProgress = (progress - previous.offset) / span;
+      return previous.value + (next.value - previous.value) * localProgress;
+    }
+    return keyframes[keyframes.length - 1]?.value ?? first.value;
+  }
+  function approachExponentially(current, target, response, deltaSeconds) {
+    const progress = 1 - Math.exp(-response * deltaSeconds);
+    return current + (target - current) * progress;
+  }
+  function formatCssNumber(value) {
+    const normalizedValue = Math.abs(value) < 5e-5 ? 0 : value;
+    return String(Number(normalizedValue.toFixed(4)));
+  }
+  function shortestAngleDelta(from, to) {
+    const difference = to - from;
+    const delta = ((difference + 180) % 360 + 360) % 360 - 180;
+    return delta === -180 && difference < 0 ? 180 : delta;
+  }
+  function resolveFabAuroraIntroFrame(progress) {
+    const clampedProgress = clampProgress(progress);
+    const angleProgress = easeOutCubic(clampedProgress);
+    const expansionProgress = clampProgress(
+      (clampedProgress - 0.68) / 0.32
+    );
+    const opacity = clampedProgress < 0.22 ? easeOutCubic(clampedProgress / 0.22) : 1;
+    return {
+      blurPx: interpolateKeyframes(clampedProgress, INTRO_BLUR_KEYFRAMES),
+      focus: 1 - smoothstep(expansionProgress),
+      gradientAngle: 170 + 55 * angleProgress,
+      maskAngle: -90 + 290 * angleProgress,
+      opacity
+    };
+  }
+  function createSpan(className) {
+    const element = document.createElement("span");
+    element.className = className;
+    return element;
+  }
+  function createAuroraClip(isSharp) {
+    const clip = createSpan("fab-aurora-clip");
+    const mask = createSpan("fab-aurora-mask");
+    const gradient = createSpan("fab-aurora-gradient");
+    if (isSharp) {
+      clip.classList.add("fab-aurora-clip-sharp");
+    }
+    mask.appendChild(gradient);
+    clip.appendChild(mask);
+    return clip;
+  }
+  function mountFabAurora(button, icon) {
+    const shell = createSpan("fab-aurora");
+    const motion = createSpan("fab-aurora-motion");
+    const stack = createSpan("fab-aurora-stack");
+    const softClip = createAuroraClip(false);
+    const sharpClip = createAuroraClip(true);
+    const surface = createSpan("fab-surface");
+    const content = createSpan("fab-content");
+    const motionPreference = window.matchMedia(MOTION_QUERY);
+    shell.setAttribute("aria-hidden", "true");
+    surface.setAttribute("aria-hidden", "true");
+    stack.append(softClip, sharpClip);
+    motion.appendChild(stack);
+    shell.appendChild(motion);
+    content.appendChild(icon);
+    button.replaceChildren(shell, surface, content);
+    let bounds = null;
+    let targetAngle = 0;
+    let maskAngle = 0;
+    let gradientAngle = 0;
+    let angularVelocity = 0;
+    let focus = 0;
+    let focusTarget = 0;
+    let focusVelocity = 0;
+    let motionOpacity = 0;
+    let frameId = 0;
+    let lastFrameAt = null;
+    let motionMode = "idle";
+    let introStartedAt = null;
+    let isPointerInside = false;
+    let isVisible = false;
+    let hasPlayedIntro = false;
+    let isDestroyed = false;
+    function writePercentageProperty(property, value) {
+      motion.style.setProperty(property, `${formatCssNumber(value)}%`);
+    }
+    function writeFocus(nextFocus) {
+      const clampedFocus = clampProgress(nextFocus);
+      const visualFocus = smoothstep(clampedFocus);
+      motion.style.setProperty(
+        "--ytar-fab-aurora-focus",
+        formatCssNumber(visualFocus)
+      );
+      writePercentageProperty(
+        "--ytar-fab-aurora-soft-fade-start",
+        50 * visualFocus
+      );
+      writePercentageProperty(
+        "--ytar-fab-aurora-soft-solid-start",
+        68 * visualFocus
+      );
+      writePercentageProperty(
+        "--ytar-fab-aurora-soft-solid-end",
+        100 - 25 * visualFocus
+      );
+      writePercentageProperty(
+        "--ytar-fab-aurora-soft-fade-end",
+        100 - 11 * visualFocus
+      );
+      writePercentageProperty(
+        "--ytar-fab-aurora-sharp-fade-start",
+        62 * visualFocus
+      );
+      writePercentageProperty(
+        "--ytar-fab-aurora-sharp-solid-start",
+        82 * visualFocus
+      );
+      writePercentageProperty(
+        "--ytar-fab-aurora-sharp-solid-end",
+        100 - 18 * visualFocus
+      );
+      writePercentageProperty(
+        "--ytar-fab-aurora-sharp-fade-end",
+        100 - 11 * visualFocus
+      );
+    }
+    function writeVisualState() {
+      motion.style.opacity = formatCssNumber(motionOpacity);
+      writeFocus(focus);
+      motion.style.setProperty(
+        "--ytar-fab-aurora-mask-angle",
+        `${formatCssNumber(maskAngle + MASK_ANGLE_OFFSET)}deg`
+      );
+      motion.style.setProperty(
+        "--ytar-fab-aurora-gradient-angle",
+        `${formatCssNumber(gradientAngle + GRADIENT_ANGLE_OFFSET)}deg`
+      );
+    }
+    function writeIntroFrame(frame) {
+      focus = frame.focus;
+      focusTarget = 0;
+      motionOpacity = frame.opacity;
+      maskAngle = frame.maskAngle - MASK_ANGLE_OFFSET;
+      gradientAngle = frame.gradientAngle - GRADIENT_ANGLE_OFFSET;
+      motion.style.opacity = formatCssNumber(frame.opacity);
+      writeFocus(frame.focus);
+      motion.style.setProperty(
+        "--ytar-fab-aurora-mask-angle",
+        `${formatCssNumber(frame.maskAngle)}deg`
+      );
+      motion.style.setProperty(
+        "--ytar-fab-aurora-gradient-angle",
+        `${formatCssNumber(frame.gradientAngle)}deg`
+      );
+      softClip.style.filter = `blur(${formatCssNumber(frame.blurPx)}px)`;
+    }
+    function cancelFrame() {
+      if (frameId === 0) {
+        return;
+      }
+      cancelAnimationFrame(frameId);
+      frameId = 0;
+    }
+    function scheduleFrame() {
+      if (frameId !== 0 || isDestroyed) {
+        return;
+      }
+      frameId = requestAnimationFrame(renderFrame);
+    }
+    function renderTrackingFrame(timestamp) {
+      const deltaSeconds = lastFrameAt === null ? 1 / 60 : Math.min(Math.max((timestamp - lastFrameAt) / 1e3, 0), 0.05);
+      lastFrameAt = timestamp;
+      angularVelocity += shortestAngleDelta(maskAngle, targetAngle) * ANGLE_STIFFNESS * deltaSeconds;
+      angularVelocity *= Math.exp(-ANGLE_DAMPING * deltaSeconds);
+      maskAngle += angularVelocity * deltaSeconds;
+      gradientAngle = approachExponentially(
+        gradientAngle,
+        gradientAngle + shortestAngleDelta(gradientAngle, targetAngle),
+        GRADIENT_RESPONSE,
+        deltaSeconds
+      );
+      const focusStiffness = focusTarget === 1 ? FOCUS_IN_STIFFNESS : FOCUS_OUT_STIFFNESS;
+      const focusDamping = focusTarget === 1 ? FOCUS_IN_DAMPING : FOCUS_OUT_DAMPING;
+      focusVelocity += ((focusTarget - focus) * focusStiffness - focusVelocity * focusDamping) * deltaSeconds;
+      focus = clampProgress(focus + focusVelocity * deltaSeconds);
+      motionOpacity = approachExponentially(
+        motionOpacity,
+        1,
+        OPACITY_RESPONSE,
+        deltaSeconds
+      );
+      const maskDelta = Math.abs(shortestAngleDelta(maskAngle, targetAngle));
+      const gradientDelta = Math.abs(
+        shortestAngleDelta(gradientAngle, targetAngle)
+      );
+      const isAngleSettled = maskDelta < 0.05 && gradientDelta < 0.05 && Math.abs(angularVelocity) < 0.05;
+      const isFocusSettled = Math.abs(focusTarget - focus) < 1e-3 && Math.abs(focusVelocity) < 0.01;
+      const isOpacitySettled = Math.abs(1 - motionOpacity) < 1e-3;
+      if (isAngleSettled) {
+        maskAngle = targetAngle;
+        gradientAngle = targetAngle;
+        angularVelocity = 0;
+      }
+      if (isFocusSettled) {
+        focus = focusTarget;
+        focusVelocity = 0;
+      }
+      if (isOpacitySettled) {
+        motionOpacity = 1;
+      }
+      writeVisualState();
+      if (!isAngleSettled || !isFocusSettled || !isOpacitySettled) {
+        scheduleFrame();
+        return;
+      }
+      lastFrameAt = null;
+      if (!isPointerInside && focus === 0) {
+        motionMode = "idle";
+      }
+    }
+    function renderFrame(timestamp) {
+      frameId = 0;
+      if (motionMode === "intro") {
+        introStartedAt ??= timestamp;
+        const progress = (timestamp - introStartedAt) / INTRO_DURATION_MS;
+        writeIntroFrame(resolveFabAuroraIntroFrame(progress));
+        if (progress < 1) {
+          scheduleFrame();
+          return;
+        }
+        motionMode = "idle";
+        introStartedAt = null;
+        lastFrameAt = null;
+        softClip.style.removeProperty("filter");
+        writeVisualState();
+        return;
+      }
+      if (motionMode === "tracking") {
+        renderTrackingFrame(timestamp);
+      }
+    }
+    function updateTargetAngle(event) {
+      if (!bounds) {
+        return;
+      }
+      const centerX = bounds.left + bounds.width / 2;
+      const centerY = bounds.top + bounds.height / 2;
+      targetAngle = Math.atan2(
+        event.clientY - centerY,
+        event.clientX - centerX
+      ) * 180 / Math.PI;
+      if (motionMode === "tracking") {
+        scheduleFrame();
+      }
+    }
+    function setIdleState() {
+      motionMode = "idle";
+      introStartedAt = null;
+      lastFrameAt = null;
+      angularVelocity = 0;
+      focus = 0;
+      focusTarget = 0;
+      focusVelocity = 0;
+      motionOpacity = 1;
+      bounds = null;
+      button.removeEventListener("pointermove", updateTargetAngle);
+      cancelFrame();
+      softClip.style.removeProperty("filter");
+      writeVisualState();
+    }
+    function activateHover() {
+      focusTarget = 1;
+      if (motionPreference.matches) {
+        motionMode = "idle";
+        focus = 1;
+        focusVelocity = 0;
+        motionOpacity = 1;
+        maskAngle = targetAngle;
+        gradientAngle = targetAngle;
+        angularVelocity = 0;
+        writeVisualState();
+        return;
+      }
+      motionMode = "tracking";
+      lastFrameAt = null;
+      button.addEventListener("pointermove", updateTargetAngle);
+      scheduleFrame();
+    }
+    function startIntro() {
+      if (hasPlayedIntro || !isVisible || isDestroyed) {
+        setIdleState();
+        return;
+      }
+      hasPlayedIntro = true;
+      if (motionPreference.matches) {
+        setIdleState();
+        return;
+      }
+      motionMode = "intro";
+      introStartedAt = null;
+      lastFrameAt = null;
+      angularVelocity = 0;
+      focusVelocity = 0;
+      writeIntroFrame(resolveFabAuroraIntroFrame(0));
+      scheduleFrame();
+    }
+    function showAurora(event) {
+      if (event.pointerType === "touch" || isDestroyed || !isVisible) {
+        return;
+      }
+      isPointerInside = true;
+      bounds = button.getBoundingClientRect();
+      updateTargetAngle(event);
+      button.removeEventListener("pointermove", updateTargetAngle);
+      cancelFrame();
+      introStartedAt = null;
+      lastFrameAt = null;
+      softClip.style.removeProperty("filter");
+      activateHover();
+    }
+    function hideAurora() {
+      if (!isPointerInside) {
+        return;
+      }
+      isPointerInside = false;
+      bounds = null;
+      button.removeEventListener("pointermove", updateTargetAngle);
+      if (isDestroyed || !isVisible) {
+        setIdleState();
+        return;
+      }
+      if (motionPreference.matches) {
+        setIdleState();
+        return;
+      }
+      focusTarget = 0;
+      motionMode = "tracking";
+      lastFrameAt = null;
+      scheduleFrame();
+    }
+    function handleMotionPreferenceChange() {
+      const shouldRestoreHover = isVisible && isPointerInside;
+      cancelFrame();
+      button.removeEventListener("pointermove", updateTargetAngle);
+      introStartedAt = null;
+      lastFrameAt = null;
+      softClip.style.removeProperty("filter");
+      if (!shouldRestoreHover) {
+        setIdleState();
+        return;
+      }
+      bounds = button.getBoundingClientRect();
+      activateHover();
+    }
+    function resetInteraction() {
+      if (isDestroyed) {
+        return;
+      }
+      isPointerInside = false;
+      setIdleState();
+    }
+    function setVisible(nextIsVisible) {
+      if (isDestroyed || isVisible === nextIsVisible) {
+        return;
+      }
+      isVisible = nextIsVisible;
+      if (!isVisible) {
+        isPointerInside = false;
+        setIdleState();
+        return;
+      }
+      startIntro();
+    }
+    function destroy() {
+      if (isDestroyed) {
+        return;
+      }
+      isDestroyed = true;
+      isPointerInside = false;
+      setIdleState();
+      button.removeEventListener("pointerenter", showAurora);
+      button.removeEventListener("pointerleave", hideAurora);
+      button.removeEventListener("pointercancel", hideAurora);
+      motionPreference.removeEventListener("change", handleMotionPreferenceChange);
+    }
+    button.addEventListener("pointerenter", showAurora);
+    button.addEventListener("pointerleave", hideAurora);
+    button.addEventListener("pointercancel", hideAurora);
+    motionPreference.addEventListener("change", handleMotionPreferenceChange);
+    return {
+      destroy,
+      resetInteraction,
+      setVisible
+    };
+  }
+
   // src/ui/icons.ts
   var SVG_NS = "http://www.w3.org/2000/svg";
   var ICON_DEFINITIONS = {
@@ -308,25 +747,208 @@
   }
 
   .fab {
+    position: relative;
+    isolation: isolate;
     display: flex;
     align-items: center;
     justify-content: center;
     width: 48px;
     height: 48px;
+    overflow: visible;
     padding: 0;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 0;
     border-radius: 50%;
     outline: none;
-    background: rgba(33, 33, 33, 0.96);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    background: transparent;
     color: #ff0000;
     cursor: pointer;
-    backdrop-filter: blur(8px);
-    transition: background-color 0.2s, transform 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.2s;
   }
 
-  .fab:hover {
-    background: rgba(63, 63, 63, 0.98);
+  .fab-aurora {
+    --ytar-fab-aurora-blur: 4px;
+    --ytar-fab-aurora-inset: -1px;
+    --ytar-fab-aurora-scale-x: 1;
+    --ytar-fab-aurora-scale-y: 1;
+    --ytar-fab-aurora-gradient: conic-gradient(
+      #3186ff 34%,
+      #9378ff 37%,
+      #f96bd6 39%,
+      #fc413d 41%,
+      #fc413d 48%,
+      #ff6b2b 50%,
+      #fec700 52%,
+      #ffdb0f 56%,
+      #88de42 58%,
+      #0ebc5f 61%,
+      #0ebc5f 65%,
+      #2eaab2 70%,
+      #00a9bb 72%,
+      #3186ff 73%,
+      #3186ff 83%,
+      #3186ff 100%
+    );
+
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: block;
+    overflow: visible;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .fab-aurora-motion {
+    --ytar-fab-aurora-focus: 0;
+    --ytar-fab-aurora-mask-angle: 0deg;
+    --ytar-fab-aurora-gradient-angle: 0deg;
+    --ytar-fab-aurora-soft-fade-start: 0%;
+    --ytar-fab-aurora-soft-solid-start: 0%;
+    --ytar-fab-aurora-soft-solid-end: 100%;
+    --ytar-fab-aurora-soft-fade-end: 100%;
+    --ytar-fab-aurora-sharp-fade-start: 0%;
+    --ytar-fab-aurora-sharp-solid-start: 0%;
+    --ytar-fab-aurora-sharp-solid-end: 100%;
+    --ytar-fab-aurora-sharp-fade-end: 100%;
+
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: block;
+    border-radius: inherit;
+    opacity: 0;
+    will-change:
+      --ytar-fab-aurora-mask-angle,
+      --ytar-fab-aurora-gradient-angle,
+      opacity;
+  }
+
+  .fab-aurora-stack,
+  .fab-aurora-clip,
+  .fab-aurora-mask,
+  .fab-aurora-gradient {
+    position: absolute;
+    display: block;
+    border-radius: inherit;
+  }
+
+  .fab-aurora-stack,
+  .fab-aurora-mask,
+  .fab-aurora-gradient {
+    inset: 0;
+  }
+
+  .fab-aurora-clip {
+    inset: var(--ytar-fab-aurora-inset);
+    overflow: hidden;
+    backface-visibility: hidden;
+    filter: blur(var(--ytar-fab-aurora-blur));
+    opacity: calc(0.55 + var(--ytar-fab-aurora-focus) * 0.45);
+    transform: translateZ(0);
+  }
+
+  .fab-aurora-clip-sharp {
+    filter: blur(1px);
+    opacity: calc(0.9 + var(--ytar-fab-aurora-focus) * 0.1);
+  }
+
+  .fab-aurora-mask {
+    scale:
+      var(--ytar-fab-aurora-scale-x)
+      var(--ytar-fab-aurora-scale-y);
+    -webkit-mask-image:
+      conic-gradient(
+        from var(--ytar-fab-aurora-mask-angle),
+        transparent 0,
+        transparent var(--ytar-fab-aurora-soft-fade-start),
+        black var(--ytar-fab-aurora-soft-solid-start),
+        black var(--ytar-fab-aurora-soft-solid-end),
+        transparent var(--ytar-fab-aurora-soft-fade-end),
+        transparent 100%
+      );
+    mask-image:
+      conic-gradient(
+        from var(--ytar-fab-aurora-mask-angle),
+        transparent 0,
+        transparent var(--ytar-fab-aurora-soft-fade-start),
+        black var(--ytar-fab-aurora-soft-solid-start),
+        black var(--ytar-fab-aurora-soft-solid-end),
+        transparent var(--ytar-fab-aurora-soft-fade-end),
+        transparent 100%
+      );
+  }
+
+  .fab-aurora-clip-sharp .fab-aurora-mask {
+    -webkit-mask-image:
+      conic-gradient(
+        from var(--ytar-fab-aurora-mask-angle),
+        transparent 0,
+        transparent var(--ytar-fab-aurora-sharp-fade-start),
+        black var(--ytar-fab-aurora-sharp-solid-start),
+        black var(--ytar-fab-aurora-sharp-solid-end),
+        transparent var(--ytar-fab-aurora-sharp-fade-end),
+        transparent 100%
+      );
+    mask-image:
+      conic-gradient(
+        from var(--ytar-fab-aurora-mask-angle),
+        transparent 0,
+        transparent var(--ytar-fab-aurora-sharp-fade-start),
+        black var(--ytar-fab-aurora-sharp-solid-start),
+        black var(--ytar-fab-aurora-sharp-solid-end),
+        transparent var(--ytar-fab-aurora-sharp-fade-end),
+        transparent 100%
+      );
+  }
+
+  .fab-aurora-gradient {
+    rotate: var(--ytar-fab-aurora-gradient-angle);
+    backface-visibility: hidden;
+    background: var(--ytar-fab-aurora-gradient);
+    transform: translateZ(0);
+  }
+
+  .fab-surface {
+    position: absolute;
+    inset: 1px;
+    z-index: 1;
+    display: block;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    background: rgba(33, 33, 33, 0.96);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    clip-path: circle(50%);
+    pointer-events: none;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    transition: background-color 0.2s, filter 0.2s;
+  }
+
+  .fab-surface::after {
+    position: absolute;
+    inset: -10px;
+    border-radius: inherit;
+    background: inherit;
+    opacity: 0.5;
+    content: "";
+  }
+
+  .fab:hover .fab-surface {
+    background: rgba(48, 48, 48, 0.98);
+    filter: blur(2px);
+  }
+
+  .fab-content {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
   }
 
   .fab:active {
@@ -346,7 +968,7 @@
     outline-offset: 3px;
   }
 
-  .fab svg {
+  .fab-content svg {
     width: 24px;
     height: 24px;
   }
@@ -613,13 +1235,13 @@
       color: #0f0f0f;
     }
 
-    .fab {
+    .fab-surface {
       border-color: rgba(0, 0, 0, 0.1);
       background: rgba(255, 255, 255, 0.96);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
-    .fab:hover {
+    .fab:hover .fab-surface {
       background: rgba(240, 240, 240, 0.98);
     }
 
@@ -705,6 +1327,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     .fab,
+    .fab-surface,
     .icon-button,
     .number-input,
     .track,
@@ -715,6 +1338,27 @@
 
     .fade-in {
       animation: none;
+    }
+
+    .fab-aurora-motion {
+      will-change: auto;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .fab-aurora {
+      display: none;
+    }
+
+    .fab-surface {
+      border-color: ButtonText;
+      background: ButtonFace;
+      box-shadow: none;
+      filter: none;
+    }
+
+    .fab-content {
+      color: ButtonText;
     }
   }
 `;
@@ -812,6 +1456,7 @@
     let host = null;
     let shadow = null;
     let elements = null;
+    let fabAuroraController = null;
     let mountObserver = null;
     let observedMountTarget = null;
     let statusText = "";
@@ -883,6 +1528,7 @@
         return;
       }
       target.appendChild(host);
+      fabAuroraController?.resetInteraction();
     }
     function watchMountState() {
       if (mountObserver) {
@@ -1037,7 +1683,7 @@
       fab.type = "button";
       fab.title = "YouTube Auto Resume";
       fab.setAttribute("aria-label", "打开 YouTube Auto Resume 面板");
-      fab.appendChild(createIcon("bolt"));
+      fabAuroraController = mountFabAurora(fab, createIcon("bolt"));
       panel.className = "panel fade-in";
       panel.setAttribute("role", "dialog");
       panel.setAttribute("aria-label", "YouTube Auto Resume");
@@ -1160,6 +1806,7 @@
       const isOpen = !settings.collapsed;
       setHiddenIfChanged(elements.panel, !isOpen);
       setHiddenIfChanged(elements.fab, isOpen);
+      fabAuroraController?.setVisible(!isOpen);
       setCheckedIfChanged(elements.enabled, settings.enabled);
       if (shadow?.activeElement !== elements.interval) {
         setValueIfChanged(elements.interval, String(settings.intervalMs));
@@ -1188,6 +1835,8 @@
         return;
       }
       isDestroyed = true;
+      fabAuroraController?.destroy();
+      fabAuroraController = null;
       mountObserver?.disconnect();
       mountObserver = null;
       observedMountTarget = null;

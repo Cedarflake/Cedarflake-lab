@@ -1,6 +1,6 @@
 {
   "name": "@cedarflake/youtube-auto-resume",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "license": "MIT",
@@ -11,7 +11,7 @@
     "build": "node --experimental-strip-types scripts/build.ts",
     "build:check": "node --experimental-strip-types scripts/build.ts --check",
     "check": "pnpm run typecheck && pnpm run test && node --experimental-strip-types scripts/build.ts --check && node --check dist/youtube-auto-resume.user.js && pnpm run test:e2e",
-    "test": "node --experimental-strip-types --test tests/ads.test.ts tests/panelMount.test.ts tests/playbackState.test.ts tests/player.test.ts tests/settings.test.ts tests/version.test.ts",
+    "test": "node --experimental-strip-types --test tests/ads.test.ts tests/fabAurora.test.ts tests/panelMount.test.ts tests/playbackState.test.ts tests/player.test.ts tests/settings.test.ts tests/version.test.ts",
     "test:e2e": "node --experimental-strip-types --test --test-concurrency=1 tests/panel.e2e.ts tests/runtime.e2e.ts",
     "typecheck": "tsc -p tsconfig.browser.json --noEmit && tsc -p tsconfig.node.json --noEmit",
     "version:check": "node --experimental-strip-types scripts/build.ts --check-version"
