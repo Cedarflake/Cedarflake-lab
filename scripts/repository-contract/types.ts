@@ -9,6 +9,8 @@ export type ContractViolationCode =
   | "WORKBENCH_TEST_MISSING"
   | "WORKBENCH_TEST_STALE"
   | "WORKBENCH_UV_LOCK_ORPHANED"
+  | "WORKFLOW_ACTION_REF_MUTABLE"
+  | "WORKFLOW_CHECKOUT_CREDENTIALS_PERSISTED"
   | "WORKFLOW_FILENAME_INVALID"
   | "WORKFLOW_NAME_PREFIX_INVALID"
   | "WORKFLOW_SCHEMA_INVALID"
@@ -32,8 +34,7 @@ export interface WorkflowContractSummary {
 }
 
 export interface RepositoryContractSummary
-  extends WorkbenchContractSummary,
-    WorkflowContractSummary {}
+  extends WorkbenchContractSummary, WorkflowContractSummary {}
 
 export interface ContractSectionResult<TSummary> {
   summary: TSummary

@@ -12,12 +12,21 @@ import type {
 type WorkflowScope = "group" | "project" | "repo"
 type PathFilterKey = "paths" | "paths-ignore"
 type PathFilterTrigger = "pull_request" | "push"
+type UsesContext = "job" | "step"
+
+interface RemoteUsesReference {
+  ref: string
+  target: string
+}
 
 const workflowDirectory = ".github/workflows"
 const workflowFilePattern = /\.ya?ml$/i
 const workflowFilenamePattern =
   /^(repo|group|project)-([a-z0-9]+(?:-[a-z0-9]+)*)-(ci|security|release|maintenance)\.yml$/
 const workflowScopePattern = /^(repo|group|project)-/
+const immutableGitHubRefPattern = /^[0-9a-f]{40}$/u
+const immutableDockerRefPattern = /^docker:\/\/[^@\s]+@sha256:[0-9a-f]{64}$/u
+const localReusableWorkflowPattern = /^\.\/\.github\/workflows\/[^/]+\.ya?ml$/u
 const pathFilterKeys: readonly PathFilterKey[] = ["paths", "paths-ignore"]
 const pathFilterTriggers: readonly PathFilterTrigger[] = [
   "pull_request",
@@ -272,6 +281,255 @@ function validateWorkflowTriggers(
   }
 }
 
+function parseRemoteUsesReference(
+  reference: string,
+): RemoteUsesReference | undefined {
+  const separatorIndex = reference.lastIndexOf("@")
+
+  if (
+    separatorIndex <= 0 ||
+    separatorIndex === reference.length - 1 ||
+    /\s/u.test(reference)
+  ) {
+    return undefined
+  }
+
+  const target = reference.slice(0, separatorIndex)
+  const ref = reference.slice(separatorIndex + 1)
+  const targetSegments = target.split("/")
+
+  if (
+    targetSegments.length < 2 ||
+    targetSegments.some(
+      (segment) =>
+        segment.length === 0 ||
+        segment === "." ||
+        segment === ".." ||
+        segment.includes("@"),
+    )
+  ) {
+    return undefined
+  }
+
+  return { ref, target }
+}
+
+function isValidLocalUsesReference(
+  reference: string,
+  context: UsesContext,
+): boolean {
+  if (context === "job") {
+    return localReusableWorkflowPattern.test(reference)
+  }
+
+  const segments = reference.slice(2).split("/")
+
+  return (
+    segments.length > 0 &&
+    segments.every(
+      (segment) =>
+        segment.length > 0 &&
+        segment !== "." &&
+        segment !== ".." &&
+        !segment.includes("\\"),
+    )
+  )
+}
+
+function isRemoteReusableWorkflowTarget(target: string): boolean {
+  const segments = target.split("/")
+
+  return (
+    segments.length === 5 &&
+    segments[2] === ".github" &&
+    segments[3] === "workflows" &&
+    typeof segments[4] === "string" &&
+    /\.ya?ml$/u.test(segments[4])
+  )
+}
+
+function validateCheckoutCredentials(
+  step: Record<string, unknown>,
+  location: string,
+  workflowPath: string,
+  violations: ContractViolation[],
+): void {
+  const inputs = step.with
+  const persistCredentials = isRecord(inputs)
+    ? inputs["persist-credentials"]
+    : undefined
+
+  if (persistCredentials === false || persistCredentials === "false") {
+    return
+  }
+
+  addViolation(violations, {
+    code: "WORKFLOW_CHECKOUT_CREDENTIALS_PERSISTED",
+    message: `${location}.with.persist-credentials must be false`,
+    path: workflowPath,
+  })
+}
+
+function validateUsesReference(
+  value: unknown,
+  context: UsesContext,
+  container: Record<string, unknown>,
+  location: string,
+  workflowPath: string,
+  violations: ContractViolation[],
+): void {
+  if (!isNonEmptyString(value)) {
+    addViolation(violations, {
+      code: "WORKFLOW_SCHEMA_INVALID",
+      message: `${location} must be a non-empty string`,
+      path: workflowPath,
+    })
+
+    return
+  }
+
+  if (value.includes("${{")) {
+    addViolation(violations, {
+      code: "WORKFLOW_ACTION_REF_MUTABLE",
+      message: `${location} must not contain a dynamic expression`,
+      path: workflowPath,
+    })
+
+    return
+  }
+
+  if (value.startsWith("./")) {
+    if (!isValidLocalUsesReference(value, context)) {
+      addViolation(violations, {
+        code: "WORKFLOW_SCHEMA_INVALID",
+        message: `${location} is not a valid local ${context} reference`,
+        path: workflowPath,
+      })
+    }
+
+    return
+  }
+
+  if (value.startsWith("docker://")) {
+    if (context === "job" || value === "docker://") {
+      addViolation(violations, {
+        code: "WORKFLOW_SCHEMA_INVALID",
+        message: `${location} is not a valid ${context}-level uses reference`,
+        path: workflowPath,
+      })
+
+      return
+    }
+
+    if (!immutableDockerRefPattern.test(value)) {
+      addViolation(violations, {
+        code: "WORKFLOW_ACTION_REF_MUTABLE",
+        message: `${location} must use a lowercase sha256 Docker digest`,
+        path: workflowPath,
+      })
+    }
+
+    return
+  }
+
+  const remoteReference = parseRemoteUsesReference(value)
+
+  if (remoteReference === undefined) {
+    addViolation(violations, {
+      code: "WORKFLOW_SCHEMA_INVALID",
+      message: `${location} is not a recognized uses reference`,
+      path: workflowPath,
+    })
+
+    return
+  }
+
+  if (
+    context === "job" &&
+    !isRemoteReusableWorkflowTarget(remoteReference.target)
+  ) {
+    addViolation(violations, {
+      code: "WORKFLOW_SCHEMA_INVALID",
+      message: `${location} must reference a reusable workflow`,
+      path: workflowPath,
+    })
+  }
+
+  if (!immutableGitHubRefPattern.test(remoteReference.ref)) {
+    addViolation(violations, {
+      code: "WORKFLOW_ACTION_REF_MUTABLE",
+      message: `${location} must use a 40-character lowercase commit SHA`,
+      path: workflowPath,
+    })
+  }
+
+  if (
+    context === "step" &&
+    remoteReference.target.toLowerCase() === "actions/checkout"
+  ) {
+    validateCheckoutCredentials(container, location, workflowPath, violations)
+  }
+}
+
+function validateWorkflowJob(
+  jobName: string,
+  job: Record<string, unknown>,
+  workflowPath: string,
+  violations: ContractViolation[],
+): void {
+  const jobLocation = `jobs.${jobName}`
+
+  if (Object.hasOwn(job, "uses")) {
+    validateUsesReference(
+      job.uses,
+      "job",
+      job,
+      `${jobLocation}.uses`,
+      workflowPath,
+      violations,
+    )
+  }
+
+  if (!Object.hasOwn(job, "steps")) {
+    return
+  }
+
+  if (!Array.isArray(job.steps)) {
+    addViolation(violations, {
+      code: "WORKFLOW_SCHEMA_INVALID",
+      message: `${jobLocation}.steps must be an array`,
+      path: workflowPath,
+    })
+
+    return
+  }
+
+  job.steps.forEach((step, index) => {
+    const stepLocation = `${jobLocation}.steps[${index}]`
+
+    if (!isRecord(step)) {
+      addViolation(violations, {
+        code: "WORKFLOW_SCHEMA_INVALID",
+        message: `${stepLocation} must be a mapping`,
+        path: workflowPath,
+      })
+
+      return
+    }
+
+    if (Object.hasOwn(step, "uses")) {
+      validateUsesReference(
+        step.uses,
+        "step",
+        step,
+        `${stepLocation}.uses`,
+        workflowPath,
+        violations,
+      )
+    }
+  })
+}
+
 function validateWorkflowDocument(
   document: unknown,
   scope: WorkflowScope | undefined,
@@ -324,7 +582,11 @@ function validateWorkflowDocument(
         message: "each workflow job must have a name and mapping definition",
         path: workflowPath,
       })
+
+      continue
     }
+
+    validateWorkflowJob(jobName, job, workflowPath, violations)
   }
 }
 
