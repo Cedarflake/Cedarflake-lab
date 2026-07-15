@@ -89,7 +89,7 @@ const metadata = [
   "// @name         YouTube Auto Resume",
   "// @namespace    https://github.com/Cedarflake/Cedarflake-Lab",
   `// @version      ${packageVersion}`,
-  "// @description  Resume paused YouTube videos, handle ads with button-first guarded fallbacks, and manage playback from a resilient panel.",
+  "// @description  Resume paused YouTube videos, click YouTube-provided ad controls, and manage playback from a resilient panel.",
   "// @author       Cedarflake Lab",
   "// @license      MIT",
   "// @homepageURL  https://github.com/Cedarflake/Cedarflake-Lab/tree/main/others/userscripts/youtube-auto-resume",

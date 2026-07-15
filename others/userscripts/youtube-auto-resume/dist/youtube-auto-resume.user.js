@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         YouTube Auto Resume
 // @namespace    https://github.com/Cedarflake/Cedarflake-Lab
-// @version      0.4.0
-// @description  Resume paused YouTube videos, handle ads with button-first guarded fallbacks, and manage playback from a resilient panel.
+// @version      0.4.1
+// @description  Resume paused YouTube videos, click YouTube-provided ad controls, and manage playback from a resilient panel.
 // @author       Cedarflake Lab
 // @license      MIT
 // @homepageURL  https://github.com/Cedarflake/Cedarflake-Lab/tree/main/others/userscripts/youtube-auto-resume
@@ -14,7 +14,6 @@
 // @grant        GM_registerMenuCommand
 // @noframes
 // ==/UserScript==
-"use strict";
 (() => {
   // src/core/playbackState.ts
   function createPlaybackState() {
@@ -87,11 +86,25 @@
 
   // src/core/settings.ts
   var SETTINGS_STORAGE_PREFIX = "autoChick.ytAutoResume.";
+  var QUALITY_PREFERENCES = [
+    "auto",
+    "hd4320",
+    "hd2880",
+    "hd2160",
+    "hd1440",
+    "hd1080",
+    "hd720",
+    "large",
+    "medium",
+    "small",
+    "tiny"
+  ];
   var DEFAULT_SETTINGS = {
     enabled: true,
     intervalMs: 1e3,
     minPausedSeconds: 2,
     autoSkipAds: false,
+    preferredQuality: "auto",
     avoidTyping: true,
     avoidEnded: true,
     collapsed: true
@@ -101,6 +114,9 @@
   }
   function readBoolean(source, key, fallback) {
     return key in source ? Boolean(source[key]) : fallback;
+  }
+  function isQualityPreference(value) {
+    return QUALITY_PREFERENCES.includes(value);
   }
   function clampNumber(value, min, max, fallback) {
     const numericValue = Number(value);
@@ -127,6 +143,7 @@
         "autoSkipAds",
         DEFAULT_SETTINGS.autoSkipAds
       ),
+      preferredQuality: isQualityPreference(source.preferredQuality) ? source.preferredQuality : DEFAULT_SETTINGS.preferredQuality,
       avoidTyping: readBoolean(
         source,
         "avoidTyping",
@@ -211,19 +228,480 @@
     return "isContentEditable" in activeElement && activeElement.isContentEditable === true;
   }
 
-  // src/ui/fabAurora.ts
-  var INTRO_DURATION_MS = 1100;
-  var MASK_ANGLE_OFFSET = 167;
-  var GRADIENT_ANGLE_OFFSET = 142;
-  var MOTION_QUERY = "(prefers-reduced-motion: reduce)";
-  var ANGLE_STIFFNESS = 140;
-  var ANGLE_DAMPING = 20;
-  var GRADIENT_RESPONSE = 8;
-  var FOCUS_IN_STIFFNESS = 180;
-  var FOCUS_IN_DAMPING = 27;
-  var FOCUS_OUT_STIFFNESS = 120;
-  var FOCUS_OUT_DAMPING = 22;
-  var OPACITY_RESPONSE = 14;
+  // src/youtube/player.ts
+  var PLAYER_SELECTOR = "#movie_player, .html5-video-player";
+  var ACTIVE_SHORTS_SELECTOR = [
+    "ytd-reel-video-renderer[is-active]",
+    "ytd-reel-video-renderer[active]"
+  ].join(", ");
+  var MINIPLAYER_SELECTOR = "ytd-miniplayer, .ytdMiniplayerComponentHost";
+  function hasHiddenStyle(element) {
+    const view = element.ownerDocument.defaultView;
+    if (!view) {
+      return false;
+    }
+    let current = element;
+    while (current) {
+      const style = view.getComputedStyle(current);
+      if (style.display === "none" || style.visibility === "hidden" || style.visibility === "collapse" || Number(style.opacity) === 0) {
+        return true;
+      }
+      current = current.parentElement;
+    }
+    return false;
+  }
+  function getViewportArea(element, documentRef) {
+    if (hasHiddenStyle(element)) {
+      return 0;
+    }
+    const rect = element.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) {
+      return 0;
+    }
+    const view = documentRef.defaultView;
+    const viewportWidth = view?.innerWidth ?? documentRef.documentElement.clientWidth;
+    const viewportHeight = view?.innerHeight ?? documentRef.documentElement.clientHeight;
+    if (viewportWidth <= 0 || viewportHeight <= 0) {
+      return rect.width * rect.height;
+    }
+    const visibleWidth = Math.max(
+      0,
+      Math.min(rect.right, viewportWidth) - Math.max(rect.left, 0)
+    );
+    const visibleHeight = Math.max(
+      0,
+      Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0)
+    );
+    return visibleWidth * visibleHeight;
+  }
+  function isFullscreenPlayer(player, fullscreenElement) {
+    return Boolean(
+      fullscreenElement && (player === fullscreenElement || player.contains(fullscreenElement) || fullscreenElement.contains(player))
+    );
+  }
+  function getPlayerScore(context, documentRef) {
+    const playerArea = getViewportArea(context.player, documentRef);
+    const videoArea = getViewportArea(context.video, documentRef);
+    const visibleArea = Math.min(playerArea, videoArea);
+    const pathname = documentRef.location.pathname;
+    const isWatchPlayer = pathname === "/watch" && context.player.closest("ytd-watch-flexy") !== null;
+    const isActiveShortPlayer = (pathname === "/shorts" || pathname.startsWith("/shorts/")) && context.player.closest(ACTIVE_SHORTS_SELECTOR) !== null;
+    const isMiniplayer = context.player.closest(MINIPLAYER_SELECTOR) !== null;
+    const isFullscreen = isFullscreenPlayer(
+      context.player,
+      documentRef.fullscreenElement
+    );
+    if (!isWatchPlayer && !isActiveShortPlayer && !isMiniplayer && !isFullscreen) {
+      return Number.NEGATIVE_INFINITY;
+    }
+    let score = Math.max(visibleArea, 0);
+    if (isMiniplayer) {
+      score += 2e12;
+    }
+    if (isWatchPlayer || isActiveShortPlayer) {
+      score += 3e12;
+    }
+    if (isFullscreen) {
+      score += 4e12;
+    }
+    return score;
+  }
+  function resolveActivePlayerContext(documentRef = document) {
+    let activeContext = null;
+    let activeScore = Number.NEGATIVE_INFINITY;
+    const players = Array.from(
+      documentRef.querySelectorAll(PLAYER_SELECTOR)
+    );
+    for (const player of players) {
+      const video = player.querySelector("video.html5-main-video") ?? player.querySelector("video");
+      if (!video) {
+        continue;
+      }
+      const context = { player, video };
+      const score = getPlayerScore(context, documentRef);
+      if (score > activeScore) {
+        activeContext = context;
+        activeScore = score;
+      }
+    }
+    return activeContext;
+  }
+  function isPlayerShowingAd(player) {
+    return player.classList.contains("ad-showing") || player.classList.contains("ad-interrupting");
+  }
+  function getPlayerPlaybackQuality(player) {
+    if (!player.getPlaybackQuality) {
+      return null;
+    }
+    try {
+      const quality = player.getPlaybackQuality();
+      return typeof quality === "string" ? quality : null;
+    } catch {
+      return null;
+    }
+  }
+  function getPlayerAvailableQualityLevels(player) {
+    if (!player.getAvailableQualityLevels) {
+      return null;
+    }
+    try {
+      const levels = player.getAvailableQualityLevels();
+      if (!Array.isArray(levels)) {
+        return null;
+      }
+      return levels.filter((level) => typeof level === "string");
+    } catch {
+      return null;
+    }
+  }
+  function setPlayerPlaybackQuality(player, quality) {
+    let applied = false;
+    try {
+      if (player.setPlaybackQualityRange) {
+        player.setPlaybackQualityRange(quality, quality);
+        applied = true;
+      }
+    } catch {
+    }
+    try {
+      if (player.setPlaybackQuality) {
+        player.setPlaybackQuality(quality);
+        applied = true;
+      }
+    } catch {
+    }
+    return applied;
+  }
+
+  // src/youtube/ads.ts
+  var SKIP_AD_SELECTOR = [
+    ".ytp-ad-skip-button-modern",
+    ".ytp-ad-skip-button",
+    ".ytp-ad-skip-button-slot button",
+    ".ytp-skip-ad-button",
+    ".videoAdUiSkipButton",
+    ".ytp-ad-text.ytp-ad-skip-button-text"
+  ].join(", ");
+  var PLAYBACK_ENFORCEMENT_SELECTOR = "#error-screen ytd-enforcement-message-view-model[in-player]";
+  var DEFAULT_COOLDOWN_MS = 750;
+  var DEFAULT_SAME_CONTROL_RETRY_MS = 1500;
+  function isDisabled(element) {
+    return element.getAttribute("aria-disabled") === "true" || "disabled" in element && Boolean(element.disabled);
+  }
+  function hasInteractionBlocker(element) {
+    const view = element.ownerDocument.defaultView;
+    if (!view) {
+      return true;
+    }
+    if (view.getComputedStyle(element).pointerEvents === "none") {
+      return true;
+    }
+    let current = element;
+    while (current) {
+      const style = view.getComputedStyle(current);
+      if (current.hasAttribute("hidden") || current.hasAttribute("inert") || current.getAttribute("aria-disabled") === "true" || current.getAttribute("aria-hidden") === "true" || "disabled" in current && Boolean(current.disabled) || style.display === "none" || style.visibility === "hidden" || style.visibility === "collapse" || Number(style.opacity) === 0) {
+        return true;
+      }
+      current = current.parentElement;
+    }
+    return false;
+  }
+  function findInteractiveElement(root, selector) {
+    const elements = Array.from(root.querySelectorAll(selector));
+    for (const candidate of elements) {
+      const closestControl = candidate.closest(
+        'button, [role="button"]'
+      );
+      const element = closestControl && root.contains(closestControl) ? closestControl : candidate;
+      if (typeof element.click === "function" && !isDisabled(element) && isElementVisible(element)) {
+        return element;
+      }
+    }
+    return null;
+  }
+  function findSkipAdButton(player) {
+    return findInteractiveElement(player, SKIP_AD_SELECTOR);
+  }
+  function isElementVisible(element) {
+    if (!element) {
+      return false;
+    }
+    if (!element.isConnected || hasInteractionBlocker(element)) {
+      return false;
+    }
+    const rect = element.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0;
+  }
+  function isPlaybackEnforcementVisible(documentRef = document) {
+    return isElementVisible(
+      documentRef.querySelector(PLAYBACK_ENFORCEMENT_SELECTOR)
+    );
+  }
+  function getAdUiSnapshot(options = {}) {
+    const context = (options.getPlayerContext ?? (() => resolveActivePlayerContext(options.document ?? document)))();
+    if (!context) {
+      return {
+        canSkipAd: false
+      };
+    }
+    return {
+      canSkipAd: findSkipAdButton(context.player) !== null
+    };
+  }
+  function createAdSkipper(options = {}) {
+    const getSettings = options.getSettings ?? (() => ({ autoSkipAds: DEFAULT_SETTINGS.autoSkipAds }));
+    const onAction = options.onAction ?? (() => void 0);
+    const getPlayerContext = options.getPlayerContext ?? (() => resolveActivePlayerContext(options.document ?? document));
+    const cooldownMs = options.cooldownMs ?? DEFAULT_COOLDOWN_MS;
+    const sameControlRetryMs = Math.max(
+      cooldownMs,
+      options.sameControlRetryMs ?? DEFAULT_SAME_CONTROL_RETRY_MS
+    );
+    const getNow = options.now ?? Date.now;
+    let lastAutomaticallyClickedControl = null;
+    let lastAdActionAt = Number.NEGATIVE_INFINITY;
+    function createResult(acted) {
+      return { acted };
+    }
+    function clickControl(control, force, currentTime, message) {
+      if (!force && lastAutomaticallyClickedControl === control && currentTime - lastAdActionAt < sameControlRetryMs) {
+        return createResult(false);
+      }
+      control.click();
+      lastAutomaticallyClickedControl = control;
+      lastAdActionAt = currentTime;
+      onAction(message);
+      return createResult(true);
+    }
+    function trySkipAdsIfPossible(attemptOptions = {}) {
+      const force = attemptOptions.force === true;
+      if (!getSettings().autoSkipAds && !force) {
+        lastAutomaticallyClickedControl = null;
+        return createResult(false);
+      }
+      const currentTime = getNow();
+      if (!force && currentTime - lastAdActionAt < cooldownMs) {
+        return createResult(false);
+      }
+      const context = getPlayerContext();
+      if (!context) {
+        lastAutomaticallyClickedControl = null;
+        if (force) {
+          onAction("手动跳过：未找到 YouTube 提供的广告控件");
+        }
+        return createResult(false);
+      }
+      const skipButton = findSkipAdButton(context.player);
+      if (skipButton) {
+        return clickControl(
+          skipButton,
+          force,
+          currentTime,
+          "检测到 YouTube 跳过按钮，已点击"
+        );
+      }
+      if (force) {
+        onAction("手动跳过：当前广告没有可用的官方跳过按钮");
+      }
+      lastAutomaticallyClickedControl = null;
+      return createResult(false);
+    }
+    return { trySkipAdsIfPossible };
+  }
+
+  // src/youtube/quality.ts
+  var AVAILABLE_QUALITY_PRIORITY = [
+    "highres",
+    "hd4320",
+    "hd2880",
+    "hd2160",
+    "hd1440",
+    "hd1080",
+    "hd720",
+    "large",
+    "medium",
+    "small",
+    "tiny"
+  ];
+  var DEFAULT_THROTTLE_MS = 5e3;
+  function getQualityLabel(quality) {
+    const labels = {
+      auto: "YouTube 自动",
+      hd4320: "4320p",
+      hd2880: "2880p",
+      hd2160: "2160p",
+      hd1440: "1440p",
+      hd1080: "1080p",
+      hd720: "720p",
+      large: "480p",
+      medium: "360p",
+      small: "240p",
+      tiny: "144p"
+    };
+    return labels[quality] ?? quality;
+  }
+  function resolvePreferredQuality(preference, levels) {
+    if (preference === "auto") {
+      return preference;
+    }
+    if (!levels?.length) {
+      return null;
+    }
+    if (levels.includes(preference)) {
+      return preference;
+    }
+    const preferenceIndex = AVAILABLE_QUALITY_PRIORITY.indexOf(preference);
+    if (preferenceIndex === -1) {
+      return null;
+    }
+    return AVAILABLE_QUALITY_PRIORITY.slice(preferenceIndex + 1).find((quality) => levels.includes(quality)) ?? null;
+  }
+  function createQualityManager(options) {
+    const getSettings = options.getSettings ?? (() => ({ preferredQuality: DEFAULT_SETTINGS.preferredQuality }));
+    const getAvailableQualityLevels = options.getAvailableQualityLevels ?? getPlayerAvailableQualityLevels;
+    const getPlaybackQuality = options.getPlaybackQuality ?? getPlayerPlaybackQuality;
+    const setPlaybackQuality = options.setPlaybackQuality ?? setPlayerPlaybackQuality;
+    const onAction = options.onAction ?? (() => void 0);
+    const throttleMs = options.throttleMs ?? DEFAULT_THROTTLE_MS;
+    const getNow = options.now ?? Date.now;
+    let lastPlayer = null;
+    let lastAppliedPreference = null;
+    let lastAttemptAt = Number.NEGATIVE_INFINITY;
+    let lastRequestedPreference = null;
+    function trySetPreferredQualityIfPossible(attemptOptions = {}) {
+      const force = attemptOptions.force === true;
+      const preference = getSettings().preferredQuality;
+      const context = options.getPlayerContext();
+      if (!context || isPlayerShowingAd(context.player)) {
+        return false;
+      }
+      if (lastPlayer !== context.player) {
+        lastPlayer = context.player;
+        lastAppliedPreference = null;
+        lastAttemptAt = Number.NEGATIVE_INFINITY;
+        lastRequestedPreference = null;
+      }
+      if (lastRequestedPreference !== preference) {
+        lastAppliedPreference = null;
+        lastAttemptAt = Number.NEGATIVE_INFINITY;
+        lastRequestedPreference = preference;
+      }
+      const currentTime = getNow();
+      if (!force && currentTime - lastAttemptAt < throttleMs) {
+        return false;
+      }
+      lastAttemptAt = currentTime;
+      const targetQuality = resolvePreferredQuality(
+        preference,
+        getAvailableQualityLevels(context.player)
+      );
+      if (!targetQuality || preference === "auto" && lastAppliedPreference === preference || preference !== "auto" && getPlaybackQuality(context.player) === targetQuality) {
+        return false;
+      }
+      if (!setPlaybackQuality(context.player, targetQuality)) {
+        return false;
+      }
+      lastAppliedPreference = preference;
+      onAction(`已尝试将画质调为：${getQualityLabel(targetQuality)}`);
+      return true;
+    }
+    return { trySetPreferredQualityIfPossible };
+  }
+
+  // src/appStatus.ts
+  function getStateSnapshot(context) {
+    const adUi = getAdUiSnapshot({
+      getPlayerContext: () => context
+    });
+    if (!context) {
+      return {
+        canSkipAd: false,
+        currentTime: null,
+        ended: null,
+        hasVideo: false,
+        hasPlaybackEnforcement: isPlaybackEnforcementVisible(),
+        paused: null,
+        playbackQuality: null,
+        readyState: null
+      };
+    }
+    const video = context.video;
+    return {
+      canSkipAd: adUi.canSkipAd,
+      currentTime: Number.isFinite(video.currentTime) ? video.currentTime : null,
+      ended: video.ended,
+      hasVideo: true,
+      hasPlaybackEnforcement: isPlaybackEnforcementVisible(),
+      paused: video.paused,
+      playbackQuality: getPlayerPlaybackQuality(context.player),
+      readyState: video.readyState
+    };
+  }
+  function formatAppStatus(context, settings) {
+    const snapshot = getStateSnapshot(context);
+    if (!snapshot.hasVideo) {
+      return [
+        "检测到活动视频：否",
+        `YouTube 播放限制提示：${snapshot.hasPlaybackEnforcement ? "已显示" : "无"}`,
+        "提示：当前页面没有受支持的 YouTube 播放器"
+      ].join("\n");
+    }
+    return [
+      "检测到活动视频：是",
+      `暂停：${snapshot.paused ? "是" : "否"}`,
+      `结束：${snapshot.ended ? "是" : "否"}`,
+      `播放位置：${snapshot.currentTime === null ? "-" : snapshot.currentTime.toFixed(1)}`,
+      `可点击跳过按钮：${snapshot.canSkipAd ? "是" : "否"}`,
+      `YouTube 播放限制提示：${snapshot.hasPlaybackEnforcement ? "已显示" : "无"}`,
+      `目标画质：${getQualityLabel(settings.preferredQuality)}`,
+      `当前画质：${snapshot.playbackQuality ?? "-"}`,
+      `检测间隔：${settings.intervalMs}ms`,
+      `暂停阈值：${settings.minPausedSeconds}s`
+    ].join("\n");
+  }
+
+  // src/ui/panelMount.ts
+  function applyHostStyles(host) {
+    const styles = [
+      ["position", "fixed"],
+      ["right", "calc(16px + env(safe-area-inset-right, 0px))"],
+      ["bottom", "calc(16px + env(safe-area-inset-bottom, 0px))"],
+      ["left", "auto"],
+      ["top", "auto"],
+      ["z-index", "2147483647"],
+      ["display", "block"],
+      ["visibility", "visible"],
+      ["opacity", "1"],
+      ["width", "max-content"],
+      ["height", "max-content"],
+      ["min-width", "48px"],
+      ["min-height", "48px"],
+      [
+        "max-width",
+        "calc(100vw - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px))"
+      ],
+      [
+        "max-height",
+        "calc(100dvh - 32px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))"
+      ],
+      ["margin", "0"],
+      ["padding", "0"],
+      ["border", "0"],
+      ["overflow", "visible"],
+      ["pointer-events", "auto"],
+      ["isolation", "isolate"]
+    ];
+    for (const [property, value] of styles) {
+      if (host.style.getPropertyValue(property) !== value || host.style.getPropertyPriority(property) !== "important") {
+        host.style.setProperty(property, value, "important");
+      }
+    }
+  }
+  function resolvePanelMountTarget(documentRef = document) {
+    return documentRef.fullscreenElement ?? documentRef.body ?? documentRef.documentElement;
+  }
+
+  // src/ui/fabAuroraMotion.ts
   var INTRO_BLUR_KEYFRAMES = [
     { offset: 0, value: 1 },
     { offset: 0.15, value: 5 },
@@ -288,6 +766,20 @@
       opacity
     };
   }
+
+  // src/ui/fabAurora.ts
+  var INTRO_DURATION_MS = 1100;
+  var MASK_ANGLE_OFFSET = 167;
+  var GRADIENT_ANGLE_OFFSET = 142;
+  var MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+  var ANGLE_STIFFNESS = 140;
+  var ANGLE_DAMPING = 20;
+  var GRADIENT_RESPONSE = 8;
+  var FOCUS_IN_STIFFNESS = 180;
+  var FOCUS_IN_DAMPING = 27;
+  var FOCUS_OUT_STIFFNESS = 120;
+  var FOCUS_OUT_DAMPING = 22;
+  var OPACITY_RESPONSE = 14;
   function createSpan(className) {
     const element = document.createElement("span");
     element.className = className;
@@ -713,9 +1205,74 @@
     return svg;
   }
 
-  // src/ui/panel.ts
-  var HOST_ID = "auto-chick-yt-auto-resume-host";
-  var PANEL_CSS = `
+  // src/ui/panelControls.ts
+  function createLabel(id, title, description) {
+    const label = document.createElement("label");
+    const key = document.createElement("div");
+    const detail = document.createElement("div");
+    label.className = "label";
+    label.htmlFor = id;
+    key.className = "label-key";
+    key.id = `${id}-label`;
+    key.textContent = title;
+    detail.className = "label-description";
+    detail.id = `${id}-description`;
+    detail.textContent = description;
+    label.append(key, detail);
+    return label;
+  }
+  function createSwitchRow(id, title, description) {
+    const row = document.createElement("div");
+    const control = document.createElement("label");
+    const input = document.createElement("input");
+    const track = document.createElement("span");
+    const thumb = document.createElement("span");
+    row.className = "row";
+    control.className = "switch";
+    input.id = id;
+    input.type = "checkbox";
+    input.setAttribute("aria-labelledby", `${id}-label`);
+    input.setAttribute("aria-describedby", `${id}-description`);
+    track.className = "track";
+    thumb.className = "thumb";
+    track.appendChild(thumb);
+    control.append(input, track);
+    row.append(createLabel(id, title, description), control);
+    return { row, input };
+  }
+  function createNumberRow(id, title, description, min, max, step) {
+    const row = document.createElement("div");
+    const input = document.createElement("input");
+    row.className = "row";
+    input.id = id;
+    input.className = "number-input";
+    input.type = "number";
+    input.min = String(min);
+    input.max = String(max);
+    input.step = String(step);
+    input.setAttribute("aria-labelledby", `${id}-label`);
+    input.setAttribute("aria-describedby", `${id}-description`);
+    row.append(createLabel(id, title, description), input);
+    return { row, input };
+  }
+  function createSelectRow(id, title, description) {
+    const row = document.createElement("div");
+    const select = document.createElement("select");
+    row.className = "row";
+    select.id = id;
+    select.className = "select-input";
+    for (const quality of QUALITY_PREFERENCES) {
+      const option = document.createElement("option");
+      option.value = quality;
+      option.textContent = getQualityLabel(quality);
+      select.append(option);
+    }
+    row.append(createLabel(id, title, description), select);
+    return { row, select };
+  }
+
+  // src/ui/panelBaseStyles.ts
+  var PANEL_BASE_STYLES = `
   :host {
     all: initial;
   }
@@ -727,7 +1284,8 @@
   }
 
   button,
-  input {
+  input,
+  select {
     font: inherit;
   }
 
@@ -958,7 +1516,8 @@
   .fab:focus-visible,
   .icon-button:focus-visible,
   .button:focus-visible,
-  .number-input:focus-visible {
+  .number-input:focus-visible,
+  .select-input:focus-visible {
     outline: 2px solid #3ea6ff;
     outline-offset: 2px;
   }
@@ -1085,14 +1644,15 @@
     font-size: 12px;
   }
 
-  .number-input {
+  .number-input,
+  .select-input {
     width: 80px;
     flex: 0 0 auto;
     padding: 6px 8px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     outline: none;
-    background: rgba(0, 0, 0, 0.2);
+    background-color: rgba(0, 0, 0, 0.2);
     color: inherit;
     font-size: 13px;
     text-align: center;
@@ -1101,6 +1661,25 @@
 
   .number-input:focus {
     border-color: #3ea6ff;
+  }
+
+  .select-input {
+    width: 132px;
+    appearance: none;
+    padding-right: 30px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23f1f1f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 9px center;
+    background-repeat: no-repeat;
+    text-align: left;
+  }
+
+  .select-input:focus {
+    border-color: #3ea6ff;
+  }
+
+  .select-input option {
+    background: #212121;
+    color: #f1f1f1;
   }
 
   .switch {
@@ -1217,7 +1796,10 @@
   .fade-in {
     animation: fade-in 0.2s cubic-bezier(0.05, 0, 0, 1);
   }
+`;
 
+  // src/ui/panelVariantStyles.ts
+  var PANEL_VARIANT_STYLES = `
   @keyframes fade-in {
     from {
       opacity: 0;
@@ -1249,6 +1831,7 @@
     .icon-button:focus-visible,
     .button:focus-visible,
     .number-input:focus-visible,
+    .select-input:focus-visible,
     .switch input:focus-visible + .track {
       outline-color: #065fd4;
     }
@@ -1273,9 +1856,19 @@
       color: #606060;
     }
 
-    .number-input {
+    .number-input,
+    .select-input {
       border-color: rgba(0, 0, 0, 0.1);
+      background-color: #ffffff;
+    }
+
+    .select-input {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230f0f0f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    }
+
+    .select-input option {
       background: #ffffff;
+      color: #0f0f0f;
     }
 
     .track {
@@ -1330,6 +1923,7 @@
     .fab-surface,
     .icon-button,
     .number-input,
+    .select-input,
     .track,
     .thumb,
     .button {
@@ -1362,94 +1956,146 @@
     }
   }
 `;
-  function createLabel(id, title, description) {
-    const label = document.createElement("label");
-    const key = document.createElement("div");
-    const detail = document.createElement("div");
-    label.className = "label";
-    label.htmlFor = id;
-    key.className = "label-key";
-    key.id = `${id}-label`;
-    key.textContent = title;
-    detail.className = "label-description";
-    detail.id = `${id}-description`;
-    detail.textContent = description;
-    label.append(key, detail);
-    return label;
-  }
-  function createSwitchRow(id, title, description) {
-    const row = document.createElement("div");
-    const control = document.createElement("label");
-    const input = document.createElement("input");
-    const track = document.createElement("span");
-    const thumb = document.createElement("span");
-    row.className = "row";
-    control.className = "switch";
-    input.id = id;
-    input.type = "checkbox";
-    input.setAttribute("aria-labelledby", `${id}-label`);
-    input.setAttribute("aria-describedby", `${id}-description`);
-    track.className = "track";
-    thumb.className = "thumb";
-    track.appendChild(thumb);
-    control.append(input, track);
-    row.append(createLabel(id, title, description), control);
-    return { row, input };
-  }
-  function createNumberRow(id, title, description, min, max, step) {
-    const row = document.createElement("div");
-    const input = document.createElement("input");
-    row.className = "row";
-    input.id = id;
-    input.className = "number-input";
-    input.type = "number";
-    input.min = String(min);
-    input.max = String(max);
-    input.step = String(step);
-    input.setAttribute("aria-labelledby", `${id}-label`);
-    input.setAttribute("aria-describedby", `${id}-description`);
-    row.append(createLabel(id, title, description), input);
-    return { row, input };
-  }
-  function applyHostStyles(host) {
-    const styles = [
-      ["position", "fixed"],
-      ["right", "calc(16px + env(safe-area-inset-right, 0px))"],
-      ["bottom", "calc(16px + env(safe-area-inset-bottom, 0px))"],
-      ["left", "auto"],
-      ["top", "auto"],
-      ["z-index", "2147483647"],
-      ["display", "block"],
-      ["visibility", "visible"],
-      ["opacity", "1"],
-      ["width", "max-content"],
-      ["height", "max-content"],
-      ["min-width", "48px"],
-      ["min-height", "48px"],
-      [
-        "max-width",
-        "calc(100vw - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px))"
-      ],
-      [
-        "max-height",
-        "calc(100dvh - 32px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))"
-      ],
-      ["margin", "0"],
-      ["padding", "0"],
-      ["border", "0"],
-      ["overflow", "visible"],
-      ["pointer-events", "auto"],
-      ["isolation", "isolate"]
-    ];
-    for (const [property, value] of styles) {
-      if (host.style.getPropertyValue(property) !== value || host.style.getPropertyPriority(property) !== "important") {
-        host.style.setProperty(property, value, "important");
+
+  // src/ui/panelStyles.ts
+  var PANEL_CSS = [PANEL_BASE_STYLES, PANEL_VARIANT_STYLES].join("\n");
+
+  // src/ui/panelShell.ts
+  function createPanelShell(host, options) {
+    const shadow = host.attachShadow({ mode: "open" });
+    const style = document.createElement("style");
+    const wrap = document.createElement("div");
+    const fab = document.createElement("button");
+    const panel = document.createElement("div");
+    const header = document.createElement("div");
+    const title = document.createElement("div");
+    const badge = document.createElement("span");
+    const titleText = document.createElement("span");
+    const close = document.createElement("button");
+    const content = document.createElement("div");
+    const grid = document.createElement("div");
+    const enabled = createSwitchRow(
+      "enabled",
+      "自动恢复",
+      "暂停后自动恢复播放"
+    );
+    const interval = createNumberRow(
+      "interval",
+      "检测间隔",
+      "单位 ms（200~10000）",
+      200,
+      1e4,
+      100
+    );
+    const minPaused = createNumberRow(
+      "min-paused",
+      "暂停阈值",
+      "暂停多久才尝试恢复（秒）",
+      0,
+      30,
+      0.5
+    );
+    const autoSkipAds = createSwitchRow(
+      "auto-skip-ads",
+      "自动点击跳过按钮",
+      "仅点击 YouTube 明确显示的跳过按钮"
+    );
+    const preferredQuality = createSelectRow(
+      "preferred-quality",
+      "目标画质",
+      "不可用时选择最接近的较低画质"
+    );
+    const avoidTyping = createSwitchRow(
+      "avoid-typing",
+      "打字时不干预",
+      "避免影响搜索或评论输入"
+    );
+    const avoidEnded = createSwitchRow(
+      "avoid-ended",
+      "结束后不重播",
+      "视频结束后不自动播放"
+    );
+    const status = document.createElement("div");
+    const lastAction = document.createElement("div");
+    const footer = document.createElement("div");
+    const resumeNow = document.createElement("button");
+    const skipNow = document.createElement("button");
+    style.textContent = PANEL_CSS;
+    wrap.className = "wrap";
+    fab.className = "fab";
+    fab.type = "button";
+    fab.title = "YouTube Auto Resume";
+    fab.setAttribute("aria-label", "打开 YouTube Auto Resume 面板");
+    const fabAuroraController = mountFabAurora(fab, createIcon("bolt"));
+    panel.className = "panel fade-in";
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-label", "YouTube Auto Resume");
+    header.className = "header";
+    title.className = "title";
+    badge.className = "badge";
+    badge.appendChild(createIcon("bolt"));
+    titleText.textContent = "Auto Resume";
+    title.append(badge, titleText);
+    close.className = "icon-button";
+    close.type = "button";
+    close.title = "最小化面板";
+    close.setAttribute("aria-label", "最小化面板");
+    close.appendChild(createIcon("x"));
+    header.append(title, close);
+    content.className = "content";
+    grid.className = "grid";
+    grid.append(
+      enabled.row,
+      interval.row,
+      minPaused.row,
+      autoSkipAds.row,
+      preferredQuality.row,
+      avoidTyping.row,
+      avoidEnded.row
+    );
+    status.className = "status";
+    status.textContent = options.statusText;
+    lastAction.className = "last-action";
+    lastAction.textContent = options.lastActionText;
+    lastAction.setAttribute("role", "status");
+    lastAction.setAttribute("aria-live", "polite");
+    lastAction.setAttribute("aria-atomic", "true");
+    footer.className = "footer";
+    resumeNow.className = "button button-primary";
+    resumeNow.type = "button";
+    resumeNow.append(createIcon("play"), "立即恢复");
+    skipNow.className = "button";
+    skipNow.type = "button";
+    skipNow.append(createIcon("forward"), "点击跳过按钮");
+    footer.append(resumeNow, skipNow);
+    content.append(grid, status, lastAction, footer);
+    panel.append(header, content);
+    wrap.append(fab, panel);
+    shadow.append(style, wrap);
+    return {
+      shadow,
+      fabAuroraController,
+      elements: {
+        fab,
+        panel,
+        close,
+        enabled: enabled.input,
+        interval: interval.input,
+        minPaused: minPaused.input,
+        autoSkipAds: autoSkipAds.input,
+        preferredQuality: preferredQuality.select,
+        avoidTyping: avoidTyping.input,
+        avoidEnded: avoidEnded.input,
+        status,
+        lastAction,
+        resumeNow,
+        skipNow
       }
-    }
+    };
   }
-  function resolvePanelMountTarget(documentRef = document) {
-    return documentRef.fullscreenElement ?? documentRef.body ?? documentRef.documentElement;
-  }
+
+  // src/ui/panel.ts
+  var HOST_ID = "auto-chick-yt-auto-resume-host";
   function createPanelView(options) {
     const onResumeNow = options.onResumeNow ?? (() => void 0);
     const onSkipNow = options.onSkipNow ?? (() => void 0);
@@ -1601,6 +2247,7 @@
           DEFAULT_SETTINGS.minPausedSeconds
         ),
         autoSkipAds: elements.autoSkipAds.checked,
+        preferredQuality: isQualityPreference(elements.preferredQuality.value) ? elements.preferredQuality.value : DEFAULT_SETTINGS.preferredQuality,
         avoidTyping: elements.avoidTyping.checked,
         avoidEnded: elements.avoidEnded.checked
       };
@@ -1624,134 +2271,25 @@
       host.id = HOST_ID;
       host.setAttribute("data-auto-chick-ui", "youtube-auto-resume");
       applyHostStyles(host);
-      shadow = host.attachShadow({ mode: "open" });
-      const style = document.createElement("style");
-      const wrap = document.createElement("div");
-      const fab = document.createElement("button");
-      const panel = document.createElement("div");
-      const header = document.createElement("div");
-      const title = document.createElement("div");
-      const badge = document.createElement("span");
-      const titleText = document.createElement("span");
-      const close = document.createElement("button");
-      const content = document.createElement("div");
-      const grid = document.createElement("div");
-      const enabled = createSwitchRow(
-        "enabled",
-        "自动恢复",
-        "暂停后自动恢复播放"
-      );
-      const interval = createNumberRow(
-        "interval",
-        "检测间隔",
-        "单位 ms（200~10000）",
-        200,
-        1e4,
-        100
-      );
-      const minPaused = createNumberRow(
-        "min-paused",
-        "暂停阈值",
-        "暂停多久才尝试恢复（秒）",
-        0,
-        30,
-        0.5
-      );
-      const autoSkipAds = createSwitchRow(
-        "auto-skip-ads",
-        "自动跳过广告",
-        "按钮优先；必要时推进有限时长广告"
-      );
-      const avoidTyping = createSwitchRow(
-        "avoid-typing",
-        "打字时不干预",
-        "避免影响搜索或评论输入"
-      );
-      const avoidEnded = createSwitchRow(
-        "avoid-ended",
-        "结束后不重播",
-        "视频结束后不自动播放"
-      );
-      const status = document.createElement("div");
-      const lastAction = document.createElement("div");
-      const footer = document.createElement("div");
-      const resumeNow = document.createElement("button");
-      const skipNow = document.createElement("button");
-      style.textContent = PANEL_CSS;
-      wrap.className = "wrap";
-      fab.className = "fab";
-      fab.type = "button";
-      fab.title = "YouTube Auto Resume";
-      fab.setAttribute("aria-label", "打开 YouTube Auto Resume 面板");
-      fabAuroraController = mountFabAurora(fab, createIcon("bolt"));
-      panel.className = "panel fade-in";
-      panel.setAttribute("role", "dialog");
-      panel.setAttribute("aria-label", "YouTube Auto Resume");
-      header.className = "header";
-      title.className = "title";
-      badge.className = "badge";
-      badge.appendChild(createIcon("bolt"));
-      titleText.textContent = "Auto Resume";
-      title.append(badge, titleText);
-      close.className = "icon-button";
-      close.type = "button";
-      close.title = "最小化面板";
-      close.setAttribute("aria-label", "最小化面板");
-      close.appendChild(createIcon("x"));
-      header.append(title, close);
-      content.className = "content";
-      grid.className = "grid";
-      grid.append(
-        enabled.row,
-        interval.row,
-        minPaused.row,
-        autoSkipAds.row,
-        avoidTyping.row,
-        avoidEnded.row
-      );
-      status.className = "status";
-      status.textContent = statusText;
-      lastAction.className = "last-action";
-      lastAction.textContent = currentLastActionText;
-      lastAction.setAttribute("role", "status");
-      lastAction.setAttribute("aria-live", "polite");
-      lastAction.setAttribute("aria-atomic", "true");
-      footer.className = "footer";
-      resumeNow.className = "button button-primary";
-      resumeNow.type = "button";
-      resumeNow.append(createIcon("play"), "立即恢复");
-      skipNow.className = "button";
-      skipNow.type = "button";
-      skipNow.append(createIcon("forward"), "跳过广告");
-      footer.append(resumeNow, skipNow);
-      content.append(grid, status, lastAction, footer);
-      panel.append(header, content);
-      wrap.append(fab, panel);
-      shadow.append(style, wrap);
-      elements = {
-        fab,
-        panel,
-        close,
-        enabled: enabled.input,
-        interval: interval.input,
-        minPaused: minPaused.input,
-        autoSkipAds: autoSkipAds.input,
-        avoidTyping: avoidTyping.input,
-        avoidEnded: avoidEnded.input,
-        status,
-        lastAction
-      };
-      fab.addEventListener("click", () => setOpen(true));
-      close.addEventListener("click", () => setOpen(false));
-      enabled.input.addEventListener("change", applySettingsFromUi);
-      interval.input.addEventListener("change", applySettingsFromUi);
-      minPaused.input.addEventListener("change", applySettingsFromUi);
-      autoSkipAds.input.addEventListener("change", applySettingsFromUi);
-      avoidTyping.input.addEventListener("change", applySettingsFromUi);
-      avoidEnded.input.addEventListener("change", applySettingsFromUi);
-      resumeNow.addEventListener("click", onResumeNow);
-      skipNow.addEventListener("click", onSkipNow);
-      panel.addEventListener("keydown", (event) => {
+      const panelShell = createPanelShell(host, {
+        statusText,
+        lastActionText: currentLastActionText
+      });
+      shadow = panelShell.shadow;
+      elements = panelShell.elements;
+      fabAuroraController = panelShell.fabAuroraController;
+      elements.fab.addEventListener("click", () => setOpen(true));
+      elements.close.addEventListener("click", () => setOpen(false));
+      elements.enabled.addEventListener("change", applySettingsFromUi);
+      elements.interval.addEventListener("change", applySettingsFromUi);
+      elements.minPaused.addEventListener("change", applySettingsFromUi);
+      elements.autoSkipAds.addEventListener("change", applySettingsFromUi);
+      elements.preferredQuality.addEventListener("change", applySettingsFromUi);
+      elements.avoidTyping.addEventListener("change", applySettingsFromUi);
+      elements.avoidEnded.addEventListener("change", applySettingsFromUi);
+      elements.resumeNow.addEventListener("click", onResumeNow);
+      elements.skipNow.addEventListener("click", onSkipNow);
+      elements.panel.addEventListener("keydown", (event) => {
         if (event.key !== "Escape" || !isExpanded()) {
           return;
         }
@@ -1815,6 +2353,7 @@
         setValueIfChanged(elements.minPaused, String(settings.minPausedSeconds));
       }
       setCheckedIfChanged(elements.autoSkipAds, settings.autoSkipAds);
+      setValueIfChanged(elements.preferredQuality, settings.preferredQuality);
       setCheckedIfChanged(elements.avoidTyping, settings.avoidTyping);
       setCheckedIfChanged(elements.avoidEnded, settings.avoidEnded);
       setTextIfChanged(elements.status, statusText);
@@ -1859,365 +2398,7 @@
     };
   }
 
-  // src/youtube/player.ts
-  var PLAYER_SELECTOR = "#movie_player, .html5-video-player";
-  var ACTIVE_SHORTS_SELECTOR = [
-    "ytd-reel-video-renderer[is-active]",
-    "ytd-reel-video-renderer[active]"
-  ].join(", ");
-  var MINIPLAYER_SELECTOR = "ytd-miniplayer, .ytdMiniplayerComponentHost";
-  function hasHiddenStyle(element) {
-    const view = element.ownerDocument.defaultView;
-    if (!view) {
-      return false;
-    }
-    let current = element;
-    while (current) {
-      const style = view.getComputedStyle(current);
-      if (style.display === "none" || style.visibility === "hidden" || style.visibility === "collapse" || Number(style.opacity) === 0) {
-        return true;
-      }
-      current = current.parentElement;
-    }
-    return false;
-  }
-  function getViewportArea(element, documentRef) {
-    if (hasHiddenStyle(element)) {
-      return 0;
-    }
-    const rect = element.getBoundingClientRect();
-    if (rect.width <= 0 || rect.height <= 0) {
-      return 0;
-    }
-    const view = documentRef.defaultView;
-    const viewportWidth = view?.innerWidth ?? documentRef.documentElement.clientWidth;
-    const viewportHeight = view?.innerHeight ?? documentRef.documentElement.clientHeight;
-    if (viewportWidth <= 0 || viewportHeight <= 0) {
-      return rect.width * rect.height;
-    }
-    const visibleWidth = Math.max(
-      0,
-      Math.min(rect.right, viewportWidth) - Math.max(rect.left, 0)
-    );
-    const visibleHeight = Math.max(
-      0,
-      Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0)
-    );
-    return visibleWidth * visibleHeight;
-  }
-  function isFullscreenPlayer(player, fullscreenElement) {
-    return Boolean(
-      fullscreenElement && (player === fullscreenElement || player.contains(fullscreenElement) || fullscreenElement.contains(player))
-    );
-  }
-  function getPlayerScore(context, documentRef) {
-    const playerArea = getViewportArea(context.player, documentRef);
-    const videoArea = getViewportArea(context.video, documentRef);
-    const visibleArea = Math.min(playerArea, videoArea);
-    const pathname = documentRef.location.pathname;
-    const isWatchPlayer = pathname === "/watch" && context.player.closest("ytd-watch-flexy") !== null;
-    const isActiveShortPlayer = (pathname === "/shorts" || pathname.startsWith("/shorts/")) && context.player.closest(ACTIVE_SHORTS_SELECTOR) !== null;
-    const isMiniplayer = context.player.closest(MINIPLAYER_SELECTOR) !== null;
-    const isFullscreen = isFullscreenPlayer(
-      context.player,
-      documentRef.fullscreenElement
-    );
-    if (!isWatchPlayer && !isActiveShortPlayer && !isMiniplayer && !isFullscreen) {
-      return Number.NEGATIVE_INFINITY;
-    }
-    let score = Math.max(visibleArea, 0);
-    if (isMiniplayer) {
-      score += 2e12;
-    }
-    if (isWatchPlayer || isActiveShortPlayer) {
-      score += 3e12;
-    }
-    if (isFullscreen) {
-      score += 4e12;
-    }
-    return score;
-  }
-  function resolveActivePlayerContext(documentRef = document) {
-    let activeContext = null;
-    let activeScore = Number.NEGATIVE_INFINITY;
-    const players = Array.from(
-      documentRef.querySelectorAll(PLAYER_SELECTOR)
-    );
-    for (const player of players) {
-      const video = player.querySelector("video.html5-main-video") ?? player.querySelector("video");
-      if (!video) {
-        continue;
-      }
-      const context = { player, video };
-      const score = getPlayerScore(context, documentRef);
-      if (score > activeScore) {
-        activeContext = context;
-        activeScore = score;
-      }
-    }
-    return activeContext;
-  }
-
-  // src/youtube/ads.ts
-  var SKIP_AD_SELECTOR = [
-    ".ytp-ad-skip-button-modern",
-    ".ytp-ad-skip-button",
-    ".ytp-ad-skip-button-slot button",
-    ".ytp-skip-ad-button",
-    ".videoAdUiSkipButton",
-    ".ytp-ad-text.ytp-ad-skip-button-text",
-    'button[class*="skip-ad"]'
-  ].join(", ");
-  var AD_OVERLAY_CLOSE_SELECTOR = [
-    ".ytp-ad-overlay-close-button",
-    'button[class*="overlay-close"]'
-  ].join(", ");
-  var DEFAULT_COOLDOWN_MS = 750;
-  var SEEK_END_MARGIN_SECONDS = 0.05;
-  function isDisabled(element) {
-    return element.getAttribute("aria-disabled") === "true" || "disabled" in element && Boolean(element.disabled);
-  }
-  function hasInteractionBlocker(element) {
-    const view = element.ownerDocument.defaultView;
-    if (!view) {
-      return true;
-    }
-    let current = element;
-    while (current) {
-      const style = view.getComputedStyle(current);
-      if (current.hasAttribute("hidden") || current.hasAttribute("inert") || current.getAttribute("aria-disabled") === "true" || current.getAttribute("aria-hidden") === "true" || "disabled" in current && Boolean(current.disabled) || style.display === "none" || style.visibility === "hidden" || style.visibility === "collapse" || Number(style.opacity) === 0 || style.pointerEvents === "none") {
-        return true;
-      }
-      current = current.parentElement;
-    }
-    return false;
-  }
-  function findInteractiveElement(root, selector) {
-    const elements = Array.from(root.querySelectorAll(selector));
-    for (const candidate of elements) {
-      const closestControl = candidate.closest(
-        'button, [role="button"]'
-      );
-      const element = closestControl && root.contains(closestControl) ? closestControl : candidate;
-      if (typeof element.click === "function" && !isDisabled(element) && isElementVisible(element)) {
-        return element;
-      }
-    }
-    return null;
-  }
-  function findSkipAdButton(player) {
-    return findInteractiveElement(player, SKIP_AD_SELECTOR);
-  }
-  function findAdOverlayCloseButton(player) {
-    return findInteractiveElement(player, AD_OVERLAY_CLOSE_SELECTOR);
-  }
-  function isElementVisible(element) {
-    if (!element) {
-      return false;
-    }
-    if (!element.isConnected || hasInteractionBlocker(element)) {
-      return false;
-    }
-    const rect = element.getBoundingClientRect();
-    return rect.width > 0 && rect.height > 0;
-  }
-  function isPlayerShowingAd(player) {
-    return player.classList.contains("ad-showing") || player.classList.contains("ad-interrupting");
-  }
-  function getAdSeekTarget(context) {
-    if (!context || !isPlayerShowingAd(context.player)) {
-      return null;
-    }
-    if (!isElementVisible(context.player) || !isElementVisible(context.video)) {
-      return null;
-    }
-    const { video } = context;
-    const duration = video.duration;
-    if (!Number.isFinite(duration) || duration <= 0) {
-      return null;
-    }
-    try {
-      const seekable = video.seekable;
-      if (seekable.length === 0) {
-        return null;
-      }
-      const rangeIndex = seekable.length - 1;
-      const rangeStart = seekable.start(rangeIndex);
-      const rangeEnd = Math.min(duration, seekable.end(rangeIndex));
-      const rangeLength = rangeEnd - rangeStart;
-      if (!Number.isFinite(rangeStart) || !Number.isFinite(rangeEnd) || rangeLength <= 0) {
-        return null;
-      }
-      const margin = Math.min(SEEK_END_MARGIN_SECONDS, rangeLength / 2);
-      const target = Math.max(rangeStart, rangeEnd - margin);
-      if (!Number.isFinite(target) || target <= 0 || Number.isFinite(video.currentTime) && target <= video.currentTime) {
-        return null;
-      }
-      return target;
-    } catch {
-      return null;
-    }
-  }
-  function seekAdToEnd(context) {
-    const target = getAdSeekTarget(context);
-    if (target === null || !context) {
-      return false;
-    }
-    try {
-      context.video.currentTime = target;
-      return true;
-    } catch {
-      return false;
-    }
-  }
-  function getAdUiSnapshot(options = {}) {
-    const context = (options.getPlayerContext ?? (() => resolveActivePlayerContext(options.document ?? document)))();
-    if (!context) {
-      return {
-        canSkipAd: false,
-        canCloseAdOverlay: false
-      };
-    }
-    return {
-      canSkipAd: findSkipAdButton(context.player) !== null || getAdSeekTarget(context) !== null,
-      canCloseAdOverlay: findAdOverlayCloseButton(context.player) !== null
-    };
-  }
-  function createAdSkipper(options = {}) {
-    const getSettings = options.getSettings ?? (() => ({ autoSkipAds: DEFAULT_SETTINGS.autoSkipAds }));
-    const onAction = options.onAction ?? (() => void 0);
-    const getPlayerContext = options.getPlayerContext ?? (() => resolveActivePlayerContext(options.document ?? document));
-    const cooldownMs = options.cooldownMs ?? DEFAULT_COOLDOWN_MS;
-    const getNow = options.now ?? Date.now;
-    let lastAdActionAt = Number.NEGATIVE_INFINITY;
-    let canContinueDisabledPending = false;
-    let pendingSeekVideo = null;
-    function clearPendingSeek() {
-      canContinueDisabledPending = false;
-      pendingSeekVideo = null;
-    }
-    function createResult(acted, recheckAfterMs = null) {
-      return { acted, recheckAfterMs };
-    }
-    function trySkipAdsIfPossible(attemptOptions = {}) {
-      const force = Boolean(attemptOptions.force);
-      const settings = getSettings();
-      const isDisabledPendingContinuation = !settings.autoSkipAds && !force && canContinueDisabledPending && pendingSeekVideo !== null;
-      if (!settings.autoSkipAds && !force && !isDisabledPendingContinuation) {
-        clearPendingSeek();
-        return createResult(false);
-      }
-      const currentTime = getNow();
-      const cooldownRemaining = cooldownMs - (currentTime - lastAdActionAt);
-      if (!force && cooldownRemaining > 0) {
-        return createResult(false, cooldownRemaining);
-      }
-      const context = getPlayerContext();
-      if (!context) {
-        clearPendingSeek();
-        if (force) {
-          onAction("手动跳过：未检测到正在播放的广告");
-        }
-        return createResult(false);
-      }
-      if (pendingSeekVideo && pendingSeekVideo !== context.video) {
-        clearPendingSeek();
-        if (!settings.autoSkipAds && !force) {
-          return createResult(false);
-        }
-      }
-      const isShowingAd = isPlayerShowingAd(context.player);
-      if (!isShowingAd) {
-        clearPendingSeek();
-      }
-      if (!settings.autoSkipAds && !force && !canContinueDisabledPending) {
-        return createResult(false);
-      }
-      if (pendingSeekVideo === context.video && seekAdToEnd(context)) {
-        clearPendingSeek();
-        lastAdActionAt = currentTime;
-        onAction("跳过按钮未生效，已将广告推进到末尾");
-        return createResult(true);
-      }
-      if (isDisabledPendingContinuation) {
-        return createResult(false, isShowingAd ? cooldownMs : null);
-      }
-      const skipButton = findSkipAdButton(context.player);
-      if (skipButton) {
-        skipButton.click();
-        pendingSeekVideo = context.video;
-        canContinueDisabledPending = force && !settings.autoSkipAds;
-        lastAdActionAt = currentTime;
-        onAction("检测到可跳过广告，已点击“跳过”");
-        return createResult(true, cooldownMs);
-      }
-      const overlayCloseButton = findAdOverlayCloseButton(context.player);
-      if (overlayCloseButton) {
-        overlayCloseButton.click();
-        lastAdActionAt = currentTime;
-        onAction("检测到广告遮罩，已点击关闭");
-        return createResult(true);
-      }
-      if (seekAdToEnd(context)) {
-        clearPendingSeek();
-        lastAdActionAt = currentTime;
-        onAction("检测到无法点击的广告，已将广告推进到末尾");
-        return createResult(true);
-      }
-      if (force) {
-        onAction("手动跳过：未检测到正在播放的广告");
-      }
-      if (force && !settings.autoSkipAds && isShowingAd) {
-        pendingSeekVideo = context.video;
-        canContinueDisabledPending = true;
-      }
-      return createResult(false, isShowingAd ? cooldownMs : null);
-    }
-    return { trySkipAdsIfPossible };
-  }
-
   // src/app.ts
-  function getStateSnapshot(context) {
-    const adUi = getAdUiSnapshot({
-      getPlayerContext: () => context
-    });
-    const video = context?.video ?? null;
-    if (!video) {
-      return {
-        canCloseAdOverlay: false,
-        canSkipAd: false,
-        currentTime: null,
-        ended: null,
-        hasVideo: false,
-        paused: null,
-        readyState: null
-      };
-    }
-    return {
-      canCloseAdOverlay: adUi.canCloseAdOverlay,
-      canSkipAd: adUi.canSkipAd,
-      currentTime: Number.isFinite(video.currentTime) ? video.currentTime : null,
-      ended: video.ended,
-      hasVideo: true,
-      paused: video.paused,
-      readyState: video.readyState
-    };
-  }
-  function formatStatus(snapshot, settings) {
-    if (!snapshot.hasVideo) {
-      return "检测到活动视频：否\n提示：当前页面没有受支持的 YouTube 播放器";
-    }
-    return [
-      "检测到活动视频：是",
-      `暂停：${snapshot.paused ? "是" : "否"}`,
-      `结束：${snapshot.ended ? "是" : "否"}`,
-      `播放位置：${snapshot.currentTime === null ? "-" : snapshot.currentTime.toFixed(1)}`,
-      `可跳过广告：${snapshot.canSkipAd ? "是" : "否"}`,
-      `可关闭广告遮罩：${snapshot.canCloseAdOverlay ? "是" : "否"}`,
-      `检测间隔：${settings.intervalMs}ms`,
-      `暂停阈值：${settings.minPausedSeconds}s`
-    ].join("\n");
-  }
   function startYouTubeAutoResumeApp(environment = {}) {
     const store = createSettingsStore({});
     const playbackState = createPlaybackState();
@@ -2244,6 +2425,11 @@
       return result;
     };
     const adSkipper = createAdSkipper({
+      getSettings: () => settings,
+      getPlayerContext: () => activeContext,
+      onAction: setLastAction
+    });
+    const qualityManager = createQualityManager({
       getSettings: () => settings,
       getPlayerContext: () => activeContext,
       onAction: setLastAction
@@ -2286,11 +2472,12 @@
         if (isStopped) {
           return;
         }
-        setLastAction("手动触发跳过");
-        const result = adSkipper.trySkipAdsIfPossible({ force: true });
-        if (result.recheckAfterMs !== null) {
-          scheduleNextLoop(result.recheckAfterMs);
+        if (isPlaybackEnforcementVisible()) {
+          setLastAction("检测到 YouTube 播放限制提示，未尝试绕过");
+          return;
         }
+        setLastAction("手动查找 YouTube 跳过按钮");
+        adSkipper.trySkipAdsIfPossible({ force: true });
       },
       saveSettings
     });
@@ -2339,7 +2526,7 @@
       if (isStopped || !panel.isExpanded()) {
         return;
       }
-      panel.setStatus(formatStatus(getStateSnapshot(activeContext), settings));
+      panel.setStatus(formatAppStatus(activeContext, settings));
     }
     function scheduleNextLoop(delay = settings.intervalMs) {
       if (isStopped) {
@@ -2416,6 +2603,14 @@
         refreshActiveContext();
       }
       updatePanelStatus();
+      if (isPlaybackEnforcementVisible() || Boolean(
+        activeContext && isPlayerShowingAd(activeContext.player)
+      )) {
+        if (isForced) {
+          setLastAction("广告或播放限制期间不执行恢复播放");
+        }
+        return;
+      }
       const video = activeContext?.video;
       if (!video) {
         return;
@@ -2466,9 +2661,9 @@
         return;
       }
       refreshActiveContext();
-      const adResult = adSkipper.trySkipAdsIfPossible();
-      if (adResult.recheckAfterMs !== null) {
-        scheduleNextLoop(adResult.recheckAfterMs);
+      if (!isPlaybackEnforcementVisible()) {
+        adSkipper.trySkipAdsIfPossible();
+        qualityManager.trySetPreferredQualityIfPossible();
       }
       void tryResume({ shouldRefreshContext: false });
       scheduleNextLoop();

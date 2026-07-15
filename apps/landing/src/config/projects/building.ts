@@ -2,6 +2,18 @@ import type { CatalogProject } from "../../types/project"
 
 export const buildingProjectEntries = [
   {
+    title: "YouTube Auto Resume Extension",
+    path: "apps/youtube-auto-resume-extension",
+    updatedAt: "2026-07-15T22:14:41+08:00",
+    summary:
+      "A cross-browser Manifest V3 playback assistant migrating the archived userscript into an extension-owned runtime.",
+    label: "Browser extension",
+    lifecycle: "active",
+    kind: "app",
+    presentation: "catalog",
+    section: "building",
+  },
+  {
     title: "Shika",
     path: "apps/shika",
     updatedAt: "2026-07-15T16:01:36+08:00",
