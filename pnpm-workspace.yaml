@@ -9,6 +9,7 @@ minimumReleaseAge: 1440
 minimumReleaseAgeStrict: true
 
 overrides:
+  kysely: 0.28.17
   postcss: 8.5.16
   use-sync-external-store: 1.4.0
 

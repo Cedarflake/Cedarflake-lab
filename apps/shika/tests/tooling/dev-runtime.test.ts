@@ -3,6 +3,8 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 
+import { DEFAULT_MIGRATION_LOCK_TABLE, DEFAULT_MIGRATION_TABLE } from "kysely";
+
 const packageRoot = fileURLToPath(new URL("../../", import.meta.url));
 const packageJson = JSON.parse(
   readFileSync(new URL("../../package.json", import.meta.url), "utf8"),
@@ -10,6 +12,10 @@ const packageJson = JSON.parse(
   dependencies?: Record<string, string>;
   scripts?: Record<string, string>;
 };
+const workspaceConfig = readFileSync(
+  new URL("../../../../pnpm-workspace.yaml", import.meta.url),
+  "utf8",
+);
 
 describe("development runtime safety", () => {
   it("uses bounded webpack development compilation", () => {
@@ -44,5 +50,12 @@ describe("development runtime safety", () => {
         `${relativePath} must not be empty`,
       );
     }
+  });
+
+  it("pins Better Auth to the compatible Kysely API", () => {
+    assert.equal(packageJson.dependencies?.kysely, "0.28.17");
+    assert.match(workspaceConfig, /^ {2}kysely: 0\.28\.17$/m);
+    assert.equal(typeof DEFAULT_MIGRATION_LOCK_TABLE, "string");
+    assert.equal(typeof DEFAULT_MIGRATION_TABLE, "string");
   });
 });
