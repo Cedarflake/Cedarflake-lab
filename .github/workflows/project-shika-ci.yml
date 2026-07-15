@@ -436,7 +436,10 @@ jobs:
               exit 1
             fi
 
-            if grep -Fq -- "${private_incident_severity}" "${output_prefix}.html" "${output_prefix}.rsc"; then
+            private_incident_label="${private_incident_severity^} incident"
+            if grep -Fq -- "data-severity=\"${private_incident_severity}\"" "${output_prefix}.html" ||
+              grep -Fq -- "\"data-severity\":\"${private_incident_severity}\"" "${output_prefix}.rsc" ||
+              grep -Fq -- "${private_incident_label}" "${output_prefix}.html" "${output_prefix}.rsc"; then
               echo "::error::Owner incident severity leaked from ${route}"
               exit 1
             fi
