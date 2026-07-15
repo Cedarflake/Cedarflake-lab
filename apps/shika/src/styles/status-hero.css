@@ -1,0 +1,123 @@
+.status-hero {
+  position: relative;
+  isolation: isolate;
+  margin-top: 0;
+  padding-block: clamp(3.75rem, 8vw, 6.5rem);
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.status-hero::after {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  width: clamp(3rem, 7vw, 5.5rem);
+  height: 2px;
+  background: var(--tone, var(--unknown));
+  content: "";
+}
+
+.status-hero[data-condition="available"] {
+  --tone: var(--accent);
+  --tone-soft: var(--accent-soft);
+}
+
+.status-hero[data-condition="limited"],
+.status-hero[data-condition="degraded"] {
+  --tone: var(--warning);
+  --tone-soft: var(--warning-soft);
+}
+
+.status-hero[data-condition="unavailable"] {
+  --tone: var(--danger);
+  --tone-soft: var(--danger-soft);
+}
+
+.status-hero[data-condition="unknown"] {
+  --tone: var(--unknown);
+  --tone-soft: var(--unknown-soft);
+}
+
+.hero-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.48rem;
+  color: var(--muted-strong);
+  font-family: var(--font-geist-mono);
+  font-size: 0.66rem;
+  font-weight: 520;
+  letter-spacing: 0.04em;
+}
+
+.live-indicator::before {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: var(--tone);
+  content: "";
+}
+
+.live-indicator[data-maintenance="true"] {
+  color: var(--warning);
+}
+
+.live-indicator[data-maintenance="true"]::before {
+  background: var(--warning);
+}
+
+.hero-status-row {
+  display: grid;
+  align-items: end;
+  gap: 2.5rem;
+  margin-top: clamp(3rem, 8vw, 6rem);
+}
+
+.hero-status {
+  max-width: 14ch;
+  margin: 0;
+  font-size: clamp(3.4rem, 9vw, 7rem);
+  font-weight: 480;
+  letter-spacing: -0.065em;
+  line-height: 0.88;
+  overflow-wrap: anywhere;
+}
+
+.hero-summary {
+  max-width: 31rem;
+}
+
+.hero-description {
+  margin: 0;
+  color: var(--muted-strong);
+  font-size: clamp(0.96rem, 1.7vw, 1.08rem);
+  line-height: 1.72;
+  overflow-wrap: anywhere;
+}
+
+.hero-updated {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-family: var(--font-geist-mono);
+  font-size: 0.66rem;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 48rem) {
+  .hero-status-row {
+    grid-template-columns: minmax(0, 1.45fr) minmax(19rem, 0.55fr);
+  }
+}
+
+@media (max-width: 35rem) {
+  .hero-topline {
+    align-items: flex-start;
+  }
+}

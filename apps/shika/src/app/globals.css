@@ -1,4 +1,17 @@
 @import "tailwindcss";
+
+@import "../styles/fonts.css";
 @import "../styles/theme.css";
 @import "../styles/base.css";
-@import "../styles/utilities.css";
+
+@import "../styles/site-shell.css";
+@import "../styles/locale-switcher.css";
+@import "../styles/action-links.css";
+@import "../styles/content-primitives.css";
+@import "../styles/indicators.css";
+
+@import "../styles/status-hero.css";
+@import "../styles/timeline.css";
+
+@import "../styles/admin.css";
+@import "../styles/forms.css";

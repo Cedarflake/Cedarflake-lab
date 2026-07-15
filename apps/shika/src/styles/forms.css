@@ -1,0 +1,280 @@
+.admin-form {
+  display: grid;
+  gap: 1.75rem;
+}
+
+.admin-form > fieldset {
+  display: grid;
+  min-width: 0;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.form-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.form-field {
+  display: grid;
+  gap: 0.48rem;
+  min-width: 0;
+  color: var(--foreground);
+  font-size: 0.82rem;
+}
+
+.form-field > span:first-child,
+.form-section-title {
+  font-weight: 590;
+  letter-spacing: -0.01em;
+}
+
+.admin-shell select {
+  appearance: none;
+  padding-right: 3rem;
+  background-color: var(--control-background);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2350544c' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 0.9rem;
+  cursor: pointer;
+}
+
+.admin-shell select:disabled {
+  cursor: not-allowed;
+}
+
+@supports (appearance: base-select) {
+  .admin-shell select,
+  .admin-shell select::picker(select) {
+    appearance: base-select;
+  }
+
+  .admin-shell select {
+    height: 2.75rem;
+    min-height: 2.75rem;
+    align-items: center;
+    padding-block: 0;
+    padding-right: 1rem;
+    background-image: none;
+  }
+
+  .admin-shell select::picker-icon {
+    width: 0.48rem;
+    height: 0.48rem;
+    margin-left: auto;
+    margin-right: 0.12rem;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    color: var(--muted-strong);
+    content: "";
+    transform: rotate(45deg) translate(-0.08rem, -0.08rem);
+    transition: transform 160ms ease;
+  }
+
+  .admin-shell select:open::picker-icon {
+    transform: rotate(225deg) translate(-0.08rem, -0.08rem);
+  }
+
+  .admin-shell select::picker(select) {
+    margin-top: 0.4rem;
+    padding: 0.35rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 0.5rem;
+    background: var(--surface-strong);
+    box-shadow: var(--shadow);
+  }
+
+  .admin-shell select option {
+    padding-inline: 0.55rem 0.7rem;
+    border-radius: 0.32rem;
+    background: transparent;
+    color: var(--foreground);
+    font-size: 0.78rem;
+    cursor: pointer;
+  }
+
+  .admin-shell select option:hover,
+  .admin-shell select option:focus {
+    background: var(--surface-muted);
+  }
+
+  .admin-shell select option:checked {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    font-weight: 590;
+  }
+
+  .admin-shell select option::checkmark {
+    margin-inline-end: 0.15rem;
+    color: var(--accent-strong);
+  }
+}
+
+.form-section {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.35rem;
+  border: 1px solid var(--border);
+  border-radius: 0.55rem;
+  background: var(--surface);
+}
+
+.form-section-header {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.form-section-title,
+.form-section-copy,
+.form-help {
+  margin: 0;
+}
+
+.form-section-copy,
+.form-help {
+  color: var(--muted-strong);
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+
+.component-outcome-list {
+  display: grid;
+  border-top: 1px solid var(--border);
+}
+
+.component-outcome {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  margin: 0;
+  padding: 1.15rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.component-outcome-header {
+  display: flex;
+  width: 100%;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0;
+}
+
+.component-outcome-name {
+  font-size: 0.85rem;
+  font-weight: 620;
+}
+
+.component-outcome-meta {
+  color: var(--muted-strong);
+  font-family: var(--font-geist-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.02em;
+}
+
+.component-outcome-fields {
+  display: grid;
+  gap: 1.15rem;
+  padding-left: 1rem;
+  border-left: 1px solid var(--border-strong);
+}
+
+.form-help {
+  font-family: var(--font-geist-mono);
+  font-size: 0.67rem;
+}
+
+.form-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.48rem;
+  background: var(--control-background);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.form-choice input {
+  margin-top: 0.2rem;
+}
+
+.form-choice[aria-disabled="true"] {
+  background: var(--surface-muted);
+  color: var(--muted-strong);
+  cursor: not-allowed;
+}
+
+.form-prerequisite {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.1rem 1.2rem;
+  border-left: 2px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.form-prerequisite p {
+  margin: 0;
+  font-size: 0.79rem;
+  line-height: 1.65;
+}
+
+.form-prerequisite a {
+  width: fit-content;
+  font-size: 0.75rem;
+  font-weight: 620;
+  text-underline-offset: 0.2em;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 0.25rem;
+}
+
+.form-submit {
+  min-height: 2.65rem;
+  padding-inline: 1rem;
+  border: 1px solid var(--foreground);
+  border-radius: 0.45rem;
+  background: var(--foreground);
+  color: var(--surface-strong);
+  cursor: pointer;
+  font-size: 0.79rem;
+  font-weight: 620;
+}
+
+.form-submit:hover:not(:disabled) {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+}
+
+.form-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+@media (min-width: 40rem) {
+  .form-grid-two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 35rem) {
+  .form-section {
+    padding: 1.05rem;
+  }
+
+  .component-outcome-header {
+    display: grid;
+    gap: 0.3rem;
+  }
+}

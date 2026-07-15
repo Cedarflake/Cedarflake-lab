@@ -58,7 +58,8 @@ test-results/
 # Python and workbench
 .venv/
 venv/
-env/
+/env/
+workbench/**/env/
 /uv.lock
 __pycache__/
 *.py[cod]

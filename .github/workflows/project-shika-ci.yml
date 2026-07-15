@@ -1,0 +1,581 @@
+name: "[Project] Shika CI"
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "apps/shika/**"
+      - ".github/workflows/project-shika-ci.yml"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/shika/**"
+      - ".github/workflows/project-shika-ci.yml"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      AUTH_CLIENT_IP_HEADER: x-vercel-forwarded-for
+      BETTER_AUTH_SECRET: shika-ci-auth-secret-value-00000001
+      BETTER_AUTH_URL: https://shika.example.invalid
+      GITHUB_CLIENT_ID: shika-ci-client
+      GITHUB_CLIENT_SECRET: shika-ci-client-secret
+      GITHUB_OWNER_ID: "1"
+      NEXT_TELEMETRY_DISABLED: "1"
+      PUBLIC_TIMELINE_CURSOR_SECRET: shika-ci-timeline-secret-value-0001
+      TURSO_DATABASE_URL: file:/tmp/shika-ci.db
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          version: 11.7.0
+
+      - name: Setup Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 22.22.2
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install Shika dependencies
+        run: pnpm --filter shika --fail-if-no-match install --frozen-lockfile
+
+      - name: Audit Shika production dependencies
+        run: pnpm --config.registry=https://registry.npmjs.org/ --filter shika --fail-if-no-match audit --prod --audit-level high
+
+      - name: Check Shika
+        run: pnpm --filter shika --fail-if-no-match check
+
+      - name: Migrate Shika CI database
+        run: pnpm --filter shika --fail-if-no-match db:migrate:local
+
+      - name: Seed Shika production smoke
+        run: pnpm --filter shika --fail-if-no-match exec tsx scripts/seed-ci-smoke.ts /tmp/shika-smoke.json
+
+      - name: Build Shika
+        run: pnpm --filter shika --fail-if-no-match build
+
+      - name: Smoke Shika production routes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          base_url="http://127.0.0.1:3100"
+          server_log="/tmp/shika-next.log"
+
+          if curl --silent --show-error --max-time 1 "${base_url}/" >/dev/null 2>&1; then
+            echo "::error::Port 3100 is already serving HTTP before the Shika smoke test"
+            exit 1
+          fi
+
+          setsid pnpm --filter shika --fail-if-no-match start --hostname 127.0.0.1 --port 3100 >"${server_log}" 2>&1 &
+          server_pid=$!
+
+          cleanup() {
+            set +e
+            kill -TERM -- "-${server_pid}" 2>/dev/null
+
+            for _ in {1..10}; do
+              if ! kill -0 -- "-${server_pid}" 2>/dev/null; then
+                wait "${server_pid}" 2>/dev/null || true
+                return 0
+              fi
+
+              sleep 0.2
+            done
+
+            kill -KILL -- "-${server_pid}" 2>/dev/null
+            wait "${server_pid}" 2>/dev/null || true
+          }
+
+          trap cleanup EXIT
+
+          is_ready=false
+          for _ in {1..30}; do
+            if curl --fail --silent --show-error --max-time 5 "${base_url}/api/health" >/dev/null; then
+              is_ready=true
+              break
+            fi
+
+            if ! kill -0 -- "-${server_pid}" 2>/dev/null; then
+              cat "${server_log}"
+              echo "::error::Shika production server exited before becoming ready"
+              exit 1
+            fi
+
+            sleep 1
+          done
+
+          if [[ "${is_ready}" != "true" ]]; then
+            cat "${server_log}"
+            echo "::error::Shika production server did not become ready"
+            exit 1
+          fi
+
+          if ! curl --fail --silent --show-error --max-time 15 \
+            --dump-header "/tmp/shika-health.headers" \
+            "${base_url}/api/health" \
+            --output "/tmp/shika-health.json"; then
+            cat "${server_log}"
+            echo "::error::Failed to request the Shika health endpoint"
+            exit 1
+          fi
+
+          if ! grep -Eqi '^content-type:.*application/json' "/tmp/shika-health.headers"; then
+            cat "/tmp/shika-health.headers"
+            echo "::error::The Shika health endpoint did not return JSON"
+            exit 1
+          fi
+
+          if ! grep -Eqi '^cache-control:.*no-store' "/tmp/shika-health.headers"; then
+            cat "/tmp/shika-health.headers"
+            echo "::error::The Shika health endpoint permits caching"
+            exit 1
+          fi
+
+          node -e '
+            const { readFileSync } = require("node:fs")
+            const body = JSON.parse(
+              readFileSync("/tmp/shika-health.json", "utf8"),
+            )
+
+            if (
+              Object.keys(body).length !== 1 ||
+              body.status !== "ok"
+            ) {
+              throw new Error("The Shika health response has an invalid shape")
+            }
+          '
+
+          node -e '
+            const { writeFileSync } = require("node:fs")
+            const fixture = require("/tmp/shika-smoke.json")
+            const publicValues = Object.values(fixture.publicCanaries ?? {})
+            const privateValues = Object.values(fixture.privateCanaries ?? {})
+            const publicSeverity = fixture.incidentSeverities?.public
+            const privateSeverity = fixture.incidentSeverities?.private
+            const expectedPublicCounts = fixture.expectedPublicCounts
+            const expectedPublicKeys = [
+              "component",
+              "incident",
+              "maintenance",
+              "siteProfile",
+            ]
+            const expectedPrivateKeys = [
+              "componentName",
+              "componentNote",
+              "componentSummary",
+              "incidentNote",
+              "incidentSummary",
+              "incidentTitle",
+              "maintenanceNote",
+              "maintenanceSummary",
+              "maintenanceTitle",
+              "privateOnlyComponentName",
+              "privateOnlyComponentNote",
+              "privateOnlyComponentSummary",
+              "privateOnlyIncidentNote",
+              "privateOnlyIncidentSummary",
+              "privateOnlyIncidentTitle",
+              "privateOnlyMaintenanceNote",
+              "privateOnlyMaintenanceSummary",
+              "privateOnlyMaintenanceTitle",
+              "privateOnlyStatusNote",
+              "privateOnlyStatusSummary",
+              "siteProfileNote",
+              "siteProfileSummary",
+              "siteProfileTitle",
+              "statusNote",
+              "statusSummary",
+            ]
+            const actualPublicKeys = Object.keys(
+              fixture.publicCanaries ?? {},
+            ).sort()
+            const actualPrivateKeys = Object.keys(
+              fixture.privateCanaries ?? {},
+            ).sort()
+
+            if (
+              typeof fixture.publicIncidentId !== "string" ||
+              fixture.publicIncidentId.length === 0 ||
+              typeof publicSeverity !== "string" ||
+              publicSeverity.length === 0 ||
+              typeof privateSeverity !== "string" ||
+              privateSeverity.length === 0 ||
+              publicSeverity === privateSeverity ||
+              JSON.stringify(actualPublicKeys) !==
+                JSON.stringify(expectedPublicKeys) ||
+              JSON.stringify(actualPrivateKeys) !==
+                JSON.stringify(expectedPrivateKeys) ||
+              !Number.isSafeInteger(expectedPublicCounts?.activeIncidents) ||
+              !Number.isSafeInteger(expectedPublicCounts?.components) ||
+              !Number.isSafeInteger(expectedPublicCounts?.maintenance) ||
+              !Number.isSafeInteger(expectedPublicCounts?.timeline) ||
+              publicValues.length !== 4 ||
+              privateValues.length !== 25
+            ) {
+              throw new Error("The Shika smoke fixture has an invalid shape")
+            }
+
+            const canaries = [...publicValues, ...privateValues]
+            if (
+              canaries.some(
+                (value) =>
+                  typeof value !== "string" ||
+                  value.length === 0 ||
+                  value.includes("\n"),
+              ) ||
+              new Set(canaries).size !== canaries.length
+            ) {
+              throw new Error("The Shika smoke canaries must be unique strings")
+            }
+
+            writeFileSync(
+              "/tmp/shika-incident-id.txt",
+              `${fixture.publicIncidentId}\n`,
+            )
+            writeFileSync(
+              "/tmp/shika-public-canaries.txt",
+              `${publicValues.join("\n")}\n`,
+            )
+            writeFileSync(
+              "/tmp/shika-incident-public-canaries.txt",
+              `${[
+                fixture.publicCanaries.siteProfile,
+                fixture.publicCanaries.component,
+                fixture.publicCanaries.incident,
+              ].join("\n")}\n`,
+            )
+            writeFileSync(
+              "/tmp/shika-private-canaries.txt",
+              `${privateValues.join("\n")}\n`,
+            )
+            writeFileSync(
+              "/tmp/shika-public-severity.txt",
+              `${publicSeverity}\n`,
+            )
+            writeFileSync(
+              "/tmp/shika-private-severity.txt",
+              `${privateSeverity}\n`,
+            )
+            writeFileSync(
+              "/tmp/shika-public-counts.txt",
+              `${[
+                expectedPublicCounts.activeIncidents,
+                expectedPublicCounts.components,
+                expectedPublicCounts.maintenance,
+                expectedPublicCounts.timeline,
+              ].join("\n")}\n`,
+            )
+          '
+
+          incident_id="$(< /tmp/shika-incident-id.txt)"
+          public_incident_severity="$(< /tmp/shika-public-severity.txt)"
+          private_incident_severity="$(< /tmp/shika-private-severity.txt)"
+          mapfile -t public_canaries < /tmp/shika-public-canaries.txt
+          mapfile -t incident_public_canaries < /tmp/shika-incident-public-canaries.txt
+          mapfile -t private_canaries < /tmp/shika-private-canaries.txt
+          mapfile -t expected_public_counts < /tmp/shika-public-counts.txt
+
+          pluralized_count_marker() {
+            local count="$1"
+            local zero_label="$2"
+            local singular_label="$3"
+            local plural_label="$4"
+
+            case "${count}" in
+              0) printf "%s" "${zero_label}" ;;
+              1) printf "1 %s" "${singular_label}" ;;
+              *) printf "%s %s" "${count}" "${plural_label}" ;;
+            esac
+          }
+
+          if ((
+            ${#public_canaries[@]} != 4 ||
+            ${#incident_public_canaries[@]} != 3 ||
+            ${#private_canaries[@]} != 25 ||
+            ${#expected_public_counts[@]} != 4
+          )); then
+            echo "::error::Shika smoke canary lists are incomplete"
+            exit 1
+          fi
+
+          routes=("/" "/history" "/incidents/${incident_id}")
+          route_names=("home" "history" "incident")
+
+          for index in "${!routes[@]}"; do
+            route="${routes[$index]}"
+            output_prefix="/tmp/shika-${route_names[$index]}"
+
+            if ! curl --fail --silent --show-error --max-time 15 \
+              --dump-header "${output_prefix}.html.headers" \
+              "${base_url}${route}" \
+              --output "${output_prefix}.html"; then
+              cat "${server_log}"
+              echo "::error::Failed to request ${route} HTML"
+              exit 1
+            fi
+
+            if ! curl --fail --silent --show-error --max-time 15 \
+              --header "RSC: 1" \
+              --dump-header "${output_prefix}.rsc.headers" \
+              "${base_url}${route}" \
+              --output "${output_prefix}.rsc"; then
+              cat "${server_log}"
+              echo "::error::Failed to request ${route} RSC"
+              exit 1
+            fi
+
+            for response_format in html rsc; do
+              headers_file="${output_prefix}.${response_format}.headers"
+
+              if ! grep -Eqi '^cache-control:.*(private|no-store)' "${headers_file}"; then
+                cat "${headers_file}"
+                echo "::error::${route} ${response_format^^} response permits shared caching"
+                exit 1
+              fi
+            done
+
+            if ! grep -Fqi "content-type: text/x-component" "${output_prefix}.rsc.headers"; then
+              cat "${output_prefix}.rsc.headers"
+              echo "::error::${route} did not return a React Server Component payload"
+              exit 1
+            fi
+
+            expected_public_canaries=("${public_canaries[@]}")
+            if [[ "${route_names[$index]}" == "incident" ]]; then
+              expected_public_canaries=("${incident_public_canaries[@]}")
+            fi
+
+            for canary in "${expected_public_canaries[@]}"; do
+              if ! grep -Fq -- "${canary}" "${output_prefix}.html"; then
+                echo "::error::Public canary ${canary} is missing from ${route} HTML"
+                exit 1
+              fi
+
+              if ! grep -Fq -- "${canary}" "${output_prefix}.rsc"; then
+                echo "::error::Public canary ${canary} is missing from ${route} RSC"
+                exit 1
+              fi
+            done
+
+            for canary in "${private_canaries[@]}"; do
+              if grep -Fq -- "${canary}" "${output_prefix}.html" "${output_prefix}.rsc"; then
+                echo "::error::Private canary ${canary} leaked from ${route}"
+                exit 1
+              fi
+            done
+
+            if [[ "${route_names[$index]}" == "home" ]]; then
+              public_count_markers=(
+                "$(pluralized_count_marker "${expected_public_counts[0]}" "No active incidents" "active incident" "active incidents")"
+                "$(pluralized_count_marker "${expected_public_counts[1]}" "No status components" "status component" "status components")"
+                "$(pluralized_count_marker "${expected_public_counts[2]}" "No maintenance windows" "maintenance window" "maintenance windows")"
+              )
+
+              for marker in "${public_count_markers[@]}"; do
+                if ! grep -Fq -- "${marker}" "${output_prefix}.html" ||
+                  ! grep -Fq -- "${marker}" "${output_prefix}.rsc"; then
+                  echo "::error::Expected public count ${marker} is missing from ${route}"
+                  exit 1
+                fi
+              done
+
+              if ! grep -Fq -- 'data-maintenance="true"' "${output_prefix}.html" ||
+                ! grep -Fq -- '"data-maintenance":"true"' "${output_prefix}.rsc" ||
+                ! grep -Fq -- "Maintenance in progress" "${output_prefix}.html" ||
+                ! grep -Fq -- "Maintenance in progress" "${output_prefix}.rsc"; then
+                echo "::error::Active public maintenance is missing from ${route}"
+                exit 1
+              fi
+            elif [[ "${route_names[$index]}" == "history" ]]; then
+              history_count_marker="$(pluralized_count_marker "${expected_public_counts[3]}" "No records on this page" "record on this page" "records on this page")"
+              if ! grep -Fq -- "${history_count_marker}" "${output_prefix}.html" ||
+                ! grep -Fq -- "${history_count_marker}" "${output_prefix}.rsc"; then
+                echo "::error::Expected public count ${history_count_marker} is missing from ${route}"
+                exit 1
+              fi
+            fi
+
+            if [[ "${route}" == "/history" ]]; then
+              if ! grep -Fq -- "${public_incident_severity^} incident" "${output_prefix}.html"; then
+                echo "::error::Public incident severity is missing from ${route} HTML"
+                exit 1
+              fi
+            else
+              if ! grep -Fq -- "data-severity=\"${public_incident_severity}\"" "${output_prefix}.html"; then
+                echo "::error::Public incident severity is missing from ${route} HTML"
+                exit 1
+              fi
+            fi
+
+            if ! grep -Fq -- "${public_incident_severity}" "${output_prefix}.rsc"; then
+              echo "::error::Public incident severity is missing from ${route} RSC"
+              exit 1
+            fi
+
+            private_incident_label="${private_incident_severity^} incident"
+            if grep -Fq -- "data-severity=\"${private_incident_severity}\"" "${output_prefix}.html" ||
+              grep -Fq -- "\"data-severity\":\"${private_incident_severity}\"" "${output_prefix}.rsc" ||
+              grep -Fq -- "${private_incident_label}" "${output_prefix}.html" "${output_prefix}.rsc"; then
+              echo "::error::Owner incident severity leaked from ${route}"
+              exit 1
+            fi
+          done
+
+          if ! curl --fail --silent --show-error --max-time 15 \
+            --header "Accept-Language: zh-CN,zh;q=0.9,en;q=0.8" \
+            --dump-header "/tmp/shika-zh-cn.headers" \
+            "${base_url}/" \
+            --output "/tmp/shika-zh-cn.html"; then
+            cat "${server_log}"
+            echo "::error::Failed to request the Simplified Chinese home page"
+            exit 1
+          fi
+
+          if ! grep -Fq -- '<html lang="zh-CN"' "/tmp/shika-zh-cn.html" ||
+            ! grep -Fq -- "当前公开状态" "/tmp/shika-zh-cn.html" ||
+            ! grep -Fq -- "维护进行中" "/tmp/shika-zh-cn.html"; then
+            echo "::error::Browser language negotiation did not render Simplified Chinese"
+            exit 1
+          fi
+
+          for canary in "${public_canaries[@]}"; do
+            if ! grep -Fq -- "${canary}" "/tmp/shika-zh-cn.html"; then
+              echo "::error::Public canary ${canary} is missing from the Simplified Chinese home page"
+              exit 1
+            fi
+          done
+
+          for canary in "${private_canaries[@]}"; do
+            if grep -Fq -- "${canary}" "/tmp/shika-zh-cn.html"; then
+              echo "::error::Private canary ${canary} leaked from the Simplified Chinese home page"
+              exit 1
+            fi
+          done
+
+          if ! curl --fail --silent --show-error --max-time 15 \
+            --header "Accept-Language: zh-CN" \
+            --header "Cookie: shika-locale=en" \
+            "${base_url}/" \
+            --output "/tmp/shika-cookie-en.html"; then
+            cat "${server_log}"
+            echo "::error::Failed to request the locale-cookie home page"
+            exit 1
+          fi
+
+          if ! grep -Fq -- '<html lang="en"' "/tmp/shika-cookie-en.html" ||
+            ! grep -Fq -- "Current public status" "/tmp/shika-cookie-en.html" ||
+            grep -Fq -- "当前公开状态" "/tmp/shika-cookie-en.html"; then
+            echo "::error::The explicit locale cookie did not override browser negotiation"
+            exit 1
+          fi
+
+          if ! curl --fail --silent --show-error --max-time 15 \
+            --dump-header "/tmp/shika-login.headers" \
+            "${base_url}/login" \
+            --output "/tmp/shika-login.html"; then
+            cat "${server_log}"
+            echo "::error::Failed to request the Shika owner login page"
+            exit 1
+          fi
+
+          if ! grep -Fq -- "Configured owner only" "/tmp/shika-login.html"; then
+            echo "::error::The Shika owner login marker is missing"
+            exit 1
+          fi
+
+          admin_status="$(curl --silent --show-error --max-time 15 \
+            --dump-header "/tmp/shika-admin.html.headers" \
+            --write-out "%{http_code}" \
+            "${base_url}/admin" \
+            --output "/tmp/shika-admin.html")"
+
+          if [[ "${admin_status}" != "307" ]]; then
+            cat "/tmp/shika-admin.html.headers"
+            echo "::error::Anonymous Shika admin HTML returned ${admin_status}, expected 307"
+            exit 1
+          fi
+
+          if ! grep -Eqi '^location: /login\?returnTo=%2Fadmin[[:space:]]*$' "/tmp/shika-admin.html.headers"; then
+            cat "/tmp/shika-admin.html.headers"
+            echo "::error::Anonymous Shika admin HTML did not redirect to the owner login"
+            exit 1
+          fi
+
+          admin_rsc_status="$(curl --silent --show-error --max-time 15 \
+            --header "RSC: 1" \
+            --dump-header "/tmp/shika-admin.rsc.headers" \
+            --write-out "%{http_code}" \
+            "${base_url}/admin" \
+            --output "/tmp/shika-admin.rsc")"
+
+          if [[ "${admin_rsc_status}" == "200" ]]; then
+            if ! grep -Fqi "content-type: text/x-component" "/tmp/shika-admin.rsc.headers"; then
+              cat "/tmp/shika-admin.rsc.headers"
+              echo "::error::Anonymous Shika admin did not return an RSC redirect payload"
+              exit 1
+            fi
+
+            if ! grep -Fq -- "NEXT_REDIRECT;replace;/login?returnTo=%2Fadmin;307;" "/tmp/shika-admin.rsc"; then
+              echo "::error::Anonymous Shika admin RSC did not redirect to the owner login"
+              exit 1
+            fi
+          elif [[ "${admin_rsc_status}" == "307" ]]; then
+            if ! grep -Eqi '^location: /login\?returnTo=%2Fadmin[[:space:]]*$' "/tmp/shika-admin.rsc.headers"; then
+              cat "/tmp/shika-admin.rsc.headers"
+              echo "::error::Anonymous Shika admin RSC did not redirect to the owner login"
+              exit 1
+            fi
+          else
+            cat "/tmp/shika-admin.rsc.headers"
+            echo "::error::Anonymous Shika admin RSC returned ${admin_rsc_status}"
+            exit 1
+          fi
+
+          owner_access_headers=(
+            "/tmp/shika-login.headers"
+            "/tmp/shika-admin.html.headers"
+            "/tmp/shika-admin.rsc.headers"
+          )
+
+          for headers_file in "${owner_access_headers[@]}"; do
+            if ! grep -Eqi '^cache-control:.*(private|no-store|no-cache)' "${headers_file}"; then
+              cat "${headers_file}"
+              echo "::error::An owner access response permits unvalidated shared caching"
+              exit 1
+            fi
+          done
+
+          for canary in "${private_canaries[@]}"; do
+            if grep -Fq -- "${canary}" \
+              "/tmp/shika-login.html" \
+              "${owner_access_headers[@]}" \
+              "/tmp/shika-admin.html" \
+              "/tmp/shika-admin.rsc"; then
+              echo "::error::Private canary ${canary} leaked from an owner access route"
+              exit 1
+            fi
+          done

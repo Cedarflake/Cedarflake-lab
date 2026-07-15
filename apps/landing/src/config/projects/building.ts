@@ -2,6 +2,28 @@ import type { CatalogProject } from "../../types/project"
 
 export const buildingProjectEntries = [
   {
+    title: "Shika",
+    path: "apps/shika",
+    updatedAt: "2026-07-15T16:01:36+08:00",
+    summary:
+      "A single-owner personal status app with private operations and explicitly published public history.",
+    label: "Rebuild",
+    lifecycle: "active",
+    kind: "app",
+    presentation: "catalog",
+    section: "building",
+    showcase: {
+      label: "Personal status app",
+      tags: ["Next.js", "Turso", "Privacy-first"],
+      cover: {
+        src: "/covers/shika.png",
+        alt: "Shika public status page showing an unreported state and no active incidents",
+        width: 1600,
+        height: 900,
+      },
+    },
+  },
+  {
     title: "Focus Orb Playground",
     path: "apps/focus-orb-demo",
     updatedAt: "2026-07-11T10:09:02+08:00",

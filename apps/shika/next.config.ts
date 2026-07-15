@@ -4,10 +4,10 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["127.0.0.1"],
   experimental: {
-    // Keep Windows builds off the child-process worker path that resets IPC connections.
+    // Bound local and CI build concurrency for predictable resource usage.
     cpus: 1,
-    turbopackPluginRuntimeStrategy: "workerThreads",
   },
   reactCompiler: true,
 };

@@ -1,0 +1,116 @@
+.section-heading-row,
+.record-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--font-geist-mono);
+  font-size: 0.64rem;
+  font-weight: 560;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.content-section {
+  padding-block: clamp(2.75rem, 6vw, 4.75rem);
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.content-section:last-child {
+  border-bottom: 0;
+}
+
+.section-title {
+  margin: 0.5rem 0 0;
+  font-size: clamp(1.45rem, 3vw, 2rem);
+  font-weight: 520;
+  letter-spacing: -0.035em;
+}
+
+.section-count {
+  min-width: 2ch;
+  color: var(--muted);
+  font-family: var(--font-geist-mono);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  text-align: right;
+}
+
+.records-list {
+  margin: 1.75rem 0 0;
+  padding: 0;
+  border-block: 1px solid var(--border-strong);
+  list-style: none;
+}
+
+.record-row {
+  position: relative;
+  padding: 1.4rem 0;
+}
+
+.record-row + .record-row {
+  border-top: 1px solid var(--border);
+}
+
+.record-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 560;
+  letter-spacing: -0.012em;
+  overflow-wrap: anywhere;
+}
+
+.record-title a {
+  text-decoration: none;
+}
+
+.record-title a::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+}
+
+.record-title a:hover {
+  color: var(--accent-strong);
+}
+
+.record-copy {
+  max-width: 47rem;
+  margin: 0.58rem 0 0;
+  color: var(--muted-strong);
+  font-size: 0.86rem;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.record-meta {
+  margin: 0.65rem 0 0;
+  color: var(--muted);
+  font-family: var(--font-geist-mono);
+  font-size: 0.67rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.empty-state {
+  margin-top: 1.5rem;
+  padding: 0.35rem 0 0.35rem 1rem;
+  border-left: 2px solid var(--border-strong);
+  color: var(--muted-strong);
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+
+@media (max-width: 35rem) {
+  .record-topline {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

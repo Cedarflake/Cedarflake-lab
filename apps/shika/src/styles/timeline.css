@@ -1,0 +1,33 @@
+.timeline-list {
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.9rem;
+  padding-block: 1.15rem;
+}
+
+.timeline-row + .timeline-row {
+  border-top: 1px solid var(--border);
+}
+
+.timeline-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-top: 0.42rem;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.timeline-copy {
+  margin: 0;
+  font-size: 0.9rem;
+  font-size: 0.86rem;
+  font-weight: 540;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}

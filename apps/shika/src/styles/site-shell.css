@@ -1,0 +1,83 @@
+.page-shell {
+  width: min(100% - 2rem, 72rem);
+  margin-inline: auto;
+  padding-block: 1rem 5rem;
+}
+
+.site-header {
+  display: flex;
+  min-height: 4.75rem;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.brand-lockup {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  flex: 1 1 15rem;
+  gap: 0.7rem;
+  text-decoration: none;
+}
+
+.brand-lockup > span:last-child {
+  min-width: 0;
+}
+
+.brand-mark {
+  display: grid;
+  width: 1.9rem;
+  height: 1.9rem;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 0.42rem;
+  background: var(--foreground);
+  color: var(--surface-strong);
+  font-family: var(--font-geist-mono);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.brand-name {
+  font-size: 0.91rem;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  overflow-wrap: anywhere;
+}
+
+.brand-description {
+  margin-top: 0.12rem;
+  color: var(--muted);
+  font-size: 0.69rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.public-nav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+@media (min-width: 48rem) {
+  .page-shell {
+    width: min(100% - 4rem, 72rem);
+    padding-top: 1.5rem;
+  }
+}
+
+@media (max-width: 35rem) {
+  .brand-description {
+    display: none;
+  }
+
+  .site-header {
+    min-height: 4.25rem;
+  }
+}

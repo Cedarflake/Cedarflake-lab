@@ -4,22 +4,31 @@
   "private": true,
   "license": "Apache-2.0",
   "scripts": {
-    "dev": "next dev",
+    "dev": "node --max-old-space-size=1024 ./node_modules/next/dist/bin/next dev --webpack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
-    "check": "pnpm lint && pnpm typecheck"
+    "test": "tsx --test ./tests/**/*.test.ts",
+    "test:watch": "tsx --test --watch ./tests/**/*.test.ts",
+    "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
+    "db:check": "drizzle-kit check --config=drizzle.config.ts",
+    "db:migrate:local": "tsx ./scripts/migrate-local.ts",
+    "db:migrate": "drizzle-kit migrate --config=drizzle.remote.config.ts",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm db:check"
   },
   "dependencies": {
-    "clsx": "^2.1.1",
-    "lucide-react": "^1.16.0",
+    "@better-auth/drizzle-adapter": "1.6.13",
+    "@libsql/client": "0.17.4",
+    "better-auth": "1.6.13",
+    "drizzle-orm": "0.45.2",
+    "kysely": "0.28.17",
+    "lucide-react": "^1.23.0",
     "next": "16.2.6",
-    "next-intl": "^4.12.0",
-    "next-themes": "^0.4.6",
+    "next-intl": "4.13.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "tailwind-merge": "^3.6.0"
+    "zod": "4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -27,9 +36,11 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
+    "drizzle-kit": "0.31.10",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
+    "tsx": "4.22.4",
     "typescript": "^5"
   }
 }

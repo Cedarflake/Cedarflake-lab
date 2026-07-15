@@ -18,7 +18,7 @@ Personal monorepo for apps, packages, local Python projects, and assorted experi
 | `apps/liminal-drift` | Vite/React game project. | [4po7.test.i0c.cc](https://4po7.test.i0c.cc/) |
 | `apps/maimai-transition` | Vite/React transition experience. | [7gkp.test.i0c.cc](https://7gkp.test.i0c.cc/) |
 | `apps/personal-email` | React Email templates and mail scripts. | — |
-| `apps/shika` | Next.js status-page prototype. | — |
+| `apps/shika` | Single-owner personal status app with explicit private and public projections. | — |
 | `packages/*` | Reusable frontend packages. | — |
 | `workbench/*` | Local Python utilities and small projects. | — |
 | `others/*` | Others. | — |

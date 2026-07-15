@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - "apps/**"
+      - "!apps/shika/**"
       - "packages/**"
       - ".editorconfig"
       - ".gitattributes"
@@ -18,6 +19,7 @@ on:
       - main
     paths:
       - "apps/**"
+      - "!apps/shika/**"
       - "packages/**"
       - ".editorconfig"
       - ".gitattributes"
@@ -58,15 +60,15 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm --filter "./apps/**" --filter "!shika" --filter "./packages/**" --fail-if-no-match install --frozen-lockfile
 
       - name: Audit production dependencies
-        run: pnpm --config.registry=https://registry.npmjs.org/ audit --prod --audit-level high
+        run: pnpm --config.registry=https://registry.npmjs.org/ --filter "./apps/**" --filter "!shika" --filter "./packages/**" --fail-if-no-match audit --prod --audit-level high
 
       - name: Check workspace
         run: |
-          pnpm -r --filter "./apps/**" --filter "./packages/**" --if-present check
+          pnpm -r --filter "./apps/**" --filter "!shika" --filter "./packages/**" --if-present check
           pnpm check:focus-orb-package
 
       - name: Build workspace
-        run: pnpm -r --workspace-concurrency=1 --filter "./apps/**" --filter "./packages/**" --if-present build
+        run: pnpm -r --workspace-concurrency=1 --filter "./apps/**" --filter "!shika" --filter "./packages/**" --if-present build

@@ -1,0 +1,41 @@
+.condition-pill,
+.exposure-pill {
+  display: inline-flex;
+  min-height: 1.65rem;
+  align-items: center;
+  gap: 0.4rem;
+  padding-inline: 0.55rem;
+  border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+  border-radius: 0.35rem;
+  background: transparent;
+  color: var(--unknown);
+  font-family: var(--font-geist-mono);
+  font-size: 0.63rem;
+  font-weight: 540;
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
+}
+
+.condition-pill::before {
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
+}
+
+.condition-pill[data-condition="available"] {
+  color: var(--accent-strong);
+}
+
+.condition-pill[data-condition="limited"],
+.condition-pill[data-condition="degraded"],
+.condition-pill[data-severity="minor"],
+.condition-pill[data-severity="major"] {
+  color: var(--warning);
+}
+
+.condition-pill[data-condition="unavailable"],
+.condition-pill[data-severity="critical"] {
+  color: var(--danger);
+}

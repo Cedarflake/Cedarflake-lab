@@ -75,24 +75,4 @@ export const featuredProjectEntries = [
       },
     },
   },
-  {
-    title: "Shika",
-    path: "apps/shika",
-    updatedAt: "2026-07-11T10:08:42+08:00",
-    summary:
-      "A bilingual personal status page for life sections, incidents, maintenance events, and uptime notes.",
-    kind: "app",
-    presentation: "featured",
-    section: "featured",
-    showcase: {
-      label: "Status prototype",
-      tags: ["Next.js", "i18n", "Themes"],
-      cover: {
-        src: "/covers/shika.png",
-        alt: "Shika personal status page preview",
-        width: 1600,
-        height: 900,
-      },
-    },
-  },
 ] as const satisfies readonly FeaturedProject[]

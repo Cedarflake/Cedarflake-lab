@@ -318,6 +318,7 @@ Current workflow ownership:
 | `group-apps-packages-ci.yml`         | Baseline dependency audit, check, and build for apps and packages |
 | `group-workbench-python-ci.yml`      | Workbench Ruff, registered tests, and dependency audits           |
 | `project-liminal-drift-ci.yml`       | Liminal Drift project and browser validation                      |
+| `project-shika-ci.yml`               | Shika static, command, migration, schema, and production validation |
 | `project-youtube-auto-resume-ci.yml` | YouTube userscript unit, build-drift, and browser validation      |
 
 `repo-repository-contract-ci.yml` uses the display name `[Repo] Repository Contract CI`. It runs for every pull request and every push to `main`, without path filters, because a change at any tracked path can introduce a contract violation; it also supports `workflow_dispatch`. Keep this repository-wide gate separate from group and project workflows.

@@ -1,0 +1,80 @@
+.header-link,
+.section-link {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: 0.42rem;
+  padding-inline: 0.7rem;
+  border-radius: 0.45rem;
+  color: var(--muted-strong);
+  font-size: 0.79rem;
+  font-weight: 540;
+  text-decoration: none;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+.action-button {
+  display: inline-flex;
+  min-height: 2.55rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.46rem;
+  padding-inline: 0.9rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.48rem;
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  font-size: 0.79rem;
+  font-weight: 560;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease,
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.action-button:hover:not(:disabled) {
+  border-color: var(--foreground);
+  background: var(--foreground);
+  color: var(--surface-strong);
+}
+
+.action-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.action-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.action-button-primary {
+  border-color: var(--foreground);
+  background: var(--foreground);
+  color: var(--surface-strong);
+}
+
+.action-button-primary:hover:not(:disabled) {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+  color: var(--surface-strong);
+}
+
+.header-link:hover,
+.section-link:hover {
+  background: var(--surface-muted);
+  color: var(--foreground);
+}
+
+.header-link:active,
+.section-link:active {
+  transform: translateY(1px);
+}

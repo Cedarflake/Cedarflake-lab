@@ -1,24 +1,18 @@
-import {getRequestConfig} from "next-intl/server";
+import { cookies, headers } from "next/headers";
+import { getRequestConfig } from "next-intl/server";
 
-import {loadLocaleMessages} from "@/i18n/messages";
-import {isValidLocale, routing, type AppLocale} from "@/i18n/routing";
+import { localeCookieName } from "./config";
+import { resolveRequestLocale } from "./resolve-locale";
 
-const timeZones: Record<AppLocale, string> = {
-  "zh-CN": "Asia/Shanghai",
-  en: "UTC",
-};
-
-export default getRequestConfig(async ({requestLocale}) => {
-  const requestedLocale = await requestLocale;
-  const locale =
-    requestedLocale && isValidLocale(requestedLocale)
-      ? requestedLocale
-      : routing.defaultLocale;
+export default getRequestConfig(async () => {
+  const [cookieStore, headerStore] = await Promise.all([cookies(), headers()]);
+  const locale = resolveRequestLocale(
+    cookieStore.get(localeCookieName)?.value ?? null,
+    headerStore.get("accept-language"),
+  );
 
   return {
     locale,
-    messages: await loadLocaleMessages(locale),
-    timeZone: timeZones[locale],
-    now: new Date(),
+    messages: (await import(`../messages/${locale}.json`)).default,
   };
 });
