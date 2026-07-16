@@ -4,7 +4,7 @@ export const buildingProjectEntries = [
   {
     title: "YouTube Auto Resume Extension",
     path: "apps/youtube-auto-resume-extension",
-    updatedAt: "2026-07-16T14:11:28+08:00",
+    updatedAt: "2026-07-16T23:37:42+08:00",
     summary:
       "A Chromium Manifest V3 playback assistant with opt-in trusted activation of visible YouTube skip controls.",
     label: "Browser extension",

@@ -1,4 +1,6 @@
-const USER_NAVIGATION_INTENT_TTL_MS = 30_000
+const EXACT_NAVIGATION_INTENT_TTL_MS = 30_000
+const GENERIC_NAVIGATION_INTENT_TTL_MS = 5_000
+const UNEXPECTED_NAVIGATION_GUARD_TTL_MS = 10_000
 
 interface NavigationIntent {
   expiresAt: number
@@ -6,6 +8,7 @@ interface NavigationIntent {
 }
 
 export interface LoopTargetController {
+  armUnexpectedNavigationGuard: (now: number) => void
   configure: (enabled: boolean, currentVideoId: string | null) => void
   getTargetVideoId: () => string | null
   markUserNavigation: (videoId: string | null, now: number) => void
@@ -39,12 +42,14 @@ export function createLoopTargetController(
   let isEnabled = initialEnabled
   let targetVideoId = initialEnabled ? initialVideoId : null
   let navigationIntent: NavigationIntent | null = null
+  let unexpectedNavigationGuardExpiresAt = 0
 
   function configure(enabled: boolean, currentVideoId: string | null): void {
     if (!enabled) {
       isEnabled = false
       targetVideoId = null
       navigationIntent = null
+      unexpectedNavigationGuardExpiresAt = 0
       return
     }
 
@@ -61,22 +66,42 @@ export function createLoopTargetController(
     }
 
     navigationIntent = {
-      expiresAt: now + USER_NAVIGATION_INTENT_TTL_MS,
+      expiresAt: now + (
+        videoId
+          ? EXACT_NAVIGATION_INTENT_TTL_MS
+          : GENERIC_NAVIGATION_INTENT_TTL_MS
+      ),
       videoId,
     }
+  }
+
+  function armUnexpectedNavigationGuard(now: number): void {
+    if (!isEnabled || !targetVideoId) {
+      return
+    }
+
+    unexpectedNavigationGuardExpiresAt = now
+      + UNEXPECTED_NAVIGATION_GUARD_TTL_MS
   }
 
   function resolveUnexpectedNavigation(
     currentVideoId: string | null,
     now: number,
   ): string | null {
-    if (!isEnabled || !currentVideoId) {
+    if (!isEnabled) {
+      return null
+    }
+
+    if (!currentVideoId) {
+      navigationIntent = null
+      unexpectedNavigationGuardExpiresAt = 0
       return null
     }
 
     if (!targetVideoId) {
       targetVideoId = currentVideoId
       navigationIntent = null
+      unexpectedNavigationGuardExpiresAt = 0
       return null
     }
 
@@ -101,6 +126,18 @@ export function createLoopTargetController(
 
     if (hasMatchingIntent) {
       targetVideoId = currentVideoId
+      unexpectedNavigationGuardExpiresAt = 0
+      return null
+    }
+
+    const isUnexpectedNavigationGuarded =
+      unexpectedNavigationGuardExpiresAt > 0
+      && unexpectedNavigationGuardExpiresAt >= now
+
+    unexpectedNavigationGuardExpiresAt = 0
+
+    if (!isUnexpectedNavigationGuarded) {
+      targetVideoId = currentVideoId
       return null
     }
 
@@ -108,6 +145,7 @@ export function createLoopTargetController(
   }
 
   return {
+    armUnexpectedNavigationGuard,
     configure,
     getTargetVideoId: () => targetVideoId,
     markUserNavigation,

@@ -96,6 +96,10 @@ export function findSkipAdButton(
   return findInteractiveElement(player, SKIP_AD_SELECTOR)
 }
 
+export function isSkipAdControl(element: Element): boolean {
+  return element.matches(SKIP_AD_SELECTOR)
+}
+
 export function isElementVisible(element: Element | null): boolean {
   if (!element) {
     return false

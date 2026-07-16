@@ -350,12 +350,14 @@ test("automatic loop is reasserted when playback and ad state clear it", async (
   }
 })
 
-test("loop target accepts user selection and rejects automatic navigation", async () => {
+test("loop target accepts all user selection and rejects guarded automation", async () => {
   const browser = await chromium.launch({ headless: true })
 
   try {
     const page = await browser.newPage()
     await openFixture(page, "/watch?v=first-video")
+    const video = page.locator("#primary-video")
+    await installVideoFixture(video, false)
     await page.evaluate(() => {
       const key = "autoChick.ytAutoResume.settings"
       const settings = JSON.parse(localStorage.getItem(key) ?? "{}") as
@@ -387,6 +389,23 @@ test("loop target accepts user selection and rejects automatic navigation", asyn
         history.pushState({}, "", "/watch?v=button-selected")
         document.dispatchEvent(new Event("yt-navigate-finish"))
       })
+
+      const customVideoSelection = document.createElement("div")
+      customVideoSelection.id = "custom-video-selection"
+      customVideoSelection.tabIndex = 0
+      customVideoSelection.textContent = "Custom video card"
+      customVideoSelection.addEventListener("click", () => {
+        document.dispatchEvent(new Event("yt-navigate-start"))
+        history.pushState({}, "", "/watch?v=custom-selected")
+        document.dispatchEvent(new Event("yt-navigate-finish"))
+      })
+      const player = document.querySelector("#movie_player")
+
+      if (!(player instanceof HTMLElement)) {
+        throw new TypeError("loop navigation fixture player is incomplete")
+      }
+
+      player.append(customVideoSelection)
       document.body.append(anchor, navigationButton)
     })
     await page.addScriptTag({ path: userscriptPath })
@@ -395,11 +414,19 @@ test("loop target accepts user selection and rejects automatic navigation", asyn
     await page.waitForURL("**/watch?v=user-selected")
     await page.locator("#user-next-button").click()
     await page.waitForURL("**/watch?v=button-selected")
+    await page.waitForTimeout(300)
+
+    await dispatchVideoEnded(video)
+    await page.locator("#custom-video-selection").click()
+    await page.waitForURL("**/watch?v=custom-selected")
+    await page.waitForTimeout(300)
+
+    await dispatchVideoEnded(video)
 
     const restoredNavigation = page.waitForEvent(
       "framenavigated",
       (frame) => frame === page.mainFrame()
-        && new URL(frame.url()).searchParams.get("v") === "button-selected",
+        && new URL(frame.url()).searchParams.get("v") === "custom-selected",
     )
     await page.evaluate(() => {
       window.setTimeout(() => {
@@ -412,7 +439,7 @@ test("loop target accepts user selection and rejects automatic navigation", asyn
 
     assert.equal(
       new URL(page.url()).searchParams.get("v"),
-      "button-selected",
+      "custom-selected",
     )
   } finally {
     await browser.close()

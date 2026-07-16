@@ -81,6 +81,10 @@ export function startYouTubeAutoResumeApp(
   const loopPlayer = createLoopPlayerController({
     getEnabled: () => settings.autoLoop,
     onAdStateChange: (isShowingAd) => {
+      if (settings.autoLoop) {
+        loopTarget.armUnexpectedNavigationGuard(Date.now())
+      }
+
       if (settings.autoLoop && enforceLoopTarget()) {
         return false
       }
@@ -92,6 +96,7 @@ export function startYouTubeAutoResumeApp(
       return true
     },
     onLoopReasserted: () => {
+      loopTarget.armUnexpectedNavigationGuard(Date.now())
       setLastAction("广告结束，已重新确认当前视频循环")
     },
   })
@@ -232,7 +237,13 @@ export function startYouTubeAutoResumeApp(
   }
 
   function syncAutoLoopPlayer(): boolean {
-    return loopPlayer.sync()
+    const wasLoopReasserted = loopPlayer.sync()
+
+    if (wasLoopReasserted) {
+      loopTarget.armUnexpectedNavigationGuard(Date.now())
+    }
+
+    return wasLoopReasserted
   }
 
   function setActiveContext(
@@ -355,6 +366,10 @@ export function startYouTubeAutoResumeApp(
 
   function handleVideoEnded(event: Event): void {
     const video = event.currentTarget as HTMLVideoElement
+
+    if (settings.autoLoop) {
+      loopTarget.armUnexpectedNavigationGuard(Date.now())
+    }
 
     playbackState.markPlaying(video)
     updatePanelStatus()

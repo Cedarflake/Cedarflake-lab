@@ -20,10 +20,49 @@ test("enabled startup captures the current video before any settings change", ()
   const target = createLoopTargetController(true, "startup-video")
 
   assert.equal(target.getTargetVideoId(), "startup-video")
+})
+
+test("an unguarded video change becomes the new loop target", () => {
+  const target = createLoopTargetController(true, "first-video")
+
   assert.equal(
-    target.resolveUnexpectedNavigation("automatic-next", 1_000),
-    "startup-video",
+    target.resolveUnexpectedNavigation("user-selected-video", 1_000),
+    null,
   )
+  assert.equal(target.getTargetVideoId(), "user-selected-video")
+})
+
+test("a guarded automatic change restores the previous loop target", () => {
+  const target = createLoopTargetController(true, "first-video")
+
+  target.armUnexpectedNavigationGuard(1_000)
+
+  assert.equal(
+    target.resolveUnexpectedNavigation("automatic-next", 1_500),
+    "first-video",
+  )
+})
+
+test("an expired guard cannot pin a later video change", () => {
+  const target = createLoopTargetController(true, "first-video")
+
+  target.armUnexpectedNavigationGuard(1_000)
+
+  assert.equal(
+    target.resolveUnexpectedNavigation("later-video", 11_001),
+    null,
+  )
+  assert.equal(target.getTargetVideoId(), "later-video")
+})
+
+test("leaving watch clears the guard before the next video", () => {
+  const target = createLoopTargetController(true, "first-video")
+
+  target.armUnexpectedNavigationGuard(1_000)
+
+  assert.equal(target.resolveUnexpectedNavigation(null, 1_500), null)
+  assert.equal(target.resolveUnexpectedNavigation("later-video", 2_000), null)
+  assert.equal(target.getTargetVideoId(), "later-video")
 })
 
 test("enabling later captures the video active at that moment", () => {
@@ -32,15 +71,12 @@ test("enabling later captures the video active at that moment", () => {
   target.configure(true, "enabled-video")
 
   assert.equal(target.getTargetVideoId(), "enabled-video")
-  assert.equal(
-    target.resolveUnexpectedNavigation("automatic-next", 1_000),
-    "enabled-video",
-  )
 })
 
 test("explicit user selection replaces the loop target", () => {
   const target = createLoopTargetController(true, "first-video")
 
+  target.armUnexpectedNavigationGuard(1_000)
   target.markUserNavigation("selected-video", 1_000)
   assert.equal(
     target.resolveUnexpectedNavigation("first-video", 1_100),
@@ -52,6 +88,7 @@ test("explicit user selection replaces the loop target", () => {
     null,
   )
   assert.equal(target.getTargetVideoId(), "selected-video")
+  target.armUnexpectedNavigationGuard(2_000)
   assert.equal(
     target.resolveUnexpectedNavigation("automatic-next", 2_000),
     "selected-video",
@@ -61,15 +98,17 @@ test("explicit user selection replaces the loop target", () => {
 test("expired or mismatched user intent cannot authorize automatic next", () => {
   const target = createLoopTargetController(true, "first-video")
 
+  target.armUnexpectedNavigationGuard(1_000)
   target.markUserNavigation("different-video", 1_000)
   assert.equal(
     target.resolveUnexpectedNavigation("automatic-next", 1_500),
     "first-video",
   )
 
+  target.armUnexpectedNavigationGuard(2_000)
   target.markUserNavigation(null, 2_000)
   assert.equal(
-    target.resolveUnexpectedNavigation("late-next", 32_001),
+    target.resolveUnexpectedNavigation("late-next", 8_001),
     "first-video",
   )
 })

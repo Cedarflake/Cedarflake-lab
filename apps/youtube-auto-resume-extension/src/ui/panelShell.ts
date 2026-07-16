@@ -81,7 +81,7 @@ export function createPanelShell(
   const autoLoop = createSwitchRow(
     "auto-loop",
     "自动循环",
-    "视频开始或广告切换后重申循环，异常换片时返回",
+    "视频开始时重申循环，仅在异常征兆后阻止自动换片",
   )
   const preferredQuality = createSelectRow(
     "preferred-quality",

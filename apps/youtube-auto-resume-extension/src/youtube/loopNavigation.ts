@@ -1,5 +1,6 @@
 import { isTypingContext } from "../core/typing.ts"
 
+import { isSkipAdControl } from "./ads.ts"
 import { getWatchVideoId } from "./loopTarget.ts"
 
 interface LoopNavigationTracker {
@@ -51,17 +52,34 @@ export function createLoopNavigationTracker(
     )
 
     if (
-      !anchor
-      || anchor.hasAttribute("download")
-      || (anchor.target && anchor.target !== "_self")
+      anchor
+      && (
+        anchor.hasAttribute("download")
+        || (anchor.target && anchor.target !== "_self")
+      )
     ) {
       return
     }
 
-    const videoId = getWatchVideoId(anchor.href)
+    const videoId = anchor ? getWatchVideoId(anchor.href) : null
 
     if (videoId) {
       options.onUserNavigation(videoId)
+      return
+    }
+
+    const isIgnoredGenericInteraction = eventPath.some(
+      (target) => target instanceof Element && (
+        isSkipAdControl(target)
+        || target.matches(
+          "#auto-chick-yt-auto-resume-host, input, textarea, select, "
+          + "[contenteditable=\"true\"]",
+        )
+      ),
+    )
+
+    if (!isIgnoredGenericInteraction) {
+      options.onUserNavigation(null)
     }
   }
 
@@ -71,14 +89,42 @@ export function createLoopNavigationTracker(
     const isMediaVideoShortcut = event.key === "MediaTrackNext"
       || event.key === "MediaTrackPrevious"
 
+    if (!options.getEnabled() || !event.isTrusted) {
+      return
+    }
+
     if (
-      options.getEnabled()
-      && event.isTrusted
-      && !isTypingContext()
+      !isTypingContext()
       && (isYouTubeVideoShortcut || isMediaVideoShortcut)
     ) {
       options.onUserNavigation(null)
+      return
     }
+
+    if (event.key !== "Enter" || isTypingContext()) {
+      return
+    }
+
+    const eventPath = event.composedPath()
+    const isIgnoredGenericInteraction = eventPath.some(
+      (target) => target instanceof Element && (
+        isSkipAdControl(target)
+        || target.matches("#auto-chick-yt-auto-resume-host")
+      ),
+    )
+
+    if (isIgnoredGenericInteraction) {
+      return
+    }
+
+    const anchor = eventPath.find(
+      (target): target is HTMLAnchorElement => (
+        target instanceof HTMLAnchorElement
+      ),
+    )
+    const videoId = anchor ? getWatchVideoId(anchor.href) : null
+
+    options.onUserNavigation(videoId)
   }
 
   function handlePopState(event: PopStateEvent): void {
