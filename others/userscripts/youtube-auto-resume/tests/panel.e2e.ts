@@ -527,6 +527,20 @@ test("launcher remains visible and follows the active mount target", async () =>
 
     await page.keyboard.press("Tab")
     const enabledSwitch = page.getByRole("checkbox", { name: "自动恢复" })
+    const qualitySelect = page.getByRole("combobox", { name: "目标画质" })
+    assert.equal(await qualitySelect.inputValue(), "auto")
+    assert.equal(
+      await qualitySelect.evaluate(
+        (element) => getComputedStyle(element).backgroundRepeat,
+      ),
+      "no-repeat",
+    )
+    await qualitySelect.selectOption("hd1080")
+    await page.waitForFunction(() => {
+      const raw = localStorage.getItem("autoChick.ytAutoResume.settings")
+      const settings = raw ? JSON.parse(raw) as Record<string, unknown> : {}
+      return settings.preferredQuality === "hd1080"
+    })
     assert.equal(
       await enabledSwitch.evaluate((element) => {
         const root = element.getRootNode()
@@ -846,7 +860,7 @@ test("stopped app remains terminal after pending and stale callbacks", async () 
       name: "立即恢复",
     }).elementHandle()
     const skipButton = await page.getByRole("button", {
-      name: "跳过广告",
+      name: "点击跳过按钮",
     }).elementHandle()
     const enabledSwitch = await page.getByRole("checkbox", {
       name: "自动恢复",

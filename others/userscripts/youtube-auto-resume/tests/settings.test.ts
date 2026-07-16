@@ -43,11 +43,21 @@ test("normalizeSettings applies defaults and clamps numeric input", () => {
     autoSkipAds: 1,
     intervalMs: 1,
     minPausedSeconds: 100,
+    preferredQuality: "hd1080",
   })
 
   assert.equal(settings.autoSkipAds, true)
+  assert.equal(settings.preferredQuality, "hd1080")
   assert.equal(settings.intervalMs, 200)
   assert.equal(settings.minPausedSeconds, 30)
+})
+
+test("invalid and legacy quality settings fall back to YouTube automatic", () => {
+  assert.equal(
+    normalizeSettings({ preferredQuality: "cinema" }).preferredQuality,
+    "auto",
+  )
+  assert.equal(normalizeSettings({ bestQuality: true }).preferredQuality, "auto")
 })
 
 test("legacy hidden-panel state cannot suppress the launcher", () => {

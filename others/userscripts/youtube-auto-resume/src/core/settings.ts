@@ -1,10 +1,27 @@
 export const SETTINGS_STORAGE_PREFIX = "autoChick.ytAutoResume."
 
+export const QUALITY_PREFERENCES = [
+  "auto",
+  "hd4320",
+  "hd2880",
+  "hd2160",
+  "hd1440",
+  "hd1080",
+  "hd720",
+  "large",
+  "medium",
+  "small",
+  "tiny",
+] as const
+
+export type QualityPreference = typeof QUALITY_PREFERENCES[number]
+
 export interface YouTubeAutoResumeSettings {
   enabled: boolean
   intervalMs: number
   minPausedSeconds: number
   autoSkipAds: boolean
+  preferredQuality: QualityPreference
   avoidTyping: boolean
   avoidEnded: boolean
   collapsed: boolean
@@ -39,6 +56,7 @@ export const DEFAULT_SETTINGS: Readonly<YouTubeAutoResumeSettings> = {
   intervalMs: 1000,
   minPausedSeconds: 2,
   autoSkipAds: false,
+  preferredQuality: "auto",
   avoidTyping: true,
   avoidEnded: true,
   collapsed: true,
@@ -58,6 +76,12 @@ function readBoolean(
   fallback: boolean,
 ): boolean {
   return key in source ? Boolean(source[key]) : fallback
+}
+
+export function isQualityPreference(
+  value: unknown,
+): value is QualityPreference {
+  return QUALITY_PREFERENCES.includes(value as QualityPreference)
 }
 
 export function clampNumber(
@@ -94,6 +118,9 @@ export function normalizeSettings(input: unknown): YouTubeAutoResumeSettings {
       "autoSkipAds",
       DEFAULT_SETTINGS.autoSkipAds,
     ),
+    preferredQuality: isQualityPreference(source.preferredQuality)
+      ? source.preferredQuality
+      : DEFAULT_SETTINGS.preferredQuality,
     avoidTyping: readBoolean(
       source,
       "avoidTyping",

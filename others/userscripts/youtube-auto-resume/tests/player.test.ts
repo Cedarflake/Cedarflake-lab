@@ -3,8 +3,13 @@ import test from "node:test"
 
 import {
   getMoviePlayer,
+  getPlayerAvailableQualityLevels,
+  getPlayerPlaybackQuality,
   getVideo,
+  isPlayerShowingAd,
   resolveActivePlayerContext,
+  setPlayerPlaybackQuality,
+  type YouTubePlayerElement,
 } from "../src/youtube/player.ts"
 import { FakeDocument, FakeElement } from "./youtubeTestDom.ts"
 
@@ -204,4 +209,65 @@ test("main video is preferred over earlier fallback videos", () => {
   documentRef.players = [player]
 
   assert.equal(getVideo(documentRef.toDocument()), mainVideo)
+})
+
+test("player ad state recognizes both YouTube ad marker classes", () => {
+  const documentRef = new FakeDocument()
+  const player = new FakeElement(documentRef)
+
+  assert.equal(isPlayerShowingAd(player as unknown as HTMLElement), false)
+
+  player.classList.add("ad-showing")
+  assert.equal(isPlayerShowingAd(player as unknown as HTMLElement), true)
+
+  player.classList.remove("ad-showing")
+  player.classList.add("ad-interrupting")
+  assert.equal(isPlayerShowingAd(player as unknown as HTMLElement), true)
+})
+
+test("quality helpers validate player API responses and apply both controls", () => {
+  const documentRef = new FakeDocument()
+  const player = new FakeElement(documentRef) as unknown as YouTubePlayerElement
+  const rangeCalls: string[][] = []
+  const qualityCalls: string[] = []
+
+  player.getAvailableQualityLevels = () => ["hd1080", null, "hd720"]
+  player.getPlaybackQuality = () => "hd720"
+  player.setPlaybackQualityRange = (minimum, maximum) => {
+    rangeCalls.push([minimum, maximum])
+  }
+  player.setPlaybackQuality = (quality) => {
+    qualityCalls.push(quality)
+  }
+
+  assert.deepEqual(
+    getPlayerAvailableQualityLevels(player),
+    ["hd1080", "hd720"],
+  )
+  assert.equal(getPlayerPlaybackQuality(player), "hd720")
+  assert.equal(setPlayerPlaybackQuality(player, "hd1080"), true)
+  assert.deepEqual(rangeCalls, [["hd1080", "hd1080"]])
+  assert.deepEqual(qualityCalls, ["hd1080"])
+})
+
+test("quality helpers tolerate unavailable or changing player APIs", () => {
+  const documentRef = new FakeDocument()
+  const player = new FakeElement(documentRef) as unknown as YouTubePlayerElement
+
+  assert.equal(getPlayerAvailableQualityLevels(player), null)
+  assert.equal(getPlayerPlaybackQuality(player), null)
+  assert.equal(setPlayerPlaybackQuality(player, "hd1080"), false)
+
+  player.getAvailableQualityLevels = () => {
+    throw new Error("unavailable")
+  }
+  player.getPlaybackQuality = () => 1080
+  player.setPlaybackQualityRange = () => {
+    throw new Error("stream replacement")
+  }
+  player.setPlaybackQuality = () => undefined
+
+  assert.equal(getPlayerAvailableQualityLevels(player), null)
+  assert.equal(getPlayerPlaybackQuality(player), null)
+  assert.equal(setPlayerPlaybackQuality(player, "hd1080"), true)
 })

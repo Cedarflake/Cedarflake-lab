@@ -1,15 +1,20 @@
 # YouTube Auto Resume
 
-A userscript for recovering paused YouTube playback and handling ads from a resilient panel.
+A userscript for recovering paused YouTube playback, applying a chosen quality preference, and using YouTube-provided ad controls from a resilient panel.
 
 ## Status
 
-Active. Version 0.4.0 adds an Aurora launcher while retaining the playback recovery, guarded ad handling, and panel resilience introduced in 0.3.0; automatic quality selection is no longer included.
+Archived on July 15, 2026 at version 0.4.1. This directory is a frozen, reproducible userscript snapshot; ongoing development has moved to the [YouTube Auto Resume Extension](../../../apps/youtube-auto-resume-extension/).
+
+The archived release includes a persistent target-quality selector and control-only ad handling: it can use visible controls provided by YouTube, but it does not block, hide, accelerate, or seek through ads.
 
 ## Features
 
 - Resumes playback after a configurable pause threshold
-- Handles ads with visible controls first, then a finite seekable fallback only for the active player YouTube explicitly marks as an ad
+- Applies a selected target quality to the active YouTube player, with a closest-lower fallback when the exact level is unavailable
+- Clicks only visible YouTube skip controls without modifying ad playback, overlays, or network requests
+- Suspends automatic and manual playback recovery while YouTube marks the active player as an ad
+- Suspends playback recovery and ad-control automation while YouTube shows an in-player enforcement message
 - Provides a YouTube-inspired Shadow DOM panel whose collapsed launcher keeps a full Aurora ring and switches to pointer-tracked edge light on hover
 - Reattaches the panel when YouTube's single-page navigation replaces page content
 - Exposes userscript menu commands for opening and resetting the panel
@@ -18,28 +23,29 @@ The launcher adapts the layered glow documented by the repository's [Google AI M
 
 ## Install
 
-Install [Tampermonkey](https://www.tampermonkey.net/) or another compatible userscript manager, then open the installable script:
+The historical release remains installable for reproducibility. Install [Tampermonkey](https://www.tampermonkey.net/) or another compatible userscript manager, then open the script:
 
 [Install YouTube Auto Resume](https://raw.githubusercontent.com/Cedarflake/Cedarflake-Lab/main/others/userscripts/youtube-auto-resume/dist/youtube-auto-resume.user.js)
 
-Automatic ad handling is disabled by default. Enable it from the floating launcher. The script tries visible skip and overlay-close controls first. For a video ad, an unavailable or ineffective skip control can fall back to advancing finite seekable media only while the active player has YouTube's `ad-showing` or `ad-interrupting` state.
+Choose a target quality from the floating launcher; the default leaves selection to YouTube. A fixed target uses the exact level when available and otherwise falls back to the closest available lower level. Quality selection never runs while YouTube marks the active player as an ad. Automatic ad-control handling is disabled by default. The script clicks a visible skip control only when YouTube exposes that control in the active player. While YouTube marks the active player as an ad, playback recovery is suspended. If an ad is not skippable, the script leaves it untouched so it plays normally. If YouTube displays an in-player enforcement message, the script backs off instead of attempting to bypass or dismiss it.
 
 ## Support
 
 The supported page scope is the top-level desktop site at `https://www.youtube.com/*`. YouTube Music, mobile YouTube, embedded players, and framed playback are outside the current scope.
 
-| Userscript manager | Browser | Support status |
-| --- | --- | --- |
-| Tampermonkey | Chrome and Edge 109+ | Primary installation target |
-| Violentmonkey | Chrome, Edge 109+, and Firefox 115+ | Expected to work with the APIs used; not covered by automated manager tests |
-| Other managers | Any browser | Not verified |
+| Userscript manager | Browser                             | Support status                                                              |
+| ------------------ | ----------------------------------- | --------------------------------------------------------------------------- |
+| Tampermonkey       | Chrome and Edge 109+                | Primary installation target                                                 |
+| Violentmonkey      | Chrome, Edge 109+, and Firefox 115+ | Expected to work with the APIs used; not covered by automated manager tests |
+| Other managers     | Any browser                         | Not verified                                                                |
 
 The build targets Chrome and Edge 109+ and Firefox 115+. Automated browser coverage runs panel and runtime fixtures against Chromium without a userscript-manager sandbox.
 
 ## Limitations
 
 - YouTube's private DOM selectors and internal player behavior can change without notice.
-- Ad handling cannot guarantee every YouTube ad format. Its seek fallback is limited to finite seekable media in the explicitly marked active ad player and never runs on ordinary playback.
+- Target-quality selection depends on YouTube's internal quality APIs and available levels; YouTube may still adapt the stream after selection.
+- Ad handling cannot guarantee every YouTube ad format. Unskippable ads play normally, and a control that YouTube does not expose cannot be activated by the script.
 - Browser autoplay policy can reject a programmatic resume until the user interacts with the page.
 - Settings are stored in page-local storage for the current browser profile.
 
@@ -65,10 +71,16 @@ Every change that alters the generated userscript must also increase `package.js
 ```text
 scripts/build.ts        esbuild configuration and userscript metadata
 src/core/settings.ts    normalized persistent settings
-src/ui/fabAurora.ts     launcher Aurora rendering and interaction state
-src/ui/panel.ts         isolated and resilient panel view
-src/youtube/            YouTube player and ad-control integrations
-src/app.ts              application state and scheduling
+src/ui/fabAurora.ts     launcher Aurora DOM rendering and interaction lifecycle
+src/ui/fabAuroraMotion.ts pure Aurora motion calculations
+src/ui/panel.ts         panel state, persistence, and lifecycle controller
+src/ui/panelShell.ts    panel Shadow DOM structure and element references
+src/ui/panelControls.ts reusable panel control factories
+src/ui/panelMount.ts    fullscreen-aware host mounting and isolation
+src/ui/panel*Styles.ts  base, responsive, theme, and accessibility styles
+src/youtube/            YouTube player, quality, and ad-control integrations
+src/app.ts              application orchestration and scheduling
+src/appStatus.ts        player and settings status projection
 src/entry.ts            userscript API registration and application startup
 tests/                  Node.js unit tests and Playwright panel/runtime fixtures
 ```

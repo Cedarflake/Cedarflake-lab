@@ -7,15 +7,18 @@ import {
 } from "./core/settings.ts"
 import { nowText } from "./core/time.ts"
 import { isTypingContext } from "./core/typing.ts"
+import { formatAppStatus } from "./appStatus.ts"
 import { createPanelView } from "./ui/panel.ts"
 import {
   createAdSkipper,
-  getAdUiSnapshot,
+  isPlaybackEnforcementVisible,
 } from "./youtube/ads.ts"
 import {
+  isPlayerShowingAd,
   resolveActivePlayerContext,
   type ActiveYouTubePlayerContext,
 } from "./youtube/player.ts"
+import { createQualityManager } from "./youtube/quality.ts"
 
 export interface AppEnvironment {
   loadedText?: string
@@ -30,67 +33,6 @@ export interface YouTubeAutoResumeApp {
 interface ResumeOptions {
   force?: boolean
   shouldRefreshContext?: boolean
-}
-
-interface VideoStateSnapshot {
-  canCloseAdOverlay: boolean
-  canSkipAd: boolean
-  currentTime: number | null
-  ended: boolean | null
-  hasVideo: boolean
-  paused: boolean | null
-  readyState: number | null
-}
-
-function getStateSnapshot(
-  context: ActiveYouTubePlayerContext | null,
-): VideoStateSnapshot {
-  const adUi = getAdUiSnapshot({
-    getPlayerContext: () => context,
-  })
-  const video = context?.video ?? null
-
-  if (!video) {
-    return {
-      canCloseAdOverlay: false,
-      canSkipAd: false,
-      currentTime: null,
-      ended: null,
-      hasVideo: false,
-      paused: null,
-      readyState: null,
-    }
-  }
-
-  return {
-    canCloseAdOverlay: adUi.canCloseAdOverlay,
-    canSkipAd: adUi.canSkipAd,
-    currentTime: Number.isFinite(video.currentTime) ? video.currentTime : null,
-    ended: video.ended,
-    hasVideo: true,
-    paused: video.paused,
-    readyState: video.readyState,
-  }
-}
-
-function formatStatus(
-  snapshot: VideoStateSnapshot,
-  settings: Settings,
-): string {
-  if (!snapshot.hasVideo) {
-    return "检测到活动视频：否\n提示：当前页面没有受支持的 YouTube 播放器"
-  }
-
-  return [
-    "检测到活动视频：是",
-    `暂停：${snapshot.paused ? "是" : "否"}`,
-    `结束：${snapshot.ended ? "是" : "否"}`,
-    `播放位置：${snapshot.currentTime === null ? "-" : snapshot.currentTime.toFixed(1)}`,
-    `可跳过广告：${snapshot.canSkipAd ? "是" : "否"}`,
-    `可关闭广告遮罩：${snapshot.canCloseAdOverlay ? "是" : "否"}`,
-    `检测间隔：${settings.intervalMs}ms`,
-    `暂停阈值：${settings.minPausedSeconds}s`,
-  ].join("\n")
 }
 
 export function startYouTubeAutoResumeApp(
@@ -126,6 +68,11 @@ export function startYouTubeAutoResumeApp(
   }
 
   const adSkipper = createAdSkipper({
+    getSettings: () => settings,
+    getPlayerContext: () => activeContext,
+    onAction: setLastAction,
+  })
+  const qualityManager = createQualityManager({
     getSettings: () => settings,
     getPlayerContext: () => activeContext,
     onAction: setLastAction,
@@ -175,12 +122,13 @@ export function startYouTubeAutoResumeApp(
         return
       }
 
-      setLastAction("手动触发跳过")
-      const result = adSkipper.trySkipAdsIfPossible({ force: true })
-
-      if (result.recheckAfterMs !== null) {
-        scheduleNextLoop(result.recheckAfterMs)
+      if (isPlaybackEnforcementVisible()) {
+        setLastAction("检测到 YouTube 播放限制提示，未尝试绕过")
+        return
       }
+
+      setLastAction("手动查找 YouTube 跳过按钮")
+      adSkipper.trySkipAdsIfPossible({ force: true })
     },
     saveSettings,
   })
@@ -245,7 +193,7 @@ export function startYouTubeAutoResumeApp(
       return
     }
 
-    panel.setStatus(formatStatus(getStateSnapshot(activeContext), settings))
+    panel.setStatus(formatAppStatus(activeContext, settings))
   }
 
   function scheduleNextLoop(delay = settings.intervalMs): void {
@@ -345,6 +293,20 @@ export function startYouTubeAutoResumeApp(
 
     updatePanelStatus()
 
+    if (
+      isPlaybackEnforcementVisible()
+      || Boolean(
+        activeContext
+        && isPlayerShowingAd(activeContext.player),
+      )
+    ) {
+      if (isForced) {
+        setLastAction("广告或播放限制期间不执行恢复播放")
+      }
+
+      return
+    }
+
     const video = activeContext?.video
 
     if (!video) {
@@ -417,10 +379,10 @@ export function startYouTubeAutoResumeApp(
     }
 
     refreshActiveContext()
-    const adResult = adSkipper.trySkipAdsIfPossible()
 
-    if (adResult.recheckAfterMs !== null) {
-      scheduleNextLoop(adResult.recheckAfterMs)
+    if (!isPlaybackEnforcementVisible()) {
+      adSkipper.trySkipAdsIfPossible()
+      qualityManager.trySetPreferredQualityIfPossible()
     }
 
     void tryResume({ shouldRefreshContext: false })

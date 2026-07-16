@@ -1,0 +1,24 @@
+{
+  "name": "@cedarflake/youtube-auto-resume-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22 <25"
+  },
+  "scripts": {
+    "build": "node --experimental-strip-types scripts/build.ts",
+    "build:check": "node --experimental-strip-types scripts/build.ts --check",
+    "check": "pnpm run typecheck && pnpm run test && pnpm run build:check",
+    "test": "node --experimental-strip-types --test tests/ads.test.ts tests/chromiumMessages.test.ts tests/fabAurora.test.ts tests/manifest.test.ts tests/panelMount.test.ts tests/playbackState.test.ts tests/player.test.ts tests/quality.test.ts tests/settings.test.ts",
+    "test:e2e": "node --experimental-strip-types --test --test-concurrency=1 tests/extension.e2e.ts tests/panel.e2e.ts tests/runtime.e2e.ts",
+    "typecheck": "tsc -p tsconfig.browser.json --noEmit && tsc -p tsconfig.node.json --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.5",
+    "esbuild": "0.25.0",
+    "playwright": "1.61.1",
+    "typescript": "5.7.3"
+  }
+}

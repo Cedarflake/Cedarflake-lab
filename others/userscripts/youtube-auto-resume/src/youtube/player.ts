@@ -1,4 +1,9 @@
-export type YouTubePlayerElement = HTMLElement
+export interface YouTubePlayerElement extends HTMLElement {
+  getAvailableQualityLevels?: () => unknown
+  getPlaybackQuality?: () => unknown
+  setPlaybackQuality?: (quality: string) => void
+  setPlaybackQualityRange?: (minimum: string, maximum: string) => void
+}
 
 export interface ActiveYouTubePlayerContext {
   player: YouTubePlayerElement
@@ -181,12 +186,77 @@ export function getMoviePlayer(
   return resolveActivePlayerContext(documentRef)?.player ?? null
 }
 
+export function isPlayerShowingAd(player: YouTubePlayerElement): boolean {
+  return (
+    player.classList.contains("ad-showing")
+    || player.classList.contains("ad-interrupting")
+  )
+}
+
+export function getPlayerPlaybackQuality(
+  player: YouTubePlayerElement,
+): string | null {
+  if (!player.getPlaybackQuality) {
+    return null
+  }
+
+  try {
+    const quality = player.getPlaybackQuality()
+    return typeof quality === "string" ? quality : null
+  } catch {
+    return null
+  }
+}
+
+export function getPlayerAvailableQualityLevels(
+  player: YouTubePlayerElement,
+): string[] | null {
+  if (!player.getAvailableQualityLevels) {
+    return null
+  }
+
+  try {
+    const levels = player.getAvailableQualityLevels()
+
+    if (!Array.isArray(levels)) {
+      return null
+    }
+
+    return levels.filter((level): level is string => typeof level === "string")
+  } catch {
+    return null
+  }
+}
+
+export function setPlayerPlaybackQuality(
+  player: YouTubePlayerElement,
+  quality: string,
+): boolean {
+  let applied = false
+
+  try {
+    if (player.setPlaybackQualityRange) {
+      player.setPlaybackQualityRange(quality, quality)
+      applied = true
+    }
+  } catch {
+    // YouTube can reject a quality range while replacing the active stream.
+  }
+
+  try {
+    if (player.setPlaybackQuality) {
+      player.setPlaybackQuality(quality)
+      applied = true
+    }
+  } catch {
+    // Preserve the playback loop when YouTube changes an internal player API.
+  }
+
+  return applied
+}
+
 export function isAdShowing(documentRef: Document = document): boolean {
   const player = getMoviePlayer(documentRef)
 
-  return Boolean(
-    player &&
-      (player.classList.contains("ad-showing") ||
-        player.classList.contains("ad-interrupting")),
-  )
+  return Boolean(player && isPlayerShowingAd(player))
 }

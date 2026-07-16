@@ -15,20 +15,15 @@ const SKIP_AD_SELECTOR = [
   ".ytp-skip-ad-button",
   ".videoAdUiSkipButton",
   ".ytp-ad-text.ytp-ad-skip-button-text",
-  "button[class*=\"skip-ad\"]",
 ].join(", ")
 
-const AD_OVERLAY_CLOSE_SELECTOR = [
-  ".ytp-ad-overlay-close-button",
-  "button[class*=\"overlay-close\"]",
-].join(", ")
-
+const PLAYBACK_ENFORCEMENT_SELECTOR =
+  "#error-screen ytd-enforcement-message-view-model[in-player]"
 const DEFAULT_COOLDOWN_MS = 750
-const SEEK_END_MARGIN_SECONDS = 0.05
+const DEFAULT_SAME_CONTROL_RETRY_MS = 1_500
 
 export interface AdUiSnapshot {
   canSkipAd: boolean
-  canCloseAdOverlay: boolean
 }
 
 export interface AdSkipperOptions {
@@ -37,6 +32,7 @@ export interface AdSkipperOptions {
   onAction?: (message: string) => void
   document?: Document
   cooldownMs?: number
+  sameControlRetryMs?: number
   now?: () => number
 }
 
@@ -51,7 +47,6 @@ export interface AdSkipAttemptOptions {
 
 export interface AdSkipResult {
   acted: boolean
-  recheckAfterMs: number | null
 }
 
 export interface AdSkipper {
@@ -65,12 +60,14 @@ function isDisabled(element: HTMLElement): boolean {
   )
 }
 
-function hasInteractionBlocker(
-  element: Element,
-): boolean {
+function hasInteractionBlocker(element: Element): boolean {
   const view = element.ownerDocument.defaultView
 
   if (!view) {
+    return true
+  }
+
+  if (view.getComputedStyle(element).pointerEvents === "none") {
     return true
   }
 
@@ -89,7 +86,6 @@ function hasInteractionBlocker(
       || style.visibility === "hidden"
       || style.visibility === "collapse"
       || Number(style.opacity) === 0
-      || style.pointerEvents === "none"
     ) {
       return true
     }
@@ -132,23 +128,12 @@ export function findSkipAdButton(
   return findInteractiveElement(player, SKIP_AD_SELECTOR)
 }
 
-export function findAdOverlayCloseButton(
-  player: YouTubePlayerElement,
-): HTMLElement | null {
-  return findInteractiveElement(player, AD_OVERLAY_CLOSE_SELECTOR)
-}
-
-export function isElementVisible(
-  element: Element | null,
-): boolean {
+export function isElementVisible(element: Element | null): boolean {
   if (!element) {
     return false
   }
 
-  if (
-    !element.isConnected
-    || hasInteractionBlocker(element)
-  ) {
+  if (!element.isConnected || hasInteractionBlocker(element)) {
     return false
   }
 
@@ -156,86 +141,12 @@ export function isElementVisible(
   return rect.width > 0 && rect.height > 0
 }
 
-function isPlayerShowingAd(player: YouTubePlayerElement): boolean {
-  return (
-    player.classList.contains("ad-showing")
-    || player.classList.contains("ad-interrupting")
-  )
-}
-
-function getAdSeekTarget(
-  context: ReturnType<YouTubePlayerContextResolver>,
-): number | null {
-  if (!context || !isPlayerShowingAd(context.player)) {
-    return null
-  }
-
-  if (
-    !isElementVisible(context.player)
-    || !isElementVisible(context.video)
-  ) {
-    return null
-  }
-
-  const { video } = context
-  const duration = video.duration
-
-  if (!Number.isFinite(duration) || duration <= 0) {
-    return null
-  }
-
-  try {
-    const seekable = video.seekable
-
-    if (seekable.length === 0) {
-      return null
-    }
-
-    const rangeIndex = seekable.length - 1
-    const rangeStart = seekable.start(rangeIndex)
-    const rangeEnd = Math.min(duration, seekable.end(rangeIndex))
-    const rangeLength = rangeEnd - rangeStart
-
-    if (
-      !Number.isFinite(rangeStart)
-      || !Number.isFinite(rangeEnd)
-      || rangeLength <= 0
-    ) {
-      return null
-    }
-
-    const margin = Math.min(SEEK_END_MARGIN_SECONDS, rangeLength / 2)
-    const target = Math.max(rangeStart, rangeEnd - margin)
-
-    if (
-      !Number.isFinite(target)
-      || target <= 0
-      || (Number.isFinite(video.currentTime) && target <= video.currentTime)
-    ) {
-      return null
-    }
-
-    return target
-  } catch {
-    return null
-  }
-}
-
-function seekAdToEnd(
-  context: ReturnType<YouTubePlayerContextResolver>,
+export function isPlaybackEnforcementVisible(
+  documentRef: Document = document,
 ): boolean {
-  const target = getAdSeekTarget(context)
-
-  if (target === null || !context) {
-    return false
-  }
-
-  try {
-    context.video.currentTime = target
-    return true
-  } catch {
-    return false
-  }
+  return isElementVisible(
+    documentRef.querySelector(PLAYBACK_ENFORCEMENT_SELECTOR),
+  )
 }
 
 export function getAdUiSnapshot(
@@ -249,150 +160,99 @@ export function getAdUiSnapshot(
   if (!context) {
     return {
       canSkipAd: false,
-      canCloseAdOverlay: false,
     }
   }
 
   return {
-    canSkipAd:
-      findSkipAdButton(context.player) !== null
-      || getAdSeekTarget(context) !== null,
-    canCloseAdOverlay: findAdOverlayCloseButton(context.player) !== null,
+    canSkipAd: findSkipAdButton(context.player) !== null,
   }
 }
 
 export function createAdSkipper(options: AdSkipperOptions = {}): AdSkipper {
-  const getSettings =
-    options.getSettings ??
-    (() => ({ autoSkipAds: DEFAULT_SETTINGS.autoSkipAds }))
+  const getSettings = options.getSettings
+    ?? (() => ({ autoSkipAds: DEFAULT_SETTINGS.autoSkipAds }))
   const onAction = options.onAction ?? (() => undefined)
-  const getPlayerContext =
-    options.getPlayerContext
+  const getPlayerContext = options.getPlayerContext
     ?? (() => resolveActivePlayerContext(options.document ?? document))
   const cooldownMs = options.cooldownMs ?? DEFAULT_COOLDOWN_MS
+  const sameControlRetryMs = Math.max(
+    cooldownMs,
+    options.sameControlRetryMs ?? DEFAULT_SAME_CONTROL_RETRY_MS,
+  )
   const getNow = options.now ?? Date.now
+  let lastAutomaticallyClickedControl: HTMLElement | null = null
   let lastAdActionAt = Number.NEGATIVE_INFINITY
-  let canContinueDisabledPending = false
-  let pendingSeekVideo: HTMLVideoElement | null = null
 
-  function clearPendingSeek(): void {
-    canContinueDisabledPending = false
-    pendingSeekVideo = null
+  function createResult(acted: boolean): AdSkipResult {
+    return { acted }
   }
 
-  function createResult(
-    acted: boolean,
-    recheckAfterMs: number | null = null,
+  function clickControl(
+    control: HTMLElement,
+    force: boolean,
+    currentTime: number,
+    message: string,
   ): AdSkipResult {
-    return { acted, recheckAfterMs }
+    if (
+      !force
+      && lastAutomaticallyClickedControl === control
+      && currentTime - lastAdActionAt < sameControlRetryMs
+    ) {
+      return createResult(false)
+    }
+
+    control.click()
+    lastAutomaticallyClickedControl = control
+    lastAdActionAt = currentTime
+    onAction(message)
+    return createResult(true)
   }
 
   function trySkipAdsIfPossible(
     attemptOptions: AdSkipAttemptOptions = {},
   ): AdSkipResult {
-    const force = Boolean(attemptOptions.force)
-    const settings = getSettings()
-    const isDisabledPendingContinuation = (
-      !settings.autoSkipAds
-      && !force
-      && canContinueDisabledPending
-      && pendingSeekVideo !== null
-    )
+    const force = attemptOptions.force === true
 
-    if (!settings.autoSkipAds && !force && !isDisabledPendingContinuation) {
-      clearPendingSeek()
+    if (!getSettings().autoSkipAds && !force) {
+      lastAutomaticallyClickedControl = null
       return createResult(false)
     }
 
     const currentTime = getNow()
-    const cooldownRemaining = cooldownMs - (currentTime - lastAdActionAt)
 
-    if (!force && cooldownRemaining > 0) {
-      return createResult(false, cooldownRemaining)
+    if (!force && currentTime - lastAdActionAt < cooldownMs) {
+      return createResult(false)
     }
 
     const context = getPlayerContext()
 
     if (!context) {
-      clearPendingSeek()
+      lastAutomaticallyClickedControl = null
 
       if (force) {
-        onAction("手动跳过：未检测到正在播放的广告")
+        onAction("手动跳过：未找到 YouTube 提供的广告控件")
       }
 
       return createResult(false)
-    }
-
-    if (pendingSeekVideo && pendingSeekVideo !== context.video) {
-      clearPendingSeek()
-
-      if (!settings.autoSkipAds && !force) {
-        return createResult(false)
-      }
-    }
-
-    const isShowingAd = isPlayerShowingAd(context.player)
-
-    if (!isShowingAd) {
-      clearPendingSeek()
-    }
-
-    if (
-      !settings.autoSkipAds
-      && !force
-      && !canContinueDisabledPending
-    ) {
-      return createResult(false)
-    }
-
-    if (pendingSeekVideo === context.video && seekAdToEnd(context)) {
-      clearPendingSeek()
-      lastAdActionAt = currentTime
-      onAction("跳过按钮未生效，已将广告推进到末尾")
-      return createResult(true)
-    }
-
-    if (isDisabledPendingContinuation) {
-      return createResult(false, isShowingAd ? cooldownMs : null)
     }
 
     const skipButton = findSkipAdButton(context.player)
 
     if (skipButton) {
-      skipButton.click()
-      pendingSeekVideo = context.video
-      canContinueDisabledPending = force && !settings.autoSkipAds
-      lastAdActionAt = currentTime
-      onAction("检测到可跳过广告，已点击“跳过”")
-      return createResult(true, cooldownMs)
-    }
-
-    const overlayCloseButton = findAdOverlayCloseButton(context.player)
-
-    if (overlayCloseButton) {
-      overlayCloseButton.click()
-      lastAdActionAt = currentTime
-      onAction("检测到广告遮罩，已点击关闭")
-      return createResult(true)
-    }
-
-    if (seekAdToEnd(context)) {
-      clearPendingSeek()
-      lastAdActionAt = currentTime
-      onAction("检测到无法点击的广告，已将广告推进到末尾")
-      return createResult(true)
+      return clickControl(
+        skipButton,
+        force,
+        currentTime,
+        "检测到 YouTube 跳过按钮，已点击",
+      )
     }
 
     if (force) {
-      onAction("手动跳过：未检测到正在播放的广告")
+      onAction("手动跳过：当前广告没有可用的官方跳过按钮")
     }
 
-    if (force && !settings.autoSkipAds && isShowingAd) {
-      pendingSeekVideo = context.video
-      canContinueDisabledPending = true
-    }
-
-    return createResult(false, isShowingAd ? cooldownMs : null)
+    lastAutomaticallyClickedControl = null
+    return createResult(false)
   }
 
   return { trySkipAdsIfPossible }
