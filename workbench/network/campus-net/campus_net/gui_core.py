@@ -457,6 +457,6 @@ def _cancel_future(future: asyncio.Future[str]) -> None:
 def _completion_message(exit_code: int) -> str:
     return {
         0: "操作完成。",
-        2: "无法确认配置接口的网络状态。",
+        2: "配置的 IPv4 接口不可用或状态无法识别，请检查实际承载校园网的 IPv4 接口。",
         4: "门户状态与独立连通性探测未能同时确认在线。",
     }.get(exit_code, f"操作结束，退出码 {exit_code}。")

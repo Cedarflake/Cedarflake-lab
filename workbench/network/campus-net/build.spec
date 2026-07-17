@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['main.py'],
+    ["main.py"],
     pathex=[],
     binaries=[],
     datas=[],
@@ -22,7 +22,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='Auto-Connect-CampusNet',
+    name="Auto-Connect-CampusNet",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -33,6 +33,7 @@ exe = EXE(
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
+    icon="assets/cli-icon.ico",
     codesign_identity=None,
     entitlements_file=None,
 )

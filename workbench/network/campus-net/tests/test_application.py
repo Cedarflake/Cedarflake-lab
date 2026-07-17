@@ -1,5 +1,6 @@
 import json
 import unittest
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 import aiohttp
@@ -133,8 +134,6 @@ class TestClassifyRunError(unittest.TestCase):
             CaptchaPromptError("captcha failed"),
             PortalProtocolError("portal failed"),
             SsoProtocolError("sso failed"),
-            aiohttp.ClientConnectionError("connection failed"),
-            TimeoutError("timed out"),
         )
 
         for error in errors:
@@ -145,6 +144,38 @@ class TestClassifyRunError(unittest.TestCase):
                 self.assertEqual(info.exit_code, 3)
                 self.assertEqual(info.title, "连接失败")
                 self.assertEqual(info.message, str(error))
+
+    def test_sanitizes_transport_error_details(self):
+        errors_and_messages = (
+            (
+                aiohttp.ClientConnectorError(
+                    SimpleNamespace(host="private.example", port=80, ssl=True),
+                    OSError(10065, "raw socket failure"),
+                ),
+                "校园网请求失败，请检查配置的 IPv4 接口和校园网连接。",
+            ),
+            (
+                TimeoutError("private timeout detail"),
+                "校园网请求超时，请检查配置的 IPv4 接口和校园网连接。",
+            ),
+        )
+
+        for error, expected_message in errors_and_messages:
+            with self.subTest(error_type=type(error).__name__):
+                info = classify_run_error(error)
+
+                self.assertIsNotNone(info)
+                self.assertEqual(info.exit_code, 3)
+                self.assertEqual(info.title, "连接失败")
+                self.assertEqual(info.message, expected_message)
+                for private_detail in (
+                    "private.example",
+                    "ssl",
+                    "10065",
+                    "raw socket failure",
+                    "private timeout detail",
+                ):
+                    self.assertNotIn(private_detail, info.message)
 
     def test_leaves_unknown_errors_for_the_caller(self):
         self.assertIsNone(classify_run_error(RuntimeError("unexpected")))

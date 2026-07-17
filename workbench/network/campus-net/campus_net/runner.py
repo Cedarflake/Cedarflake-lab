@@ -40,10 +40,18 @@ async def run_captive_http(
         status_callback("正在通过配置的 IPv4 接口探测校园网状态…")
         initialization = await client.initialize()
         if initialization.probe.state is NetworkState.ONLINE:
-            status_callback("配置接口已经通过独立连通性探测，无需登录。")
+            status_callback(
+                f"配置的 IPv4 接口 {config.interface_index} 已通过独立连通性探测，无需登录；"
+                "如果校园网实际位于另一接口，请重新选择对应的 IPv4 接口。"
+            )
             return 0
         if initialization.probe.state is NetworkState.UNKNOWN:
-            status_callback(f"无法确认配置接口的网络状态：{initialization.probe.reason}")
+            reason = initialization.probe.reason.rstrip("。") or "探测结果无法识别"
+            status_callback(
+                f"无法确认配置的 IPv4 接口 {config.interface_index} 的网络状态：{reason}。"
+                "请确认该接口已接入校园网，或重新选择实际承载校园网的 IPv4 接口；"
+                "已停止，未改用其他网络接口。"
+            )
             return 2
         if probe_only:
             status_callback("已识别当前接口的 captive 门户入口；未提交任何认证信息。")

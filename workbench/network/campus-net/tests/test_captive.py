@@ -1,9 +1,11 @@
 import socket
 import struct
 import unittest
+from types import SimpleNamespace
 from unittest.mock import Mock, patch
 from urllib.parse import urlencode
 
+import aiohttp
 from campus_net.captive import (
     IP_UNICAST_IF,
     MAX_CAPTIVE_URL_LENGTH,
@@ -13,6 +15,7 @@ from campus_net.captive import (
     WindowsInterfaceSocketFactory,
     classify_response,
     extract_captive_url,
+    probe_connectivity,
 )
 from campus_net.config import CaptiveHttpConfig, ProbeConfig
 
@@ -242,6 +245,37 @@ class TestResponseClassification(unittest.TestCase):
 
         self.assertEqual(result.state, NetworkState.UNKNOWN)
         self.assertTrue(result.reason)
+
+
+class TestConnectivityProbe(unittest.IsolatedAsyncioTestCase):
+    async def test_reports_unreachable_bound_interface_without_raw_socket_error(self):
+        session = Mock()
+        session.get.side_effect = aiohttp.ClientConnectorError(
+            SimpleNamespace(host="connectivity.example", port=80, ssl=True),
+            OSError(10065, "raw socket failure"),
+        )
+
+        result = await probe_connectivity(session, http_config())
+
+        self.assertEqual(result.state, NetworkState.UNKNOWN)
+        self.assertIsNone(result.captive_url)
+        self.assertEqual(result.reason, "配置接口未连接，或该接口当前没有可用路由")
+        for private_detail in ("connectivity.example", "ssl", "10065", "raw socket failure"):
+            self.assertNotIn(private_detail, result.reason)
+        session.get.assert_called_once()
+        _args, kwargs = session.get.call_args
+        self.assertEqual(kwargs["allow_redirects"], False)
+        self.assertEqual(kwargs["timeout"].total, 8)
+
+    async def test_reports_probe_timeout_without_raw_exception_text(self):
+        session = Mock()
+        session.get.side_effect = TimeoutError("secret transport detail")
+
+        result = await probe_connectivity(session, http_config())
+
+        self.assertEqual(result.state, NetworkState.UNKNOWN)
+        self.assertEqual(result.reason, "配置接口访问连通性探测地址超时")
+        self.assertNotIn("secret transport detail", result.reason)
 
 
 class TestWindowsInterfaceSocketFactory(unittest.TestCase):

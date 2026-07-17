@@ -19,6 +19,7 @@ MAX_RESPONSE_BYTES = 64 * 1024
 MAX_CAPTIVE_URL_LENGTH = 4096
 REQUIRED_CAPTIVE_PARAMETERS = frozenset({"wlanuserip", "wlanacname", "nasip", "mac"})
 IP_UNICAST_IF = getattr(socket, "IP_UNICAST_IF", 31)
+UNREACHABLE_SOCKET_ERROR_CODES = frozenset({10050, 10051, 10057, 10065, 1231, 1232})
 
 LOCATION_ASSIGNMENT = re.compile(
     r"(?<![\w.])(?:top\.self\.location\.href|window\.location\.href|location\.href)"
@@ -186,9 +187,28 @@ async def probe_connectivity(
                 body=body,
             )
     except (aiohttp.ClientError, TimeoutError) as error:
-        return ProbeResult(NetworkState.UNKNOWN, reason=f"探测请求失败：{error}")
+        return ProbeResult(NetworkState.UNKNOWN, reason=_probe_failure_reason(error))
 
     return classify_response(snapshot, config)
+
+
+def _probe_failure_reason(error: aiohttp.ClientError | TimeoutError) -> str:
+    if isinstance(error, TimeoutError):
+        return "配置接口访问连通性探测地址超时"
+
+    if isinstance(error, aiohttp.ClientConnectorError):
+        os_error = error.os_error
+        error_codes = {
+            getattr(os_error, "errno", None),
+            getattr(os_error, "winerror", None),
+        }
+        if error_codes & UNREACHABLE_SOCKET_ERROR_CODES:
+            return "配置接口未连接，或该接口当前没有可用路由"
+        if isinstance(os_error, socket.gaierror):
+            return "配置接口无法解析连通性探测地址"
+        return "配置接口无法连接连通性探测地址"
+
+    return "配置接口的连通性探测请求未完成"
 
 
 def _validate_captive_url(candidate: str, portal_origin: str, entry_path: str) -> None:

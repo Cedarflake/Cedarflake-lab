@@ -197,6 +197,24 @@ class TestOperationController(ControllerTestCase):
         )
         self.assertFalse(terminal.cancelled)
 
+    def test_reports_interface_selection_guidance_for_unknown_network_state(self):
+        async def runner(_config: dict[str, Any], **_kwargs: Any) -> int:
+            return 2
+
+        controller = OperationController(runner)
+        controller.start(captive_model(), probe_only=False)
+        terminal, _events = self.wait_for_event(
+            controller,
+            lambda event: isinstance(event, FinishedEvent),
+        )
+        self.wait_until_stopped(controller)
+
+        self.assertEqual(terminal.exit_code, 2)
+        self.assertEqual(
+            terminal.message,
+            "配置的 IPv4 接口不可用或状态无法识别，请检查实际承载校园网的 IPv4 接口。",
+        )
+
     def test_rejects_concurrent_start_and_cancels_active_task(self):
         started = threading.Event()
 

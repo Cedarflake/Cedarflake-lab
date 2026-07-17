@@ -61,6 +61,18 @@ async def execute_config(
 def classify_run_error(error: BaseException) -> RunErrorInfo | None:
     if isinstance(error, (FileNotFoundError, json.JSONDecodeError, TypeError, ValueError)):
         return RunErrorInfo(1, "配置错误", str(error))
+    if isinstance(error, TimeoutError):
+        return RunErrorInfo(
+            3,
+            "连接失败",
+            "校园网请求超时，请检查配置的 IPv4 接口和校园网连接。",
+        )
+    if isinstance(error, aiohttp.ClientError):
+        return RunErrorInfo(
+            3,
+            "连接失败",
+            "校园网请求失败，请检查配置的 IPv4 接口和校园网连接。",
+        )
     if isinstance(
         error,
         (
@@ -69,8 +81,6 @@ def classify_run_error(error: BaseException) -> RunErrorInfo | None:
             CaptchaPromptError,
             PortalProtocolError,
             SsoProtocolError,
-            aiohttp.ClientError,
-            TimeoutError,
         ),
     ):
         return RunErrorInfo(3, "连接失败", str(error))

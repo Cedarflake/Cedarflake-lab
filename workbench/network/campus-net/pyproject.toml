@@ -22,3 +22,6 @@ dev = [
 
 [tool.uv]
 package = false
+
+[tool.uv.workspace]
+members = []

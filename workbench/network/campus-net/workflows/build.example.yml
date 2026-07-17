@@ -31,12 +31,12 @@ jobs:
         run: uv sync --group dev
 
       - name: Run tests
-        run: uv run python -m unittest discover -s tests -p "test_*.py" -v
+        run: '& .\.venv\Scripts\python.exe -m unittest discover -s tests -p "test_*.py" -v'
 
       - name: Build CLI and GUI
         run: |
-          uv run pyinstaller --clean --noconfirm build.spec
-          uv run pyinstaller --clean --noconfirm gui.spec
+          & .\.venv\Scripts\python.exe -m PyInstaller --clean --noconfirm build.spec
+          & .\.venv\Scripts\python.exe -m PyInstaller --clean --noconfirm gui.spec
 
       - name: Verify executables and GUI resources
         shell: pwsh
@@ -44,12 +44,29 @@ jobs:
           $cli = Resolve-Path -LiteralPath "dist/Auto-Connect-CampusNet.exe" -ErrorAction Stop
           $gui = Resolve-Path -LiteralPath "dist/Auto-Connect-CampusNet-GUI.exe" -ErrorAction Stop
           $smokeConfig = Join-Path $env:RUNNER_TEMP "campus-net-gui-smoke.json"
-          $process = Start-Process -FilePath $gui -ArgumentList @("--smoke-test", "--config", $smokeConfig) -Wait -PassThru
-          if ($process.ExitCode -ne 0) {
-            throw "GUI smoke test failed with exit code $($process.ExitCode)"
+          $startInfo = [Diagnostics.ProcessStartInfo]::new()
+          $startInfo.FileName = $gui.Path
+          $startInfo.Arguments = "--smoke-test --config=`"$smokeConfig`""
+          $startInfo.UseShellExecute = $false
+          $startInfo.CreateNoWindow = $true
+          $process = [Diagnostics.Process]::Start($startInfo)
+          if (-not $process.WaitForExit(60000)) {
+            $process.Kill()
+            $process.WaitForExit()
+            throw "GUI smoke test timed out"
+          }
+          $exitCode = $process.ExitCode
+          $process.Dispose()
+          if ($exitCode -ne 0) {
+            throw "GUI smoke test failed with exit code $exitCode"
           }
           if (Test-Path -LiteralPath $smokeConfig) {
             throw "GUI smoke test unexpectedly created $smokeConfig"
+          }
+          Start-Sleep -Milliseconds 500
+          $remaining = @(Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $gui.Path })
+          if ($remaining.Count -ne 0) {
+            throw "GUI smoke test left $($remaining.Count) process(es) running"
           }
           Get-FileHash -Algorithm SHA256 -LiteralPath $cli, $gui |
             ForEach-Object { "$($_.Hash.ToLowerInvariant())  $([IO.Path]::GetFileName($_.Path))" } |
