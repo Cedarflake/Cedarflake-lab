@@ -1,110 +1,66 @@
-name: Build and Release EXE
+name: "[Project] Campus Net Build Example"
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Release version (e.g. 1.2.3 or v1.2.3)'
-        required: true
-        default: '1.0.0'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  build-and-release:
+  build:
     runs-on: windows-latest
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: workbench/network/campus-net
+
     steps:
-      - name: Checkout repository (fetch tags)
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          fetch-depth: 0
-          persist-credentials: true
+          persist-credentials: false
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - name: Setup uv and Python
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
         with:
-          python-version: '3.11'
+          enable-cache: true
+          cache-dependency-glob: workbench/network/campus-net/pyproject.toml
+          python-version: "3.13"
 
-      - name: Install uv and project dependencies
-        shell: pwsh
-        run: |
-          python -m pip install uv
-          uv sync --group dev
+      - name: Install project dependencies
+        run: uv sync --group dev
 
-      - name: Build with PyInstaller (uses build.spec at repo root)
-        shell: pwsh
+      - name: Run tests
+        run: uv run python -m unittest discover -s tests -p "test_*.py" -v
+
+      - name: Build CLI and GUI
         run: |
           uv run pyinstaller --clean --noconfirm build.spec
+          uv run pyinstaller --clean --noconfirm gui.spec
 
-      - name: Find built .exe
-        id: find_exe
+      - name: Verify executables and GUI resources
         shell: pwsh
         run: |
-          $exe = Get-ChildItem -Path dist -Recurse -Filter *.exe -File | Select-Object -First 1
-          if (-not $exe) {
-            Write-Error "No .exe found in dist directory. Build may have failed."
-            exit 1
+          $cli = Resolve-Path -LiteralPath "dist/Auto-Connect-CampusNet.exe" -ErrorAction Stop
+          $gui = Resolve-Path -LiteralPath "dist/Auto-Connect-CampusNet-GUI.exe" -ErrorAction Stop
+          $smokeConfig = Join-Path $env:RUNNER_TEMP "campus-net-gui-smoke.json"
+          $process = Start-Process -FilePath $gui -ArgumentList @("--smoke-test", "--config", $smokeConfig) -Wait -PassThru
+          if ($process.ExitCode -ne 0) {
+            throw "GUI smoke test failed with exit code $($process.ExitCode)"
           }
-          echo "exe_path=$($exe.FullName)" >> $env:GITHUB_OUTPUT
-          echo "exe_name=$($exe.Name)" >> $env:GITHUB_OUTPUT
-          Write-Host "Found exe: $($exe.FullName)"
-
-      - name: Compose tag name (prepend v if needed)
-        id: compose_tag
-        shell: pwsh
-        run: |
-          $input = "${{ github.event.inputs.version }}"
-          if ($input.StartsWith('v')) {
-            $tag = $input
-          } else {
-            $tag = "v$input"
+          if (Test-Path -LiteralPath $smokeConfig) {
+            throw "GUI smoke test unexpectedly created $smokeConfig"
           }
-          echo "TAG=$tag" >> $env:GITHUB_ENV
-          Write-Host "Computed TAG: $tag"
+          Get-FileHash -Algorithm SHA256 -LiteralPath $cli, $gui |
+            ForEach-Object { "$($_.Hash.ToLowerInvariant())  $([IO.Path]::GetFileName($_.Path))" } |
+            Set-Content -LiteralPath "dist/SHA256SUMS.txt" -Encoding utf8NoBOM
 
-      - name: Ensure tag does not already exist && create & push tag
-        shell: pwsh
-        env:
-          TAG: ${{ env.TAG }}
-        run: |
-          Write-Host "Checking if tag $env:TAG exists on remote..."
-          $exists = git ls-remote --tags origin $env:TAG
-          if ($exists) {
-            Write-Error "Tag $env:TAG already exists on remote. Aborting to avoid overwrite."
-            exit 1
-          }
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a $env:TAG -m "Release $env:TAG"
-          git push origin $env:TAG
-          Write-Host "Tag $env:TAG created and pushed."
-
-      - name: Authenticate gh CLI (using GITHUB_TOKEN) and create release
-        shell: pwsh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ env.TAG }}
-        run: |
-          # gh is preinstalled on GH-hosted runners; authenticate with token
-          echo $env:GITHUB_TOKEN | gh auth login --with-token
-          # create a release for the tag
-          gh release create $env:TAG --title "$env:TAG" --notes "Release $env:TAG"
-          Write-Host "Created release $env:TAG"
-
-      - name: Upload EXE as release asset (gh)
-        shell: pwsh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          EXE_PATH: ${{ steps.find_exe.outputs.exe_path }}
-          TAG: ${{ env.TAG }}
-        run: |
-          if (-not (Test-Path $env:EXE_PATH)) {
-            Write-Error "EXE not found: $env:EXE_PATH"
-            exit 1
-          }
-          gh release upload $env:TAG $env:EXE_PATH
-          Write-Host "Uploaded asset: $env:EXE_PATH"
+      - name: Upload validated build artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: campus-net-windows-${{ github.sha }}
+          if-no-files-found: error
+          path: |
+            workbench/network/campus-net/dist/Auto-Connect-CampusNet.exe
+            workbench/network/campus-net/dist/Auto-Connect-CampusNet-GUI.exe
+            workbench/network/campus-net/dist/SHA256SUMS.txt

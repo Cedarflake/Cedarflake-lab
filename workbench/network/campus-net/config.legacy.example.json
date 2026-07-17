@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "login_url": "http://你的校园网门户/eportal/InterFace.do?method=login",
+  "username": "你的学号",
+  "encrypted_password": "你的加密后密码",
+  "carrier": "运营商值，一般遵循旧门户的 URL 编码",
+  "user_group": "身份组，一般遵循 URL 编码",
+  "session_id": "从旧版门户抓包得到的 JSESSIONID"
+}

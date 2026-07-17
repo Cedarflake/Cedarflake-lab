@@ -8,3 +8,9 @@ Auto_Connect_CampusNet.egg-info/
 
 # Local secrets
 config.json
+config.backup.*.json
+.config.json.*.tmp
+.config.backup.*.tmp
+config.*.backup.json
+
+uv.lock

@@ -1,7 +1,7 @@
 [project]
 name = "cedarflake-campus-net"
 version = "1.0.0"
-description = "Log in to a Ruijie campus network portal."
+description = "Connect through legacy and captive SSO Ruijie campus portals."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
@@ -10,6 +10,9 @@ authors = [
 ]
 dependencies = [
   "aiohttp>=3.12.0,<4",
+  "pillow>=11.0.0,<13",
+  "pycryptodome>=3.21.0,<4",
+  "ttkbootstrap>=1.10,<2",
 ]
 
 [dependency-groups]

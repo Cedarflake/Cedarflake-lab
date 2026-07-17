@@ -1,0 +1,1 @@
+"""Campus network portal adapters."""
