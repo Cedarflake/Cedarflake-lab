@@ -111,7 +111,7 @@ jobs:
 
       - name: Test campus-net
         working-directory: workbench/network/campus-net
-        run: uv run python -m unittest discover -s tests -p "test_*.py" -v
+        run: xvfb-run -a uv run python -m unittest discover -s tests -p "test_*.py" -v
 
   audit:
     runs-on: ubuntu-latest
