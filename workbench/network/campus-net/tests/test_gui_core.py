@@ -28,13 +28,12 @@ from campus_net.gui_core import (
     FinishedEvent,
     GuiEvent,
     LogEvent,
-    NetworkInterface,
     OperationController,
     _PendingCaptcha,
     build_config_from_form,
     form_values_from_config,
-    parse_windows_ipv4_interfaces,
 )
+from campus_net.interfaces import NetworkInterface, parse_windows_ipv4_interfaces
 
 
 def captive_values() -> dict[str, str]:

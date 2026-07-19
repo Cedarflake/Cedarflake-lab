@@ -71,6 +71,7 @@ class TestExecuteConfig(unittest.IsolatedAsyncioTestCase):
             run_captive_http.await_args.kwargs["status_callback"],
             status_callback,
         )
+        self.assertIsNone(run_captive_http.await_args.kwargs["interface_selector"])
 
     @patch("campus_net.application.run_legacy", new_callable=AsyncMock)
     async def test_dispatches_version_1_to_legacy_runner(self, run_legacy):

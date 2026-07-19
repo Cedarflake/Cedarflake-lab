@@ -33,12 +33,11 @@ from .gui_core import (
     FailedEvent,
     FinishedEvent,
     LogEvent,
-    NetworkInterface,
     OperationController,
     build_config_from_form,
     form_values_from_config,
-    list_windows_ipv4_interfaces,
 )
+from .interfaces import NetworkInterface, list_windows_ipv4_interfaces
 from .window_state import (
     ScreenRect,
     WindowState,

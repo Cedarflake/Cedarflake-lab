@@ -21,7 +21,7 @@ from .config import (
 )
 from .interactive import CaptchaPromptError, prompt_captcha
 from .legacy import run_legacy
-from .runner import run_captive_http
+from .runner import InterfaceSelector, run_captive_http
 from .sso import SsoProtocolError
 
 StatusReporter = Callable[[str], None]
@@ -40,6 +40,7 @@ async def execute_config(
     probe_only: bool = False,
     captcha_provider: CaptchaProvider = prompt_captcha,
     status_callback: StatusReporter = print,
+    interface_selector: InterfaceSelector | None = None,
 ) -> int:
     adapter = get_adapter(cfg)
     if adapter == ADAPTER_CAPTIVE_SSO_HTTP:
@@ -49,6 +50,7 @@ async def execute_config(
             probe_only=probe_only,
             captcha_provider=captcha_provider,
             status_callback=status_callback,
+            interface_selector=interface_selector,
         )
     if adapter == ADAPTER_LEGACY_EPORTAL:
         if probe_only:

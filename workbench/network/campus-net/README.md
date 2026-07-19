@@ -81,7 +81,7 @@ if (-not (Test-Path -LiteralPath config.json)) {
 - `username`、`password`：校园网账号和密码。程序直接读取本地配置，不会再次询问密码或读取密码环境变量。
 - `carrier`：运营商显示名。程序会从本次会话的服务列表中找到“中国电信”对应的动态值再提交。
 
-程序只使用 `interface_index` 指定的 IPv4 接口，不按接口名称或类型猜测校园网，也不会在失败时改用其他网络接口。校园网可以位于 WLAN、以太网或其他 IPv4 接口；若所选接口未连接、无可用路由或返回其他 captive 门户，CLI 与 GUI 会停止并提示重新选择实际承载校园网的接口，不会提交账号密码。所选接口已经可以访问互联网时，程序会跳过登录，并提醒校园网位于其他接口时需要改选接口。
+程序始终先使用 `interface_index` 指定的 IPv4 接口，不按接口名称或类型猜测校园网，也不会自动改用其他网络接口。校园网可以位于 WLAN、以太网或其他 IPv4 接口；若交互式 CLI 无法确认所选接口的网络状态，会列出当前 Windows IPv4 接口，由用户显式选择一个接口后重新探测。该选择仅用于本次运行，不修改 `config.json`；重定向输入输出、后台任务和 GUI 不会等待终端输入，仍会安全停止。GUI 可在界面中重新选择接口再连接。任何改选都发生在提交账号密码之前。所选接口已经可以访问互联网时，程序会跳过登录，并提醒校园网位于其他接口时需要改选接口。
 
 以下协议参数不再属于用户配置，由代码统一维护：User-Agent、连通性探测指纹、门户入口路径、验证码模式和次数、登录后确认间隔与超时。这样升级门户适配时只改实现，不要求用户同步一组内部常量。
 
@@ -134,6 +134,12 @@ uv sync --group dev
 & .\.venv\Scripts\python.exe -m unittest discover -s tests -p "test_*.py" -v
 & .\.venv\Scripts\python.exe -m PyInstaller --clean --noconfirm build.spec
 & .\.venv\Scripts\python.exe -m PyInstaller --clean --noconfirm gui.spec
+```
+
+控制台版构建后可运行不读取配置、不访问网络的入口冒烟检查：
+
+```powershell
+& .\dist\Auto-Connect-CampusNet.exe --help
 ```
 
 子项目在 `pyproject.toml` 中声明自己的 uv workspace 边界，因此 `uv sync` 不会继续向上扫描仓库根仅用于 Ruff 的 `pyproject.toml`。同步后直接使用该环境的 Python，也不会让后续每条测试或构建命令重新触发项目发现，从而避免与项目构建无关的“缺少 `[project]`”警告。
